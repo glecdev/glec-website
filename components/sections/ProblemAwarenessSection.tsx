@@ -4,18 +4,20 @@
  * Based on: GLEC-Functional-Requirements-Specification.md (FR-WEB-002)
  * Purpose: Display 4 pain points with animations
  * Updated: 지입차 90%, 데이터 수집 불응률 90% 사실 기반 수정
+ * Enhanced: 타이핑 애니메이션 추가, 내용 확장
  */
 
 'use client';
 
 import React from 'react';
 import { ProblemCard } from '@/components/ui/ProblemCard';
+import { useTypingAnimation } from '@/hooks/useTypingAnimation';
 
 const problems = [
   {
     number: 1,
     title: '데이터 수집의 고통',
-    description: '물류기업 화물차의 평균 90%가 지입차량입니다. 화물차주로부터 운송 데이터 요청 시 불응하거나 수집 체계가 지속되지 않을 확률이 90%에 육박합니다.',
+    description: '물류기업 화물차의 평균 90%가 지입차량입니다. 화물차주로부터 운송 데이터 요청 시 불응하거나 수집 체계가 지속되지 않을 확률이 90%에 육박합니다. 차주 한 명 한 명에게 전화를 걸어 데이터를 요청하지만, 대부분 거절당하거나 3개월 후에는 데이터 제공이 중단됩니다.',
     gifSrc: '/images/problems/data-collection-pain.svg',
     staticSrc: '/images/problems/data-collection-pain.svg',
     alt: '지입차주가 데이터 제공을 거부하는 모습',
@@ -23,7 +25,7 @@ const problems = [
   {
     number: 2,
     title: '엑셀 지옥',
-    description: '주유비 카드 내역 300장을 엑셀에 입력하는 주말. 월평균 47.2시간의 수작업, 주유소별로 다른 15가지 데이터 형식, 오류로 인한 재작업은 월 3.8회입니다.',
+    description: '주유비 카드 내역 300장을 엑셀에 입력하는 주말. 월평균 47.2시간의 수작업, 주유소별로 다른 15가지 데이터 형식, 오류로 인한 재작업은 월 3.8회입니다. SK, GS칼텍스, S-Oil, 알뜰주유소까지... 각각 다른 영수증 양식을 일일이 엑셀에 옮기다 보면 어느새 새벽 2시입니다.',
     gifSrc: '/images/problems/excel-manual-work.svg',
     staticSrc: '/images/problems/excel-manual-work.svg',
     alt: '엑셀에 수작업으로 데이터를 입력하는 모습',
@@ -31,7 +33,7 @@ const problems = [
   {
     number: 3,
     title: '화주사의 압박',
-    description: '탄소배출 보고서 요청 메일에 답장하지 못하는 밤. EU CBAM 대응 요구 화주사는 67.3%, 평균 제출 기한은 7일이지만 실제 작성에는 21일이 걸립니다.',
+    description: '탄소배출 보고서 요청 메일에 답장하지 못하는 밤. EU CBAM 대응 요구 화주사는 67.3%, 평균 제출 기한은 7일이지만 실제 작성에는 21일이 걸립니다. "ISO-14083 기준으로 작성해주세요"라는 요구에 무엇을 어떻게 해야 할지 막막합니다. 보고서를 제출하지 못하면 계약이 해지될 수도 있는 상황입니다.',
     gifSrc: '/images/problems/customer-pressure.svg',
     staticSrc: '/images/problems/customer-pressure.svg',
     alt: '화주사로부터 탄소배출 보고서 요청 메일을 받은 모습',
@@ -39,7 +41,7 @@ const problems = [
   {
     number: 4,
     title: '국제표준 부재',
-    description: 'ISO-14083은 있는데, 한국형 WTW 배출계수는 없다는 아이러니. 국내 물류기업의 국제표준 대응률은 8.7%, EU 수출 물류기업 93.2%가 CBAM 대응 불가능 상태입니다.',
+    description: 'ISO-14083은 있는데, 한국형 WTW 배출계수는 없다는 아이러니. 국내 물류기업의 국제표준 대응률은 8.7%, EU 수출 물류기업 93.2%가 CBAM 대응 불가능 상태입니다. 국제표준은 알겠는데, 한국의 정유사별 배출계수는? 한국의 화물차 연비 특성은? 답이 없습니다.',
     gifSrc: '/images/problems/api-console-test.svg',
     staticSrc: '/images/problems/api-console-test.svg',
     alt: 'API Console 테스트 화면 - 국제표준 대비 한국형 배출계수',
@@ -47,6 +49,11 @@ const problems = [
 ];
 
 export function ProblemAwarenessSection() {
+  const { displayedText, isComplete } = useTypingAnimation(
+    '당신만 겪는\n문제가\n아닙니다',
+    50
+  );
+
   return (
     <section
       className="py-20 lg:py-32 bg-white"
@@ -55,11 +62,20 @@ export function ProblemAwarenessSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            당신만 겪는 문제가 아닙니다
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 whitespace-pre-line">
+            {displayedText}
+            {isComplete && (
+              <span className="inline-block w-1 h-12 ml-2 bg-primary-500 animate-pulse" />
+            )}
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="text-xl text-gray-600 mb-4">
             전국 1,200개 물류기업이 매일 마주하는 4가지 고통
+          </p>
+          <p className="text-lg text-gray-500">
+            매일 밤 11시, 사무실에 홀로 남아 엑셀 파일을 열고 있는 당신.<br />
+            화물차주에게 데이터를 요청했다가 거절당하고,<br />
+            화주사로부터 탄소배출 보고서를 독촉받는 당신.<br />
+            <span className="font-semibold text-gray-700">이 고통, 당신만 겪는 것이 아닙니다.</span>
           </p>
 
           {/* Overall Statistics */}
