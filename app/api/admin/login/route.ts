@@ -29,6 +29,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { comparePassword, generateToken, hashPassword } from '@/lib/auth';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // Request validation schema
 const LoginSchema = z.object({
@@ -57,28 +60,6 @@ interface LoginResponse {
     };
   };
 }
-
-/**
- * Mock user database (temporary until Prisma DB is connected)
- *
- * IMPORTANT: In production, this will query Prisma:
- * const user = await prisma.user.findUnique({ where: { email } });
- *
- * Password hash generated with: await hashPassword('admin123!')
- */
-const MOCK_ADMIN_USER = {
-  id: 'admin-001',
-  email: 'admin@glec.io',
-  name: 'GLEC Admin',
-  // Password: 'admin123!' (FOR DEMO ONLY - NEVER use in production!)
-  // Hash generated with: await bcrypt.hash('admin123!', 12)
-  passwordHash: '$2b$12$Fsb9/UyKn1h330l.YP3PDOAWcipTr4n2hv4DPRWhClnDAD78bk2qa',
-  role: 'SUPER_ADMIN' as const,
-  phone: '+82-10-1234-5678',
-  lastLoginAt: null,
-  createdAt: new Date('2025-01-01'),
-  updatedAt: new Date('2025-01-01'),
-};
 
 export async function POST(request: NextRequest) {
   try {
@@ -132,13 +113,10 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = validationResult.data;
 
-    // TODO: Replace with Prisma query when DB is connected
-    // const user = await prisma.user.findUnique({
-    //   where: { email },
-    // });
-
-    // Mock implementation
-    const user = email === MOCK_ADMIN_USER.email ? MOCK_ADMIN_USER : null;
+    // Query user from Prisma database
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
     if (!user) {
       // Don't reveal whether email exists (security best practice)
@@ -168,11 +146,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 401 });
     }
 
-    // TODO: Update lastLoginAt in database
-    // await prisma.user.update({
-    //   where: { id: user.id },
-    //   data: { lastLoginAt: new Date() },
-    // });
+    // Update lastLoginAt in database
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
 
     // Generate JWT token
     const token = generateToken({
