@@ -2,11 +2,17 @@
  * Contact Form Submission API
  *
  * POST /api/contact-form
- * Handles contact form submissions and sends email via Resend
+ * Handles contact form submissions:
+ * 1. Validate input
+ * 2. Save to database (Prisma)
+ * 3. Send email via Resend
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // Initialize Resend only if API key is available (prevents build-time errors)
 const resend = process.env.RESEND_API_KEY
@@ -75,20 +81,6 @@ function sanitizeInput(input: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Resend is configured
-    if (!resend) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'SERVICE_UNAVAILABLE',
-            message: '이메일 서비스가 설정되지 않았습니다. 관리자에게 문의하세요.',
-          },
-        },
-        { status: 503 }
-      );
-    }
-
     // Parse request body
     const body: ContactFormData = await request.json();
 
@@ -118,96 +110,59 @@ export async function POST(request: NextRequest) {
       message: sanitizeInput(body.message),
     };
 
-    // Send email via Resend
-    const emailResult = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@glec.io',
-      to: 'contact@glec.io',
-      replyTo: sanitizedData.email,
-      subject: `[GLEC 상담 신청] ${sanitizedData.company} - ${sanitizedData.name}`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #0600f7 0%, #000a42 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-            .content { background: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px; }
-            .field { margin-bottom: 20px; }
-            .label { font-weight: bold; color: #0600f7; margin-bottom: 5px; }
-            .value { background: white; padding: 10px; border-left: 3px solid #0600f7; }
-            .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1 style="margin: 0; font-size: 24px;">🎯 새로운 상담 신청</h1>
-              <p style="margin: 5px 0 0 0; opacity: 0.9;">GLEC 무료 상담 신청이 접수되었습니다</p>
-            </div>
-            <div class="content">
-              <div class="field">
-                <div class="label">👤 이름</div>
-                <div class="value">${sanitizedData.name}</div>
-              </div>
+    // Get client IP address
+    const ipAddress = request.headers.get('x-forwarded-for') ||
+                     request.headers.get('x-real-ip') ||
+                     'unknown';
 
-              <div class="field">
-                <div class="label">🏢 회사명</div>
-                <div class="value">${sanitizedData.company}</div>
-              </div>
-
-              <div class="field">
-                <div class="label">📧 이메일</div>
-                <div class="value"><a href="mailto:${sanitizedData.email}">${sanitizedData.email}</a></div>
-              </div>
-
-              <div class="field">
-                <div class="label">📞 전화번호</div>
-                <div class="value"><a href="tel:${sanitizedData.phone}">${sanitizedData.phone}</a></div>
-              </div>
-
-              <div class="field">
-                <div class="label">🚚 보유 차량 대수</div>
-                <div class="value">${sanitizedData.vehicleCount}</div>
-              </div>
-
-              <div class="field">
-                <div class="label">💬 문의 내용</div>
-                <div class="value" style="white-space: pre-wrap;">${sanitizedData.message}</div>
-              </div>
-
-              <div class="footer">
-                <p>📅 접수 시간: ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</p>
-                <p>⚡ 영업일 기준 24시간 내에 담당자가 연락드립니다.</p>
-              </div>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
+    // Save to database
+    const contact = await prisma.contact.create({
+      data: {
+        companyName: sanitizedData.company,
+        contactName: sanitizedData.name,
+        email: sanitizedData.email,
+        phone: sanitizedData.phone,
+        inquiryType: 'PRODUCT',
+        message: `${sanitizedData.message}\n\n보유 차량 대수: ${sanitizedData.vehicleCount}`,
+        privacyConsent: true,
+        status: 'NEW',
+        ipAddress: ipAddress,
+      },
     });
 
-    if (emailResult.error) {
-      console.error('Resend email error:', emailResult.error);
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'EMAIL_SEND_ERROR',
-            message: '이메일 전송 중 오류가 발생했습니다',
-          },
-        },
-        { status: 500 }
-      );
+    // Send email via Resend (optional - continue even if email fails)
+    let emailSent = false;
+    let emailError = null;
+
+    if (resend) {
+      try {
+        const emailResult = await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || 'noreply@glec.io',
+          to: 'contact@glec.io',
+          replyTo: sanitizedData.email,
+          subject: `[GLEC 상담 신청] ${sanitizedData.company} - ${sanitizedData.name}`,
+          html: `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><h1>상담 신청</h1><p>이름: ${sanitizedData.name}</p><p>회사: ${sanitizedData.company}</p><p>이메일: ${sanitizedData.email}</p><p>전화: ${sanitizedData.phone}</p><p>차량: ${sanitizedData.vehicleCount}</p><p>내용: ${sanitizedData.message}</p></body></html>`,
+        });
+
+        if (emailResult.error) {
+          emailError = emailResult.error;
+          console.error('Resend email error:', emailResult.error);
+        } else {
+          emailSent = true;
+        }
+      } catch (err) {
+        emailError = err;
+        console.error('Email sending exception:', err);
+      }
     }
 
     // Success response
     return NextResponse.json({
       success: true,
       data: {
-        id: emailResult.data?.id,
+        id: contact.id,
         message: '상담 신청이 성공적으로 접수되었습니다',
+        emailSent: emailSent,
       },
     });
   } catch (error) {
