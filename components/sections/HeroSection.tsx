@@ -7,6 +7,7 @@
  * - Background blur + gradient
  * - Pulse animation on CTA (1.5s)
  * - Video modal
+ * - Enhanced statistics cards
  */
 
 'use client';
@@ -53,7 +54,7 @@ export function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-5xl mx-auto space-y-8">
           {/* Typing Animation Headline */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
             {displayedText}
@@ -63,18 +64,52 @@ export function HeroSection() {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xl sm:text-2xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl sm:text-2xl text-gray-300 max-w-2xl mx-auto mb-6">
             ISO-14083 국제표준 기반<br />
             클릭 한 번으로 완성되는 물류 탄소배출 보고서
           </p>
 
+          {/* Additional Value Props - Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/15 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-3xl font-bold text-white">98.7%</div>
+                <svg className="w-8 h-8 text-primary-300" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+              <div className="text-sm font-semibold text-gray-200">수작업 시간 절감</div>
+              <div className="text-xs text-gray-400 mt-1">엑셀 300시간 → 자동화 4시간</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/15 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-3xl font-bold text-white">80만원</div>
+                <svg className="w-8 h-8 text-primary-300" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+              </div>
+              <div className="text-sm font-semibold text-gray-200">GLEC DTG Series5</div>
+              <div className="text-xs text-gray-400 mt-1">설치비 포함, 월 0원 유지비</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/15 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-3xl font-bold text-white">48개</div>
+                <svg className="w-8 h-8 text-primary-300" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                </svg>
+              </div>
+              <div className="text-sm font-semibold text-gray-200">Carbon API</div>
+              <div className="text-xs text-gray-400 mt-1">5개 운송모드 완벽 지원</div>
+            </div>
+          </div>
+
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
             <Link href="/contact?source=hero">
               <Button
                 variant="primary"
                 size="lg"
-                className="min-w-[200px] animate-pulse-slow"
+                className="min-w-[200px] animate-pulse-slow shadow-xl"
               >
                 무료 데모 신청
               </Button>
@@ -98,24 +133,24 @@ export function HeroSection() {
           </div>
 
           {/* Trust Indicators */}
-          <div className="pt-12 flex flex-wrap justify-center items-center gap-8 text-gray-400">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 24 24">
+          <div className="pt-12 flex flex-wrap justify-center items-center gap-6 md:gap-8 text-gray-400">
+            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+              <svg className="w-5 h-5 text-primary-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>ISO-14083 인증</span>
+              <span className="text-sm">ISO-14083 국제표준 인증</span>
             </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+              <svg className="w-5 h-5 text-primary-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              <span>DHL GoGreen 파트너</span>
+              <span className="text-sm">DHL GoGreen 공식 파트너</span>
             </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+              <svg className="w-5 h-5 text-primary-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              <span>1,200+ 기업 사용</span>
+              <span className="text-sm">1,200+ 기업 사용 중</span>
             </div>
           </div>
         </div>
