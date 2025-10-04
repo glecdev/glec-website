@@ -138,7 +138,19 @@ export function SolutionOverviewSection() {
                   <h3 className="text-3xl font-bold text-gray-900 mb-6">
                     세계 최초 스마트폰 CPU 탑재 DTG
                   </h3>
+                  <p className="text-lg text-gray-600 mb-6">
+                    물류기업 화물차의 90%를 차지하는 지입차량의 데이터 수집 문제를 해결하는 혁신적인 장치
+                  </p>
                   <ul className="space-y-4 mb-8">
+                    <li className="flex items-start">
+                      <svg className="w-6 h-6 text-primary-500 mr-3 mt-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div>
+                        <p className="font-semibold text-gray-900">지입차 데이터 자동 수집</p>
+                        <p className="text-gray-600">차주 설득 없이 OBD-II 포트 연결만으로 즉시 데이터 수집</p>
+                      </div>
+                    </li>
                     <li className="flex items-start">
                       <svg className="w-6 h-6 text-primary-500 mr-3 mt-1" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />

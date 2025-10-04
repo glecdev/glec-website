@@ -1,9 +1,9 @@
 /**
  * ProblemAwarenessSection Component
  *
- * Based: GLEC-Functional-Requirements-Specification.md (FR-WEB-002)
+ * Based on: GLEC-Functional-Requirements-Specification.md (FR-WEB-002)
  * Purpose: Display 4 pain points with animations
- * Enhanced: Added overall statistics and detailed CTA
+ * Updated: 지입차 90%, 데이터 수집 불응률 90% 사실 기반 수정
  */
 
 'use client';
@@ -15,10 +15,10 @@ const problems = [
   {
     number: 1,
     title: '데이터 수집의 고통',
-    description: '화물차주가 DTG 장착을 거부합니다. 전국 화물차 85만대 중 DTG 장착률은 겨우 12.3%, 차주 설득에만 평균 2.5개월이 소요됩니다.',
+    description: '물류기업 화물차의 평균 90%가 지입차량입니다. 화물차주로부터 운송 데이터 요청 시 불응하거나 수집 체계가 지속되지 않을 확률이 90%에 육박합니다.',
     gifSrc: '/images/problems/data-collection-pain.svg',
     staticSrc: '/images/problems/data-collection-pain.svg',
-    alt: '화물차주가 DTG 장착을 거부하는 모습',
+    alt: '지입차주가 데이터 제공을 거부하는 모습',
   },
   {
     number: 2,
@@ -65,20 +65,20 @@ export function ProblemAwarenessSection() {
           {/* Overall Statistics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 p-6 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-200">
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-primary-500">47.2시간</div>
+              <div className="text-3xl md:text-4xl font-bold text-primary-500">90%</div>
+              <div className="text-sm text-gray-600 mt-1">지입차 비율</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-primary-500">90%</div>
+              <div className="text-sm text-gray-600 mt-1">데이터 수집 불응률</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-primary-500">47.2h</div>
               <div className="text-sm text-gray-600 mt-1">월평균 수작업</div>
             </div>
             <div className="text-center">
               <div className="text-3xl md:text-4xl font-bold text-primary-500">21일</div>
               <div className="text-sm text-gray-600 mt-1">보고서 작성</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-primary-500">23.7%</div>
-              <div className="text-sm text-gray-600 mt-1">데이터 오류율</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-primary-500">8.7%</div>
-              <div className="text-sm text-gray-600 mt-1">표준 대응률</div>
             </div>
           </div>
         </div>
@@ -109,13 +109,13 @@ export function ProblemAwarenessSection() {
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="font-semibold text-sm">수작업 98.7% 절감</span>
+                <span className="font-semibold text-sm">지입차 데이터 자동 수집</span>
               </div>
               <div className="flex items-center gap-2 text-primary-600 bg-white px-4 py-2 rounded-full shadow-sm">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="font-semibold text-sm">21일 → 4시간</span>
+                <span className="font-semibold text-sm">수작업 98.7% 절감</span>
               </div>
               <div className="flex items-center gap-2 text-primary-600 bg-white px-4 py-2 rounded-full shadow-sm">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
