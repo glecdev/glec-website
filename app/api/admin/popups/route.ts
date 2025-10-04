@@ -9,10 +9,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PopupStore, Popup } from '../../_shared/popup-store';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
-
 // GET - 모든 팝업 조회 (관리자용)
 export async function GET(request: NextRequest) {
   try {

@@ -17,17 +17,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-
-  // Disable static page generation errors (allow dynamic routes)
-  // This prevents build failures when API routes use dynamic features
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
-
-  // Skip static optimization for all API routes
-  // Force all pages to be server-rendered
-  // This is required for Cloudflare Pages deployment
-  output: undefined, // No static export
 };
 
 export default nextConfig;

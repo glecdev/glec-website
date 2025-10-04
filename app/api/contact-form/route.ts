@@ -8,10 +8,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
-
 // Initialize Resend only if API key is available (prevents build-time errors)
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)

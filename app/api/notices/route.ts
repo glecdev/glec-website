@@ -17,10 +17,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMockNoticesWithIds } from '@/lib/mock-data';
 import type { Notice } from '@prisma/client';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
-
 // Response type based on API Spec
 interface NoticesResponse {
   success: boolean;

@@ -30,10 +30,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { comparePassword, generateToken, hashPassword } from '@/lib/auth';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
-
 // Request validation schema
 const LoginSchema = z.object({
   email: z.string().email('Valid email is required'),

@@ -18,10 +18,6 @@ import { withAuth } from '@/lib/auth-middleware';
  * Test endpoint - Returns authenticated user info
  * Requires: JWT token
  */
-
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
 export const GET = withAuth(async (request: NextRequest, { user }) => {
   return NextResponse.json({
     success: true,

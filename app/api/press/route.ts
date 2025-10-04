@@ -15,10 +15,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMockPressWithIds } from '@/lib/mock-data';
 import type { Press } from '@prisma/client';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
-
 interface PressResponse {
   success: boolean;
   data: Press[];

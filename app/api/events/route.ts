@@ -13,10 +13,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Event, EventsApiResponse, EventsApiError } from '@/types/event';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
-
 // Mock data generator (temporary until database is connected)
 // IMPORTANT: This will be replaced with Prisma queries
 function getMockEvents(): Event[] {

@@ -8,10 +8,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
-
 // Import from parent route (임시 - 실제는 DB 사용)
 // TODO: 실제 구현 시 Database에서 가져오기
 

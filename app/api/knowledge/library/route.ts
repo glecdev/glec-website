@@ -7,10 +7,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
-
-
 const MOCK_LIBRARY_DATA = [
   {
     id: 'lib-001',
