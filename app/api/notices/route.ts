@@ -14,8 +14,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getMockNoticesWithIds } from '@/lib/mock-data';
+import { neon } from '@neondatabase/serverless';
 import type { Notice } from '@prisma/client';
+
+// Database connection
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+const sql = neon(DATABASE_URL);
 
 // Response type based on API Spec
 interface NoticesResponse {
@@ -89,59 +98,118 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // TODO: Replace with Prisma query when DB is connected
-    // const notices = await prisma.notice.findMany({
-    //   where: {
-    //     status: 'PUBLISHED',
-    //     ...(category && { category: category as NoticeCategory }),
-    //     ...(search && {
-    //       OR: [
-    //         { title: { contains: search, mode: 'insensitive' } },
-    //         { content: { contains: search, mode: 'insensitive' } },
-    //       ],
-    //     }),
-    //   },
-    //   orderBy: { publishedAt: 'desc' },
-    //   skip: (page - 1) * per_page,
-    //   take: per_page,
-    // });
+    // Build SQL query with proper parameter binding
+    // Note: Neon serverless driver uses tagged template literals for safety
+    let countQuery;
+    let dataQuery;
 
-    // Mock implementation (temporary)
-    let allNotices = getMockNoticesWithIds();
-
-    // Filter by status (only PUBLISHED)
-    allNotices = allNotices.filter((n) => n.status === 'PUBLISHED');
-
-    // Filter by category
-    if (category) {
-      allNotices = allNotices.filter((n) => n.category === category);
+    if (category && search) {
+      // Both filters
+      const searchPattern = `%${search}%`;
+      countQuery = sql`
+        SELECT COUNT(*) as count
+        FROM notices
+        WHERE status = 'PUBLISHED'
+          AND category = ${category}
+          AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+      `;
+      dataQuery = sql`
+        SELECT
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
+          created_at, updated_at
+        FROM notices
+        WHERE status = 'PUBLISHED'
+          AND category = ${category}
+          AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+        ORDER BY published_at DESC, created_at DESC
+        LIMIT ${per_page}
+        OFFSET ${(page - 1) * per_page}
+      `;
+    } else if (category) {
+      // Category only
+      countQuery = sql`
+        SELECT COUNT(*) as count
+        FROM notices
+        WHERE status = 'PUBLISHED'
+          AND category = ${category}
+      `;
+      dataQuery = sql`
+        SELECT
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
+          created_at, updated_at
+        FROM notices
+        WHERE status = 'PUBLISHED'
+          AND category = ${category}
+        ORDER BY published_at DESC, created_at DESC
+        LIMIT ${per_page}
+        OFFSET ${(page - 1) * per_page}
+      `;
+    } else if (search) {
+      // Search only
+      const searchPattern = `%${search}%`;
+      countQuery = sql`
+        SELECT COUNT(*) as count
+        FROM notices
+        WHERE status = 'PUBLISHED'
+          AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+      `;
+      dataQuery = sql`
+        SELECT
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
+          created_at, updated_at
+        FROM notices
+        WHERE status = 'PUBLISHED'
+          AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+        ORDER BY published_at DESC, created_at DESC
+        LIMIT ${per_page}
+        OFFSET ${(page - 1) * per_page}
+      `;
+    } else {
+      // No filters
+      countQuery = sql`
+        SELECT COUNT(*) as count
+        FROM notices
+        WHERE status = 'PUBLISHED'
+      `;
+      dataQuery = sql`
+        SELECT
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
+          created_at, updated_at
+        FROM notices
+        WHERE status = 'PUBLISHED'
+        ORDER BY published_at DESC, created_at DESC
+        LIMIT ${per_page}
+        OFFSET ${(page - 1) * per_page}
+      `;
     }
 
-    // Filter by search
-    if (search) {
-      const searchLower = search.toLowerCase();
-      allNotices = allNotices.filter(
-        (n) =>
-          n.title.toLowerCase().includes(searchLower) ||
-          n.content.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Sort by publishedAt DESC
-    allNotices.sort((a, b) => {
-      const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-      const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-      return dateB - dateA;
-    });
-
-    // Pagination
-    const total = allNotices.length;
+    // Execute queries
+    const countResult = await countQuery;
+    const total = Number(countResult[0]?.count || 0);
     const total_pages = Math.ceil(total / per_page);
-    const startIndex = (page - 1) * per_page;
-    const paginatedNotices = allNotices.slice(
-      startIndex,
-      startIndex + per_page
-    );
+
+    const notices = await dataQuery;
+
+    // Transform to match Notice type (snake_case to camelCase for consistency)
+    const paginatedNotices = notices.map((notice: any) => ({
+      id: notice.id,
+      title: notice.title,
+      slug: notice.slug,
+      content: notice.content,
+      excerpt: notice.excerpt,
+      status: notice.status,
+      category: notice.category,
+      thumbnailUrl: notice.thumbnail_url,
+      viewCount: notice.view_count,
+      publishedAt: notice.published_at,
+      authorId: notice.author_id,
+      createdAt: notice.created_at,
+      updatedAt: notice.updated_at,
+    }));
 
     // Response format from API Spec
     const response: NoticesResponse = {
@@ -181,21 +249,29 @@ export async function GET(request: NextRequest) {
  */
 async function getNoticeBySlug(slug: string) {
   try {
-    // TODO: Replace with Prisma query when DB is connected
-    // const notice = await prisma.notice.findFirst({
-    //   where: {
-    //     slug,
-    //     status: 'PUBLISHED',
-    //   },
-    // });
+    // Query database for notice by slug
+    const notices = await sql`
+      SELECT
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        status,
+        category,
+        thumbnail_url,
+        view_count,
+        published_at,
+        author_id,
+        created_at,
+        updated_at
+      FROM notices
+      WHERE slug = ${slug}
+        AND status = 'PUBLISHED'
+      LIMIT 1
+    `;
 
-    // Mock implementation (temporary)
-    const allNotices = getMockNoticesWithIds();
-    const notice = allNotices.find(
-      (n) => n.slug === slug && n.status === 'PUBLISHED'
-    );
-
-    if (!notice) {
+    if (notices.length === 0) {
       const errorResponse: ErrorResponse = {
         success: false,
         error: {
@@ -206,15 +282,36 @@ async function getNoticeBySlug(slug: string) {
       return NextResponse.json(errorResponse, { status: 404 });
     }
 
-    // Increment view count (TODO: Update in DB when connected)
-    // await prisma.notice.update({
-    //   where: { id: notice.id },
-    //   data: { viewCount: { increment: 1 } },
-    // });
+    const notice = notices[0];
+
+    // Increment view count
+    await sql`
+      UPDATE notices
+      SET view_count = view_count + 1,
+          updated_at = NOW()
+      WHERE id = ${notice.id}
+    `;
+
+    // Transform to match Notice type
+    const noticeData = {
+      id: notice.id,
+      title: notice.title,
+      slug: notice.slug,
+      content: notice.content,
+      excerpt: notice.excerpt,
+      status: notice.status,
+      category: notice.category,
+      thumbnailUrl: notice.thumbnail_url,
+      viewCount: notice.view_count + 1, // Reflect incremented view count
+      publishedAt: notice.published_at,
+      authorId: notice.author_id,
+      createdAt: notice.created_at,
+      updatedAt: notice.updated_at,
+    };
 
     const response: NoticeDetailResponse = {
       success: true,
-      data: notice,
+      data: noticeData as any,
     };
 
     return NextResponse.json(response, {
