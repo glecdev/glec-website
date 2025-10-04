@@ -22,7 +22,7 @@ export function HeroSection() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   const { displayedText, isComplete } = useTypingAnimation(
-    '매일 밤 11시, 엑셀과 싸우는 당신에게',
+    '매일 밤 11시, 탄소배출 보고서 때문에 엑셀과 싸우는 당신에게',
     50
   );
 
