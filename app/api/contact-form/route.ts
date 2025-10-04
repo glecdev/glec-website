@@ -8,7 +8,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if API key is available (prevents build-time errors)
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 interface ContactFormData {
   name: string;
@@ -72,6 +75,20 @@ function sanitizeInput(input: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Resend is configured
+    if (!resend) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'SERVICE_UNAVAILABLE',
+            message: '이메일 서비스가 설정되지 않았습니다. 관리자에게 문의하세요.',
+          },
+        },
+        { status: 503 }
+      );
+    }
+
     // Parse request body
     const body: ContactFormData = await request.json();
 
