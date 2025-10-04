@@ -61,9 +61,21 @@ const CATEGORY_COLORS = {
 
 const PER_PAGE = 12;
 
+// SearchParams wrapper component (Suspense boundary 내부)
+function SearchParamsHandler({ onParamsChange }: { onParamsChange: (category: string, search: string) => void }) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const category = searchParams.get('category') || '';
+    const search = searchParams.get('search') || '';
+    onParamsChange(category, search);
+  }, [searchParams, onParamsChange]);
+
+  return null;
+}
+
 function NewsPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   // State
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -73,16 +85,14 @@ function NewsPageContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Get initial params from URL
-  useEffect(() => {
-    const category = searchParams.get('category') || '';
-    const search = searchParams.get('search') || '';
-
+  // Handle URL params change
+  const handleParamsChange = useCallback((category: string, search: string) => {
     setSelectedCategory(category);
     setSearchQuery(search);
     setDebouncedSearch(search);
-  }, [searchParams]);
+  }, []);
 
   // Debounce search (500ms)
   useEffect(() => {
@@ -142,14 +152,19 @@ function NewsPageContent() {
 
   // Fetch on mount and when filters change
   useEffect(() => {
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    fetchNotices(page);
-  }, [fetchNotices, searchParams]);
+    fetchNotices(currentPage);
+  }, [fetchNotices, currentPage]);
 
   // Handle category change
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    updateURL({ category, page: 1 });
+    setCurrentPage(1);
+
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (searchQuery) params.set('search', searchQuery);
+    params.set('page', '1');
+    router.push(`/news?${params.toString()}`);
   };
 
   // Handle search change
@@ -157,36 +172,15 @@ function NewsPageContent() {
     setSearchQuery(e.target.value);
   };
 
-  // Update URL with new params
-  const updateURL = (newParams: { category?: string; page?: number; search?: string }) => {
-    const params = new URLSearchParams(searchParams);
-
-    if (newParams.category !== undefined) {
-      if (newParams.category) {
-        params.set('category', newParams.category);
-      } else {
-        params.delete('category');
-      }
-    }
-
-    if (newParams.page !== undefined) {
-      params.set('page', newParams.page.toString());
-    }
-
-    if (newParams.search !== undefined) {
-      if (newParams.search) {
-        params.set('search', newParams.search);
-      } else {
-        params.delete('search');
-      }
-    }
-
-    router.push(`/news?${params.toString()}`);
-  };
-
   // Handle page change
   const handlePageChange = (page: number) => {
-    updateURL({ page });
+    setCurrentPage(page);
+
+    const params = new URLSearchParams();
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (searchQuery) params.set('search', searchQuery);
+    params.set('page', page.toString());
+    router.push(`/news?${params.toString()}`);
   };
 
   // Navigate to notice detail
@@ -196,6 +190,11 @@ function NewsPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* SearchParams Handler */}
+      <Suspense fallback={null}>
+        <SearchParamsHandler onParamsChange={handleParamsChange} />
+      </Suspense>
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 lg:px-6 py-12">
