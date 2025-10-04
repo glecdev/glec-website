@@ -64,9 +64,6 @@ export function ProblemAwarenessSection() {
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
             {displayedText}
-            {isComplete && (
-              <span className="inline-block w-1 h-12 ml-2 bg-primary-500 animate-pulse" />
-            )}
           </h2>
           <p className="text-xl text-gray-600 mb-4">
             전국 1,200개 물류기업이 매일 마주하는 4가지 고통
