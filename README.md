@@ -1,20 +1,24 @@
 # GLEC Website
 
-[![Deployment Status](https://img.shields.io/badge/Deployment-90%25%20Complete-brightgreen)](./DEPLOYMENT-STATUS.md)
+[![Deployment Status](https://img.shields.io/badge/Deployment-95%25%20Complete-brightgreen)](./DEPLOYMENT-STATUS.md)
 [![Vercel](https://img.shields.io/badge/Vercel-Deployed-success)](https://glec-website.vercel.app)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5.2-blue)](https://nextjs.org)
 [![Pages](https://img.shields.io/badge/Pages-13/13%20Working-success)](https://glec-website.vercel.app)
+[![E2E Tests](https://img.shields.io/badge/E2E%20Tests-17/17%20Passed-success)](./tests/e2e/production-comprehensive.spec.ts)
+[![Performance](https://img.shields.io/badge/LCP-0.22s-success)](./DEPLOYMENT-ITERATION-2.md)
 
 ISO-14083 국제표준 기반 물류 탄소배출 측정 솔루션 - 공식 웹사이트 및 Admin CMS
 
-## 🎉 Iteration 1 완료!
+## 🎉 Iteration 2 완료!
 
-**✅ 모든 13개 페이지 100% 작동 중**
-- 성공률: 53.85% → **100%** (+46.15% 개선)
-- 진행률: 80% → **90%** (+10%)
-- 상세 보고서: [DEPLOYMENT-ITERATION-1.md](./DEPLOYMENT-ITERATION-1.md)
+**✅ Playwright E2E 테스트 17/17 통과 (100%)**
+- 진행률: 90% → **95%** (+5%)
+- E2E 테스트: **17/17 통과** (100%)
+- 성능: LCP 평균 **0.22s** (목표 대비 91% 빠름)
+- 접근성: **12/13 페이지 완벽 통과** (92%)
+- 상세 보고서: [DEPLOYMENT-ITERATION-2.md](./DEPLOYMENT-ITERATION-2.md)
 
-## 🚀 다음 단계 (Iteration 2)
+## 🚀 다음 단계 (Iteration 3)
 
 **Neon 데이터베이스 연결만 하면 배포 100% 완료!** (10분)
 
@@ -43,11 +47,14 @@ cd d:\GLEC-Website\glec-website
 
 ---
 
-## 📊 현재 상태 (Iteration 1 완료)
+## 📊 현재 상태 (Iteration 2 완료)
 
-### ✅ 완료 (90%)
+### ✅ 완료 (95%)
 - ✅ Vercel 프로덕션 배포
 - ✅ **전체 13개 페이지 100% 작동**
+- ✅ **Playwright E2E 테스트 17/17 통과**
+- ✅ **/news Suspense 에러 해결**
+- ✅ **성능 최적화 (LCP 평균 0.22s)**
 - ✅ 환경 변수 12/14 추가
 - ✅ 자동화 스크립트 6개
 - ✅ 배포 문서 8개
