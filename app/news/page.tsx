@@ -481,6 +481,9 @@ function NewsPageLoading() {
   );
 }
 
+// Force dynamic rendering (required for useSearchParams)
+export const dynamic = 'force-dynamic';
+
 // Default export with Suspense wrapper
 export default function NewsPage() {
   return (
