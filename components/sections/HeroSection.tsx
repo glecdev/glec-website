@@ -22,7 +22,7 @@ export function HeroSection() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   const { displayedText, isComplete } = useTypingAnimation(
-    '매일 밤 11시, 탄소배출 보고서 때문에 엑셀과 싸우는 당신에게',
+    '매일 밤 11시,\n탄소배출 보고서 때문에\n엑셀과 싸우는 당신에게',
     50
   );
 
@@ -56,7 +56,7 @@ export function HeroSection() {
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-5xl mx-auto space-y-8">
           {/* Typing Animation Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight whitespace-pre-line">
             {displayedText}
             {isComplete && (
               <span className="inline-block w-1 h-12 ml-2 bg-primary-500 animate-pulse" />
