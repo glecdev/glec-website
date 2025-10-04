@@ -3,9 +3,6 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-// Force dynamic rendering to avoid prerendering issues with useSearchParams
-export const dynamic = 'force-dynamic';
-
 // Types (API Spec 기반)
 interface Notice {
   id: string;
