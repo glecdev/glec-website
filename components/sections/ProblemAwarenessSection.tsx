@@ -50,7 +50,7 @@ const problems = [
 
 export function ProblemAwarenessSection() {
   const { displayedText, isComplete } = useTypingAnimation(
-    '당신만 겪는\n문제가\n아닙니다',
+    '당신만 겪는 문제가 아닙니다',
     50
   );
 
@@ -62,7 +62,7 @@ export function ProblemAwarenessSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 whitespace-pre-line">
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
             {displayedText}
             {isComplete && (
               <span className="inline-block w-1 h-12 ml-2 bg-primary-500 animate-pulse" />
