@@ -64,44 +64,10 @@ export function HeroSection() {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xl sm:text-2xl text-gray-300 max-w-2xl mx-auto mb-6">
+          <p className="text-xl sm:text-2xl text-gray-300 max-w-2xl mx-auto">
             ISO-14083 국제표준 기반<br />
             클릭 한 번으로 완성되는 물류 탄소배출 보고서
           </p>
-
-          {/* Additional Value Props - Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/15 transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold text-white">98.7%</div>
-                <svg className="w-8 h-8 text-primary-300" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              </div>
-              <div className="text-sm font-semibold text-gray-200">수작업 시간 절감</div>
-              <div className="text-xs text-gray-400 mt-1">엑셀 300시간 → 자동화 4시간</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/15 transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold text-white">80만원</div>
-                <svg className="w-8 h-8 text-primary-300" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25z" />
-                </svg>
-              </div>
-              <div className="text-sm font-semibold text-gray-200">GLEC DTG Series5</div>
-              <div className="text-xs text-gray-400 mt-1">설치비 포함, 월 0원 유지비</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 border border-white/20 hover:bg-white/15 transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold text-white">48개</div>
-                <svg className="w-8 h-8 text-primary-300" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-                </svg>
-              </div>
-              <div className="text-sm font-semibold text-gray-200">Carbon API</div>
-              <div className="text-xs text-gray-400 mt-1">5개 운송모드 완벽 지원</div>
-            </div>
-          </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
