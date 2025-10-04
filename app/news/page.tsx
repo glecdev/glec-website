@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+// Force dynamic rendering for this page (uses searchParams)
+export const dynamic = 'force-dynamic';
 
 // Types (API Spec 기반)
 interface Notice {
