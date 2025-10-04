@@ -1,12 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Cloudflare Pages with Next.js Runtime (supports SSR + Dynamic Routes)
-  // No 'output: export' - use standard Next.js build
-
-  // Disable Image Optimization API (Cloudflare uses next-on-pages)
-  images: {
-    unoptimized: true,
-  },
+  // Standard Next.js build for Vercel deployment
+  // Vercel automatically optimizes images and supports all Next.js features
 
   // Disable ESLint during production build to speed up deployment
   eslint: {
