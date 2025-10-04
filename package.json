@@ -11,7 +11,15 @@
     "test:e2e:admin": "playwright test tests/e2e/admin/",
     "test:e2e:public": "playwright test tests/e2e/homepage.spec.ts tests/e2e/cloud-page.spec.ts tests/e2e/carbon-api-page.spec.ts",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "db:migrate": "dotenv -e .env.migration -- npx prisma migrate deploy",
+    "db:seed": "dotenv -e .env.migration -- npx ts-node prisma/seed.ts",
+    "db:studio": "dotenv -e .env.migration -- npx prisma studio",
+    "db:reset": "dotenv -e .env.migration -- npx prisma migrate reset",
+    "verify:env": "node scripts/verify-vercel-env.js"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.901.0",
@@ -45,6 +53,7 @@
     "@types/node": "^20.19.19",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv-cli": "^10.0.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.33",
     "postcss": "^8",
