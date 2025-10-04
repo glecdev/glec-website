@@ -1,0 +1,31 @@
+﻿2025-10-04T07:00:39.2632687Z Current runner version: '2.328.0'
+2025-10-04T07:00:39.2667854Z ##[group]Runner Image Provisioner
+2025-10-04T07:00:39.2669172Z Hosted Compute Agent
+2025-10-04T07:00:39.2669977Z Version: 20250912.392
+2025-10-04T07:00:39.2671112Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+2025-10-04T07:00:39.2672381Z Build Date: 2025-09-12T15:23:14Z
+2025-10-04T07:00:39.2673358Z ##[endgroup]
+2025-10-04T07:00:39.2674199Z ##[group]Operating System
+2025-10-04T07:00:39.2675080Z Ubuntu
+2025-10-04T07:00:39.2675748Z 24.04.3
+2025-10-04T07:00:39.2676519Z LTS
+2025-10-04T07:00:39.2677518Z ##[endgroup]
+2025-10-04T07:00:39.2678302Z ##[group]Runner Image
+2025-10-04T07:00:39.2679242Z Image: ubuntu-24.04
+2025-10-04T07:00:39.2679996Z Version: 20250929.60.1
+2025-10-04T07:00:39.2681672Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250929.60/images/ubuntu/Ubuntu2404-Readme.md
+2025-10-04T07:00:39.2683992Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250929.60
+2025-10-04T07:00:39.2686051Z ##[endgroup]
+2025-10-04T07:00:39.2688072Z ##[group]GITHUB_TOKEN Permissions
+2025-10-04T07:00:39.2690504Z Contents: read
+2025-10-04T07:00:39.2691561Z Deployments: write
+2025-10-04T07:00:39.2692400Z Metadata: read
+2025-10-04T07:00:39.2693215Z ##[endgroup]
+2025-10-04T07:00:39.2696527Z Secret source: Actions
+2025-10-04T07:00:39.2698447Z Prepare workflow directory
+2025-10-04T07:00:39.3170187Z Prepare all required actions
+2025-10-04T07:00:39.3228274Z Getting action download info
+2025-10-04T07:00:39.5820300Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+2025-10-04T07:00:39.8326594Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2025-10-04T07:00:40.1030814Z Download action repository 'cloudflare/pages-action@v1' (SHA:f0a1cd58cd66095dee69bfa18fa5efd1dde93bca)
+2025-10-04T07:00:40.4679497Z Complete job name: Deploy to Cloudflare Pages

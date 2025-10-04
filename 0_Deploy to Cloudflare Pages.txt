@@ -1,0 +1,263 @@
+﻿2025-10-04T07:00:39.2633547Z Current runner version: '2.328.0'
+2025-10-04T07:00:39.2667882Z ##[group]Runner Image Provisioner
+2025-10-04T07:00:39.2669182Z Hosted Compute Agent
+2025-10-04T07:00:39.2669984Z Version: 20250912.392
+2025-10-04T07:00:39.2671121Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+2025-10-04T07:00:39.2672391Z Build Date: 2025-09-12T15:23:14Z
+2025-10-04T07:00:39.2673367Z ##[endgroup]
+2025-10-04T07:00:39.2674206Z ##[group]Operating System
+2025-10-04T07:00:39.2675087Z Ubuntu
+2025-10-04T07:00:39.2675754Z 24.04.3
+2025-10-04T07:00:39.2676527Z LTS
+2025-10-04T07:00:39.2677532Z ##[endgroup]
+2025-10-04T07:00:39.2678309Z ##[group]Runner Image
+2025-10-04T07:00:39.2679249Z Image: ubuntu-24.04
+2025-10-04T07:00:39.2680005Z Version: 20250929.60.1
+2025-10-04T07:00:39.2681682Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250929.60/images/ubuntu/Ubuntu2404-Readme.md
+2025-10-04T07:00:39.2684317Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250929.60
+2025-10-04T07:00:39.2686061Z ##[endgroup]
+2025-10-04T07:00:39.2688083Z ##[group]GITHUB_TOKEN Permissions
+2025-10-04T07:00:39.2690527Z Contents: read
+2025-10-04T07:00:39.2691572Z Deployments: write
+2025-10-04T07:00:39.2692409Z Metadata: read
+2025-10-04T07:00:39.2693223Z ##[endgroup]
+2025-10-04T07:00:39.2696554Z Secret source: Actions
+2025-10-04T07:00:39.2698472Z Prepare workflow directory
+2025-10-04T07:00:39.3170223Z Prepare all required actions
+2025-10-04T07:00:39.3228305Z Getting action download info
+2025-10-04T07:00:39.5820339Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+2025-10-04T07:00:39.8326618Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2025-10-04T07:00:40.1030854Z Download action repository 'cloudflare/pages-action@v1' (SHA:f0a1cd58cd66095dee69bfa18fa5efd1dde93bca)
+2025-10-04T07:00:40.4679527Z Complete job name: Deploy to Cloudflare Pages
+2025-10-04T07:00:40.5448486Z ##[group]Run actions/checkout@v4
+2025-10-04T07:00:40.5449790Z with:
+2025-10-04T07:00:40.5450500Z   repository: glecdev/glec-website
+2025-10-04T07:00:40.5451678Z   token: ***
+2025-10-04T07:00:40.5452358Z   ssh-strict: true
+2025-10-04T07:00:40.5453069Z   ssh-user: git
+2025-10-04T07:00:40.5453790Z   persist-credentials: true
+2025-10-04T07:00:40.5454634Z   clean: true
+2025-10-04T07:00:40.5455364Z   sparse-checkout-cone-mode: true
+2025-10-04T07:00:40.5456257Z   fetch-depth: 1
+2025-10-04T07:00:40.5456959Z   fetch-tags: false
+2025-10-04T07:00:40.5457893Z   show-progress: true
+2025-10-04T07:00:40.5458631Z   lfs: false
+2025-10-04T07:00:40.5459303Z   submodules: false
+2025-10-04T07:00:40.5460042Z   set-safe-directory: true
+2025-10-04T07:00:40.5461143Z ##[endgroup]
+2025-10-04T07:00:40.6538140Z Syncing repository: glecdev/glec-website
+2025-10-04T07:00:40.6540739Z ##[group]Getting Git version info
+2025-10-04T07:00:40.6542090Z Working directory is '/home/runner/work/glec-website/glec-website'
+2025-10-04T07:00:40.6543992Z [command]/usr/bin/git version
+2025-10-04T07:00:40.7780292Z git version 2.51.0
+2025-10-04T07:00:40.7807995Z ##[endgroup]
+2025-10-04T07:00:40.7823014Z Temporarily overriding HOME='/home/runner/work/_temp/9f264301-215f-4661-80ae-c5b0e74c1405' before making global git config changes
+2025-10-04T07:00:40.7826066Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-04T07:00:40.7835590Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/glec-website/glec-website
+2025-10-04T07:00:40.7954088Z Deleting the contents of '/home/runner/work/glec-website/glec-website'
+2025-10-04T07:00:40.7957736Z ##[group]Initializing the repository
+2025-10-04T07:00:40.7961831Z [command]/usr/bin/git init /home/runner/work/glec-website/glec-website
+2025-10-04T07:00:40.9058916Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-10-04T07:00:40.9060909Z hint: is subject to change. To configure the initial branch name to use in all
+2025-10-04T07:00:40.9062640Z hint: of your new repositories, which will suppress this warning, call:
+2025-10-04T07:00:40.9064184Z hint:
+2025-10-04T07:00:40.9065035Z hint: 	git config --global init.defaultBranch <name>
+2025-10-04T07:00:40.9066075Z hint:
+2025-10-04T07:00:40.9067070Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-10-04T07:00:40.9068949Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-10-04T07:00:40.9070254Z hint:
+2025-10-04T07:00:40.9070912Z hint: 	git branch -m <name>
+2025-10-04T07:00:40.9071686Z hint:
+2025-10-04T07:00:40.9072773Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2025-10-04T07:00:40.9108288Z Initialized empty Git repository in /home/runner/work/glec-website/glec-website/.git/
+2025-10-04T07:00:40.9120670Z [command]/usr/bin/git remote add origin https://github.com/glecdev/glec-website
+2025-10-04T07:00:40.9307968Z ##[endgroup]
+2025-10-04T07:00:40.9309526Z ##[group]Disabling automatic garbage collection
+2025-10-04T07:00:40.9313522Z [command]/usr/bin/git config --local gc.auto 0
+2025-10-04T07:00:40.9349242Z ##[endgroup]
+2025-10-04T07:00:40.9350370Z ##[group]Setting up auth
+2025-10-04T07:00:40.9360212Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-04T07:00:40.9396094Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-04T07:00:41.1179160Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-04T07:00:41.1210545Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-04T07:00:41.1432601Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-10-04T07:00:41.1466458Z ##[endgroup]
+2025-10-04T07:00:41.1467793Z ##[group]Fetching the repository
+2025-10-04T07:00:41.1483722Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +39edaa05344323a204d156ce6f7d7b5b9c30180d:refs/remotes/origin/main
+2025-10-04T07:00:41.6753150Z From https://github.com/glecdev/glec-website
+2025-10-04T07:00:41.6754520Z  * [new ref]         39edaa05344323a204d156ce6f7d7b5b9c30180d -> origin/main
+2025-10-04T07:00:41.6965338Z ##[endgroup]
+2025-10-04T07:00:41.6966122Z ##[group]Determining the checkout info
+2025-10-04T07:00:41.6967483Z ##[endgroup]
+2025-10-04T07:00:41.6972448Z [command]/usr/bin/git sparse-checkout disable
+2025-10-04T07:00:41.7198669Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-10-04T07:00:41.7226671Z ##[group]Checking out the ref
+2025-10-04T07:00:41.7230168Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2025-10-04T07:00:41.7619197Z Switched to a new branch 'main'
+2025-10-04T07:00:41.7620189Z branch 'main' set up to track 'origin/main'.
+2025-10-04T07:00:41.7632914Z ##[endgroup]
+2025-10-04T07:00:41.7669753Z [command]/usr/bin/git log -1 --format=%H
+2025-10-04T07:00:41.7691401Z 39edaa05344323a204d156ce6f7d7b5b9c30180d
+2025-10-04T07:00:41.7923357Z ##[group]Run actions/setup-node@v4
+2025-10-04T07:00:41.7923803Z with:
+2025-10-04T07:00:41.7924119Z   node-version: 18
+2025-10-04T07:00:41.7924434Z   cache: npm
+2025-10-04T07:00:41.7924765Z   always-auth: false
+2025-10-04T07:00:41.7925117Z   check-latest: false
+2025-10-04T07:00:41.7925627Z   token: ***
+2025-10-04T07:00:41.7925944Z ##[endgroup]
+2025-10-04T07:00:42.0643148Z Found in cache @ /opt/hostedtoolcache/node/18.20.8/x64
+2025-10-04T07:00:42.0652738Z ##[group]Environment details
+2025-10-04T07:00:57.1680303Z node: v18.20.8
+2025-10-04T07:00:57.1680697Z npm: 10.8.2
+2025-10-04T07:00:57.1680996Z yarn: 1.22.22
+2025-10-04T07:00:57.1682458Z ##[endgroup]
+2025-10-04T07:00:57.1705230Z [command]/opt/hostedtoolcache/node/18.20.8/x64/bin/npm config get cache
+2025-10-04T07:00:58.8853926Z /home/runner/.npm
+2025-10-04T07:00:59.1483492Z npm cache is not found
+2025-10-04T07:00:59.1608349Z ##[group]Run npm ci
+2025-10-04T07:00:59.1608645Z [36;1mnpm ci[0m
+2025-10-04T07:00:59.2208899Z shell: /usr/bin/bash -e {0}
+2025-10-04T07:00:59.2209207Z ##[endgroup]
+2025-10-04T07:01:30.0728108Z npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2025-10-04T07:01:30.8020768Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2025-10-04T07:01:32.4328112Z npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+2025-10-04T07:01:32.4544243Z npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+2025-10-04T07:01:32.8422167Z npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-10-04T07:01:34.5382950Z npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+2025-10-04T07:01:41.1354214Z 
+2025-10-04T07:01:41.1355047Z added 620 packages, and audited 621 packages in 42s
+2025-10-04T07:01:41.1355602Z 
+2025-10-04T07:01:41.1359569Z 186 packages are looking for funding
+2025-10-04T07:01:41.1360840Z   run `npm fund` for details
+2025-10-04T07:01:41.1370334Z 
+2025-10-04T07:01:41.1370789Z found 0 vulnerabilities
+2025-10-04T07:01:41.1718099Z ##[group]Run npm run build
+2025-10-04T07:01:41.1718389Z [36;1mnpm run build[0m
+2025-10-04T07:01:41.1755297Z shell: /usr/bin/bash -e {0}
+2025-10-04T07:01:41.1755531Z env:
+2025-10-04T07:01:41.1755690Z   DATABASE_URL: 
+2025-10-04T07:01:41.1755894Z   JWT_SECRET: 
+2025-10-04T07:01:41.1756061Z   RESEND_API_KEY: 
+2025-10-04T07:01:41.1756238Z   RESEND_FROM_EMAIL: 
+2025-10-04T07:01:41.1756416Z   R2_ACCOUNT_ID: 
+2025-10-04T07:01:41.1756620Z   R2_ACCESS_KEY_ID: 
+2025-10-04T07:01:41.1756798Z   R2_SECRET_ACCESS_KEY: 
+2025-10-04T07:01:41.1757008Z   R2_BUCKET_NAME: 
+2025-10-04T07:01:41.1757173Z   R2_PUBLIC_URL: 
+2025-10-04T07:01:41.1757456Z   ADMIN_EMAIL: 
+2025-10-04T07:01:41.1757639Z   ADMIN_PASSWORD_HASH: 
+2025-10-04T07:01:41.1757829Z ##[endgroup]
+2025-10-04T07:01:41.3343994Z 
+2025-10-04T07:01:41.3344510Z > glec-website@0.1.0 build
+2025-10-04T07:01:41.3345011Z > next build
+2025-10-04T07:01:41.3345224Z 
+2025-10-04T07:01:42.3811971Z ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2025-10-04T07:01:42.3951705Z Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2025-10-04T07:01:42.3952923Z This information is used to shape Next.js' roadmap and prioritize features.
+2025-10-04T07:01:42.3954217Z You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-10-04T07:01:42.3955162Z https://nextjs.org/telemetry
+2025-10-04T07:01:42.3955481Z 
+2025-10-04T07:01:42.4504484Z   ▲ Next.js 14.2.33
+2025-10-04T07:01:42.4505049Z   - Experiments (use with caution):
+2025-10-04T07:01:42.4505788Z     · missingSuspenseWithCSRBailout
+2025-10-04T07:01:42.4506138Z 
+2025-10-04T07:01:42.5082740Z    Creating an optimized production build ...
+2025-10-04T07:01:53.2293136Z Failed to compile.
+2025-10-04T07:01:53.2293424Z 
+2025-10-04T07:01:53.2296559Z ./app/api/admin/knowledge/blog/route.ts
+2025-10-04T07:01:53.2296977Z Error: 
+2025-10-04T07:01:53.2297849Z   [31mx[0m cannot import as reserved word
+2025-10-04T07:01:53.2298730Z     ,-[[36;1;4m/home/runner/work/glec-website/glec-website/app/api/admin/knowledge/blog/route.ts[0m:11:1]
+2025-10-04T07:01:53.2299435Z  [2m11[0m | import {
+2025-10-04T07:01:53.2299734Z  [2m12[0m | 
+2025-10-04T07:01:53.2300157Z  [2m13[0m | // Force dynamic rendering for this API route
+2025-10-04T07:01:53.2300712Z  [2m14[0m | export const dynamic = 'force-dynamic';
+2025-10-04T07:01:53.2301180Z     : [31;1m^^^^^^[0m
+2025-10-04T07:01:53.2301854Z  [2m15[0m | 
+2025-10-04T07:01:53.2302199Z  [2m16[0m |   KnowledgeBlogPost,
+2025-10-04T07:01:53.2302667Z  [2m17[0m |   CreateKnowledgeBlogPostInput,
+2025-10-04T07:01:53.2303085Z     `----
+2025-10-04T07:01:53.2303245Z 
+2025-10-04T07:01:53.2303362Z Caused by:
+2025-10-04T07:01:53.2303655Z     Syntax Error
+2025-10-04T07:01:53.2303856Z 
+2025-10-04T07:01:53.2304086Z Import trace for requested module:
+2025-10-04T07:01:53.2304546Z ./app/api/admin/knowledge/blog/route.ts
+2025-10-04T07:01:53.2304829Z 
+2025-10-04T07:01:53.2305057Z ./app/api/admin/knowledge/library/route.ts
+2025-10-04T07:01:53.2305460Z Error: 
+2025-10-04T07:01:53.2305864Z   [31mx[0m cannot import as reserved word
+2025-10-04T07:01:53.2306795Z     ,-[[36;1;4m/home/runner/work/glec-website/glec-website/app/api/admin/knowledge/library/route.ts[0m:17:1]
+2025-10-04T07:01:53.2307751Z  [2m17[0m | import {
+2025-10-04T07:01:53.2308077Z  [2m18[0m | 
+2025-10-04T07:01:53.2308542Z  [2m19[0m | // Force dynamic rendering for this API route
+2025-10-04T07:01:53.2309160Z  [2m20[0m | export const dynamic = 'force-dynamic';
+2025-10-04T07:01:53.2309647Z     : [31;1m^^^^^^[0m
+2025-10-04T07:01:53.2309981Z  [2m21[0m | 
+2025-10-04T07:01:53.2310363Z  [2m22[0m |   KnowledgeLibraryItem,
+2025-10-04T07:01:53.2310902Z  [2m23[0m |   CreateKnowledgeLibraryItemInput,
+2025-10-04T07:01:53.2311314Z     `----
+2025-10-04T07:01:53.2311457Z 
+2025-10-04T07:01:53.2311603Z Caused by:
+2025-10-04T07:01:53.2311862Z     Syntax Error
+2025-10-04T07:01:53.2312388Z 
+2025-10-04T07:01:53.2312626Z Import trace for requested module:
+2025-10-04T07:01:53.2313221Z ./app/api/admin/knowledge/library/route.ts
+2025-10-04T07:01:53.2313516Z 
+2025-10-04T07:01:53.2313758Z ./app/api/admin/knowledge/videos/route.ts
+2025-10-04T07:01:53.2314138Z Error: 
+2025-10-04T07:01:53.2314548Z   [31mx[0m cannot import as reserved word
+2025-10-04T07:01:53.2315555Z     ,-[[36;1;4m/home/runner/work/glec-website/glec-website/app/api/admin/knowledge/videos/route.ts[0m:11:1]
+2025-10-04T07:01:53.2316370Z  [2m11[0m | import {
+2025-10-04T07:01:53.2316706Z  [2m12[0m | 
+2025-10-04T07:01:53.2317176Z  [2m13[0m | // Force dynamic rendering for this API route
+2025-10-04T07:01:53.2317986Z  [2m14[0m | export const dynamic = 'force-dynamic';
+2025-10-04T07:01:53.2318464Z     : [31;1m^^^^^^[0m
+2025-10-04T07:01:53.2318783Z  [2m15[0m | 
+2025-10-04T07:01:53.2319161Z  [2m16[0m |   KnowledgeVideo,
+2025-10-04T07:01:53.2319647Z  [2m17[0m |   CreateKnowledgeVideoInput,
+2025-10-04T07:01:53.2320043Z     `----
+2025-10-04T07:01:53.2320197Z 
+2025-10-04T07:01:53.2320311Z Caused by:
+2025-10-04T07:01:53.2320564Z     Syntax Error
+2025-10-04T07:01:53.2320735Z 
+2025-10-04T07:01:53.2320936Z Import trace for requested module:
+2025-10-04T07:01:53.2321422Z ./app/api/admin/knowledge/videos/route.ts
+2025-10-04T07:01:53.2321700Z 
+2025-10-04T07:01:53.2321951Z ./app/api/admin/upload/presigned-url/route.ts
+2025-10-04T07:01:53.2322357Z Error: 
+2025-10-04T07:01:53.2322756Z   [31mx[0m cannot import as reserved word
+2025-10-04T07:01:53.2323720Z     ,-[[36;1;4m/home/runner/work/glec-website/glec-website/app/api/admin/upload/presigned-url/route.ts[0m:28:1]
+2025-10-04T07:01:53.2324400Z  [2m28[0m | import {
+2025-10-04T07:01:53.2324615Z  [2m29[0m | 
+2025-10-04T07:01:53.2324923Z  [2m30[0m | // Force dynamic rendering for this API route
+2025-10-04T07:01:53.2325320Z  [2m31[0m | export const dynamic = 'force-dynamic';
+2025-10-04T07:01:53.2325615Z     : [31;1m^^^^^^[0m
+2025-10-04T07:01:53.2325823Z  [2m32[0m | 
+2025-10-04T07:01:53.2326063Z  [2m33[0m |   createR2Client,
+2025-10-04T07:01:53.2326311Z  [2m34[0m |   R2_CONFIG,
+2025-10-04T07:01:53.2326507Z     `----
+2025-10-04T07:01:53.2326600Z 
+2025-10-04T07:01:53.2326671Z Caused by:
+2025-10-04T07:01:53.2326839Z     Syntax Error
+2025-10-04T07:01:53.2326946Z 
+2025-10-04T07:01:53.2327082Z Import trace for requested module:
+2025-10-04T07:01:53.2327647Z ./app/api/admin/upload/presigned-url/route.ts
+2025-10-04T07:01:53.2327846Z 
+2025-10-04T07:01:53.2380431Z 
+2025-10-04T07:01:53.2381515Z > Build failed because of webpack errors
+2025-10-04T07:01:53.2562235Z ##[error]Process completed with exit code 1.
+2025-10-04T07:01:53.2696410Z Post job cleanup.
+2025-10-04T07:01:53.3694653Z [command]/usr/bin/git version
+2025-10-04T07:01:53.3730199Z git version 2.51.0
+2025-10-04T07:01:53.3779869Z Temporarily overriding HOME='/home/runner/work/_temp/7554600a-6e42-4eb9-be73-bf5134861e91' before making global git config changes
+2025-10-04T07:01:53.3780827Z Adding repository directory to the temporary git global config as a safe directory
+2025-10-04T07:01:53.3786251Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/glec-website/glec-website
+2025-10-04T07:01:53.3823354Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-10-04T07:01:53.3859297Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-10-04T07:01:53.4134481Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-10-04T07:01:53.4154854Z http.https://github.com/.extraheader
+2025-10-04T07:01:53.4167907Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-10-04T07:01:53.4197740Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-10-04T07:01:53.4535179Z Cleaning up orphan processes

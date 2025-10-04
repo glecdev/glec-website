@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLEC - 배포 진행 중</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Pretendard', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0600f7 0%, #000a42 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 5rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            letter-spacing: -0.05em;
+            text-shadow: 0 4px 20px rgba(6, 0, 247, 0.5);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-size: 1.1rem;
+            text-align: left;
+        }
+
+        .status-value {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+        }
+
+        .icon-check {
+            color: #10b981;
+        }
+
+        .icon-pending {
+            color: #f59e0b;
+            animation: pulse 2s infinite;
+        }
+
+        .icon-manual {
+            color: #3b82f6;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .instruction-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .instruction-box h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #60a5fa;
+        }
+
+        .instruction-box ol {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .instruction-box li {
+            margin-bottom: 0.75rem;
+        }
+
+        .instruction-box code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #0600f7;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 2rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.3);
+        }
+
+        .timestamp {
+            margin-top: 2rem;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 3rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .status-card {
+                padding: 1.5rem;
+            }
+
+            .instruction-box {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">GLEC</div>
+        <h1>배포 진행 중</h1>
+        <p class="subtitle">ISO-14083 국제표준 물류 탄소배출 측정 솔루션</p>
+
+        <div class="status-card">
+            <div class="status-item">
+                <div class="status-label">Cloudflare Pages 프로젝트</div>
+                <div class="status-value">
+                    <span class="icon icon-check">✓</span>
+                    생성됨
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-label">GitHub Repository</div>
+                <div class="status-value">
+                    <span class="icon icon-manual">⚙</span>
+                    수동 연동 필요
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-label">프로덕션 빌드</div>
+                <div class="status-value">
+                    <span class="icon icon-check">✓</span>
+                    완료 (64 pages)
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-label">배포 상태</div>
+                <div class="status-value">
+                    <span class="icon icon-pending">⏳</span>
+                    수동 배포 대기 중
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-label">문서화</div>
+                <div class="status-value">
+                    <span class="icon icon-check">✓</span>
+                    완료 (8,000+ words)
+                </div>
+            </div>
+        </div>
+
+        <div class="instruction-box">
+            <h2>🔧 다음 단계 (수동 작업 필요)</h2>
+            <ol>
+                <li>
+                    <strong>Cloudflare Dashboard 접속</strong><br>
+                    <code>https://dash.cloudflare.com/</code> → Workers & Pages → glec-website
+                </li>
+                <li>
+                    <strong>GitHub 연동</strong><br>
+                    Settings → Builds & deployments → Connect to Git → GitHub 선택
+                </li>
+                <li>
+                    <strong>저장소 생성 및 선택</strong><br>
+                    새 저장소 생성: <code>glecdev/website</code> → Branch: <code>main</code>
+                </li>
+                <li>
+                    <strong>빌드 설정</strong><br>
+                    Framework: Next.js | Build command: <code>npm run build</code> | Output: <code>.next</code>
+                </li>
+                <li>
+                    <strong>환경 변수 설정 (10개)</strong><br>
+                    DATABASE_URL, JWT_SECRET, RESEND_API_KEY, R2_*, ADMIN_*
+                </li>
+                <li>
+                    <strong>배포 실행</strong><br>
+                    로컬 Git push → 자동 배포 트리거
+                </li>
+            </ol>
+        </div>
+
+        <a href="/docs/GITHUB-INTEGRATION-CHECKLIST.md" class="cta-button" download>
+            📋 전체 가이드 다운로드
+        </a>
+
+        <div class="timestamp">
+            마지막 업데이트: 2025-10-04 11:55 KST<br>
+            로컬 커밋: 254 files | 문서: DEPLOYMENT-GUIDE.md, DEPLOYMENT-STATUS-FINAL.md, GITHUB-INTEGRATION-CHECKLIST.md
+        </div>
+    </div>
+
+    <script>
+        // 30초마다 자동 새로고침 (배포 완료 확인)
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000);
+
+        // 진행 상황 로그
+        console.log('%cGLEC Deployment Status', 'font-size: 20px; font-weight: bold; color: #0600f7;');
+        console.log('1. ✓ Cloudflare Pages 프로젝트 생성됨');
+        console.log('2. ⏳ GitHub 저장소 연동 필요');
+        console.log('3. ✓ 프로덕션 빌드 완료 (64 pages)');
+        console.log('4. ⏳ 수동 배포 대기 중');
+        console.log('');
+        console.log('상세 가이드: /docs/GITHUB-INTEGRATION-CHECKLIST.md');
+    </script>
+</body>
+</html>

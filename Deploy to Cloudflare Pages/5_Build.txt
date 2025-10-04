@@ -1,0 +1,116 @@
+﻿2025-10-04T07:01:41.1718086Z ##[group]Run npm run build
+2025-10-04T07:01:41.1718386Z [36;1mnpm run build[0m
+2025-10-04T07:01:41.1755290Z shell: /usr/bin/bash -e {0}
+2025-10-04T07:01:41.1755529Z env:
+2025-10-04T07:01:41.1755688Z   DATABASE_URL: 
+2025-10-04T07:01:41.1755892Z   JWT_SECRET: 
+2025-10-04T07:01:41.1756059Z   RESEND_API_KEY: 
+2025-10-04T07:01:41.1756235Z   RESEND_FROM_EMAIL: 
+2025-10-04T07:01:41.1756414Z   R2_ACCOUNT_ID: 
+2025-10-04T07:01:41.1756618Z   R2_ACCESS_KEY_ID: 
+2025-10-04T07:01:41.1756796Z   R2_SECRET_ACCESS_KEY: 
+2025-10-04T07:01:41.1757005Z   R2_BUCKET_NAME: 
+2025-10-04T07:01:41.1757171Z   R2_PUBLIC_URL: 
+2025-10-04T07:01:41.1757453Z   ADMIN_EMAIL: 
+2025-10-04T07:01:41.1757637Z   ADMIN_PASSWORD_HASH: 
+2025-10-04T07:01:41.1757827Z ##[endgroup]
+2025-10-04T07:01:41.3343958Z 
+2025-10-04T07:01:41.3344501Z > glec-website@0.1.0 build
+2025-10-04T07:01:41.3345002Z > next build
+2025-10-04T07:01:41.3345218Z 
+2025-10-04T07:01:42.3811838Z ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2025-10-04T07:01:42.3951669Z Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2025-10-04T07:01:42.3952915Z This information is used to shape Next.js' roadmap and prioritize features.
+2025-10-04T07:01:42.3954206Z You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-10-04T07:01:42.3955155Z https://nextjs.org/telemetry
+2025-10-04T07:01:42.3955475Z 
+2025-10-04T07:01:42.4504445Z   ▲ Next.js 14.2.33
+2025-10-04T07:01:42.4505040Z   - Experiments (use with caution):
+2025-10-04T07:01:42.4505776Z     · missingSuspenseWithCSRBailout
+2025-10-04T07:01:42.4506131Z 
+2025-10-04T07:01:42.5082707Z    Creating an optimized production build ...
+2025-10-04T07:01:53.2293083Z Failed to compile.
+2025-10-04T07:01:53.2293420Z 
+2025-10-04T07:01:53.2296547Z ./app/api/admin/knowledge/blog/route.ts
+2025-10-04T07:01:53.2296974Z Error: 
+2025-10-04T07:01:53.2297796Z   [31mx[0m cannot import as reserved word
+2025-10-04T07:01:53.2298726Z     ,-[[36;1;4m/home/runner/work/glec-website/glec-website/app/api/admin/knowledge/blog/route.ts[0m:11:1]
+2025-10-04T07:01:53.2299431Z  [2m11[0m | import {
+2025-10-04T07:01:53.2299731Z  [2m12[0m | 
+2025-10-04T07:01:53.2300154Z  [2m13[0m | // Force dynamic rendering for this API route
+2025-10-04T07:01:53.2300709Z  [2m14[0m | export const dynamic = 'force-dynamic';
+2025-10-04T07:01:53.2301177Z     : [31;1m^^^^^^[0m
+2025-10-04T07:01:53.2301850Z  [2m15[0m | 
+2025-10-04T07:01:53.2302196Z  [2m16[0m |   KnowledgeBlogPost,
+2025-10-04T07:01:53.2302664Z  [2m17[0m |   CreateKnowledgeBlogPostInput,
+2025-10-04T07:01:53.2303082Z     `----
+2025-10-04T07:01:53.2303241Z 
+2025-10-04T07:01:53.2303359Z Caused by:
+2025-10-04T07:01:53.2303650Z     Syntax Error
+2025-10-04T07:01:53.2303852Z 
+2025-10-04T07:01:53.2304082Z Import trace for requested module:
+2025-10-04T07:01:53.2304542Z ./app/api/admin/knowledge/blog/route.ts
+2025-10-04T07:01:53.2304814Z 
+2025-10-04T07:01:53.2305053Z ./app/api/admin/knowledge/library/route.ts
+2025-10-04T07:01:53.2305456Z Error: 
+2025-10-04T07:01:53.2305860Z   [31mx[0m cannot import as reserved word
+2025-10-04T07:01:53.2306791Z     ,-[[36;1;4m/home/runner/work/glec-website/glec-website/app/api/admin/knowledge/library/route.ts[0m:17:1]
+2025-10-04T07:01:53.2307746Z  [2m17[0m | import {
+2025-10-04T07:01:53.2308073Z  [2m18[0m | 
+2025-10-04T07:01:53.2308538Z  [2m19[0m | // Force dynamic rendering for this API route
+2025-10-04T07:01:53.2309156Z  [2m20[0m | export const dynamic = 'force-dynamic';
+2025-10-04T07:01:53.2309637Z     : [31;1m^^^^^^[0m
+2025-10-04T07:01:53.2309977Z  [2m21[0m | 
+2025-10-04T07:01:53.2310360Z  [2m22[0m |   KnowledgeLibraryItem,
+2025-10-04T07:01:53.2310898Z  [2m23[0m |   CreateKnowledgeLibraryItemInput,
+2025-10-04T07:01:53.2311311Z     `----
+2025-10-04T07:01:53.2311454Z 
+2025-10-04T07:01:53.2311600Z Caused by:
+2025-10-04T07:01:53.2311859Z     Syntax Error
+2025-10-04T07:01:53.2312057Z 
+2025-10-04T07:01:53.2312623Z Import trace for requested module:
+2025-10-04T07:01:53.2313217Z ./app/api/admin/knowledge/library/route.ts
+2025-10-04T07:01:53.2313514Z 
+2025-10-04T07:01:53.2313749Z ./app/api/admin/knowledge/videos/route.ts
+2025-10-04T07:01:53.2314134Z Error: 
+2025-10-04T07:01:53.2314545Z   [31mx[0m cannot import as reserved word
+2025-10-04T07:01:53.2315550Z     ,-[[36;1;4m/home/runner/work/glec-website/glec-website/app/api/admin/knowledge/videos/route.ts[0m:11:1]
+2025-10-04T07:01:53.2316366Z  [2m11[0m | import {
+2025-10-04T07:01:53.2316702Z  [2m12[0m | 
+2025-10-04T07:01:53.2317172Z  [2m13[0m | // Force dynamic rendering for this API route
+2025-10-04T07:01:53.2317981Z  [2m14[0m | export const dynamic = 'force-dynamic';
+2025-10-04T07:01:53.2318460Z     : [31;1m^^^^^^[0m
+2025-10-04T07:01:53.2318780Z  [2m15[0m | 
+2025-10-04T07:01:53.2319157Z  [2m16[0m |   KnowledgeVideo,
+2025-10-04T07:01:53.2319643Z  [2m17[0m |   CreateKnowledgeVideoInput,
+2025-10-04T07:01:53.2320030Z     `----
+2025-10-04T07:01:53.2320194Z 
+2025-10-04T07:01:53.2320308Z Caused by:
+2025-10-04T07:01:53.2320560Z     Syntax Error
+2025-10-04T07:01:53.2320733Z 
+2025-10-04T07:01:53.2320933Z Import trace for requested module:
+2025-10-04T07:01:53.2321419Z ./app/api/admin/knowledge/videos/route.ts
+2025-10-04T07:01:53.2321697Z 
+2025-10-04T07:01:53.2321947Z ./app/api/admin/upload/presigned-url/route.ts
+2025-10-04T07:01:53.2322354Z Error: 
+2025-10-04T07:01:53.2322753Z   [31mx[0m cannot import as reserved word
+2025-10-04T07:01:53.2323712Z     ,-[[36;1;4m/home/runner/work/glec-website/glec-website/app/api/admin/upload/presigned-url/route.ts[0m:28:1]
+2025-10-04T07:01:53.2324397Z  [2m28[0m | import {
+2025-10-04T07:01:53.2324613Z  [2m29[0m | 
+2025-10-04T07:01:53.2324921Z  [2m30[0m | // Force dynamic rendering for this API route
+2025-10-04T07:01:53.2325317Z  [2m31[0m | export const dynamic = 'force-dynamic';
+2025-10-04T07:01:53.2325612Z     : [31;1m^^^^^^[0m
+2025-10-04T07:01:53.2325821Z  [2m32[0m | 
+2025-10-04T07:01:53.2326053Z  [2m33[0m |   createR2Client,
+2025-10-04T07:01:53.2326309Z  [2m34[0m |   R2_CONFIG,
+2025-10-04T07:01:53.2326505Z     `----
+2025-10-04T07:01:53.2326598Z 
+2025-10-04T07:01:53.2326669Z Caused by:
+2025-10-04T07:01:53.2326837Z     Syntax Error
+2025-10-04T07:01:53.2326944Z 
+2025-10-04T07:01:53.2327080Z Import trace for requested module:
+2025-10-04T07:01:53.2327642Z ./app/api/admin/upload/presigned-url/route.ts
+2025-10-04T07:01:53.2327844Z 
+2025-10-04T07:01:53.2380416Z 
+2025-10-04T07:01:53.2381510Z > Build failed because of webpack errors
+2025-10-04T07:01:53.2562218Z ##[error]Process completed with exit code 1.
