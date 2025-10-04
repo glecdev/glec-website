@@ -54,14 +54,14 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    label: '지식',
+    label: '지식센터',
     href: '/knowledge',
     submenu: [
       { label: '라이브러리', href: '/knowledge/library' },
-      { label: '프레스', href: '/knowledge/press' },
+      { label: '언론기사', href: '/knowledge/press' },
       { label: '영상', href: '/knowledge/videos' },
       { label: '블로그', href: '/knowledge/blog' },
-      { label: '공지사항', href: '/knowledge/notices' },
+      { label: '공지사항', href: '/notices' },
     ],
   },
   {
@@ -185,6 +185,7 @@ export function Header() {
 
 function NavItem({ item }: { item: NavItem }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   if (!item.submenu) {
     return (
@@ -197,11 +198,26 @@ function NavItem({ item }: { item: NavItem }) {
     );
   }
 
+  const handleMouseEnter = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      setTimeoutId(null);
+    }
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    const id = setTimeout(() => {
+      setIsOpen(false);
+    }, 500); // 500ms delay before closing
+    setTimeoutId(id);
+  };
+
   return (
     <div
       className="relative"
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <button
         className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors"

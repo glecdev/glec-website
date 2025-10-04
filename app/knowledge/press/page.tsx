@@ -84,6 +84,23 @@ export default function PressPage() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary-500 to-navy-900 text-white py-16">
         <div className="container mx-auto px-6">
+          <div className="mb-4">
+            <Link
+              href="/knowledge"
+              className="inline-flex items-center text-white/80 hover:text-white transition-colors"
+            >
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+              지식센터로 돌아가기
+            </Link>
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">언론 보도</h1>
           <p className="text-xl text-white/90">
             GLEC의 최신 뉴스와 언론 보도 자료
