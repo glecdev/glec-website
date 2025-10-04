@@ -49,8 +49,13 @@ const problems = [
 ];
 
 export function ProblemAwarenessSection() {
-  const { displayedText, isComplete } = useTypingAnimation(
+  const { displayedText: headerText } = useTypingAnimation(
     '당신만 겪는 문제가 아닙니다',
+    50
+  );
+
+  const { displayedText: ctaText } = useTypingAnimation(
+    '이 문제들을 단 하나의 솔루션으로 해결할 수 있다면?',
     50
   );
 
@@ -63,7 +68,7 @@ export function ProblemAwarenessSection() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            {displayedText}
+            {headerText}
           </h2>
           <p className="text-xl text-gray-600 mb-4">
             전국 1,200개 물류기업이 매일 마주하는 4가지 고통
@@ -111,7 +116,7 @@ export function ProblemAwarenessSection() {
         <div className="mt-20 lg:mt-32 text-center bg-gradient-to-br from-primary-50 via-blue-50 to-purple-50 rounded-2xl p-12 shadow-lg">
           <div className="max-w-3xl mx-auto">
             <p className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-4">
-              이 문제들을 <span className="text-primary-500">단 하나의 솔루션</span>으로 해결할 수 있다면?
+              {ctaText}
             </p>
             <p className="text-lg text-gray-600 mb-8">
               GLEC은 DTG 하드웨어부터 Carbon API, 클라우드 플랫폼까지<br className="hidden md:block" />
