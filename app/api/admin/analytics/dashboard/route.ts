@@ -26,6 +26,10 @@ import { getMockNoticesWithIds, getMockPressWithIds } from '@/lib/mock-data';
 import { PopupStore } from '@/app/api/_shared/popup-store';
 import type { Notice, Press } from '@prisma/client';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
+
 interface StatWithGrowth {
   current: number;
   previous: number;

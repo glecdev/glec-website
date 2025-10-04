@@ -35,6 +35,10 @@ import type { Notice, NoticeCategory, ContentStatus } from '@prisma/client';
  * Notice Create Schema
  * Based on: GLEC-API-Specification.yaml (lines 1338-1367)
  */
+
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
 const NoticeCreateSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
   content: z.string().min(1, 'Content is required'),

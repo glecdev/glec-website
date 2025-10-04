@@ -7,6 +7,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
+
 const MOCK_VIDEOS_DATA = [
   {
     id: 'vid-001',

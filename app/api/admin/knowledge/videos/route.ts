@@ -9,6 +9,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import {
+
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
   KnowledgeVideo,
   CreateKnowledgeVideoInput,
   UpdateKnowledgeVideoInput,
