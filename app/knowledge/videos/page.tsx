@@ -1,8 +1,8 @@
 /**
- * Knowledge Videos Page
+ * Knowledge Videos Page (영상자료)
  *
- * Purpose: 제품 소개 및 튜토리얼 영상 목록
- * API: GET /api/knowledge/videos
+ * Based on: GLEC-Functional-Requirements-Specification.md
+ * Purpose: Display video tutorials and product demos with category filter and search
  */
 
 'use client';
@@ -19,28 +19,60 @@ interface Video {
   duration: string; // "5:30" format
   viewCount: number;
   publishedAt: string;
-  category: 'PRODUCT' | 'TUTORIAL' | 'WEBINAR' | 'EVENT';
+  category: 'PRODUCT' | 'TUTORIAL' | 'WEBINAR' | 'INTERVIEW';
 }
 
-const CATEGORY_LABELS = {
-  PRODUCT: '제품 소개',
-  TUTORIAL: '튜토리얼',
-  WEBINAR: '웨비나',
-  EVENT: '이벤트',
+const CATEGORIES = {
+  ALL: { value: '', label: '전체' },
+  PRODUCT: { value: 'PRODUCT', label: '제품 소개' },
+  TUTORIAL: { value: 'TUTORIAL', label: '사용 가이드' },
+  WEBINAR: { value: 'WEBINAR', label: '웨비나' },
+  INTERVIEW: { value: 'INTERVIEW', label: '고객 인터뷰' },
+} as const;
+
+const CATEGORY_COLORS = {
+  PRODUCT: 'bg-blue-100 text-blue-800',
+  TUTORIAL: 'bg-green-100 text-green-800',
+  WEBINAR: 'bg-purple-100 text-purple-800',
+  INTERVIEW: 'bg-orange-100 text-orange-800',
 };
 
 export default function VideosPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchVideos();
-  }, []);
+  }, [selectedCategory, debouncedSearch]);
 
   const fetchVideos = async () => {
     try {
-      const response = await fetch('/api/knowledge/videos');
+      setIsLoading(true);
+      const params = new URLSearchParams();
+      params.append('per_page', '20');
+
+      if (selectedCategory) {
+        params.append('category', selectedCategory);
+      }
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
+      }
+
+      const response = await fetch(`/api/knowledge/videos?${params.toString()}`);
       const data = await response.json();
+
       if (data.success) {
         setVideos(data.data);
       }
@@ -62,8 +94,49 @@ export default function VideosPage() {
             </svg>
             지식센터로 돌아가기
           </Link>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">영상 자료</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">영상자료</h1>
           <p className="text-xl opacity-90">제품 소개, 튜토리얼, 웨비나 영상을 확인하세요</p>
+        </div>
+      </section>
+
+      {/* Category Filter + Search */}
+      <section className="py-8 bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Category Tabs */}
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(CATEGORIES).map(([key, { value, label }]) => (
+                <button
+                  key={key}
+                  onClick={() => setSelectedCategory(value)}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    selectedCategory === value
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Input */}
+            <div className="flex-1 lg:max-w-md">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="제목/내용 검색..."
+                className="
+                  w-full px-4 py-2
+                  text-base text-gray-900
+                  border border-gray-300 rounded-lg
+                  transition-colors duration-200
+                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                "
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -72,7 +145,7 @@ export default function VideosPage() {
         <div className="container mx-auto px-4">
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-video bg-gray-200 rounded-lg mb-4"></div>
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
@@ -84,7 +157,9 @@ export default function VideosPage() {
             <div className="text-center py-16">
               <div className="text-6xl mb-4">🎥</div>
               <h3 className="text-2xl font-bold text-gray-700 mb-2">영상이 없습니다</h3>
-              <p className="text-gray-600">곧 새로운 영상이 추가될 예정입니다.</p>
+              <p className="text-gray-600">
+                {searchQuery ? '검색 결과가 없습니다. 다른 키워드로 시도해보세요.' : '곧 새로운 영상이 추가될 예정입니다.'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -94,39 +169,41 @@ export default function VideosPage() {
                   href={video.videoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group block"
+                  className="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 >
-                  <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-4">
+                  <div className="relative aspect-video bg-gray-900 overflow-hidden">
                     <img
-                      src={video.thumbnailUrl || '/images/video-placeholder.jpg'}
+                      src={video.thumbnailUrl}
                       alt={video.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                      <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <svg className="w-8 h-8 text-primary-500 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                      </svg>
+                    </div>
+                    {video.duration && (
+                      <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                        {video.duration}
                       </div>
-                    </div>
-                    <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/70 text-white text-xs rounded">
-                      {video.duration}
-                    </div>
+                    )}
                   </div>
-                  <div className="mb-2">
-                    <span className="text-xs font-semibold text-primary-500">
-                      {CATEGORY_LABELS[video.category]}
-                    </span>
+
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`px-2 py-1 text-xs font-semibold rounded ${CATEGORY_COLORS[video.category]}`}>
+                        {CATEGORIES[video.category].label}
+                      </span>
+                      <span className="text-xs text-gray-500">{video.viewCount.toLocaleString()} 조회</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-500 transition-colors">
+                      {video.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">{video.description}</p>
+                    <time className="text-xs text-gray-400">
+                      {new Date(video.publishedAt).toLocaleDateString('ko-KR')}
+                    </time>
                   </div>
-                  <h3 className="text-lg font-bold mb-2 group-hover:text-primary-500 transition-colors line-clamp-2">
-                    {video.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                    {video.description}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    조회수 {video.viewCount.toLocaleString()}회
-                  </p>
                 </a>
               ))}
             </div>

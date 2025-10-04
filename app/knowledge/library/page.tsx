@@ -41,10 +41,21 @@ export default function LibraryPage() {
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchLibrary();
-  }, [selectedCategory]);
+  }, [selectedCategory, debouncedSearch]);
 
   const fetchLibrary = async () => {
     try {
@@ -52,6 +63,9 @@ export default function LibraryPage() {
       const params = new URLSearchParams();
       if (selectedCategory !== 'ALL') {
         params.append('category', selectedCategory);
+      }
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
       }
 
       const response = await fetch(`/api/knowledge/library?${params.toString()}`);
@@ -83,33 +97,53 @@ export default function LibraryPage() {
         </div>
       </section>
 
-      {/* Category Filter */}
+      {/* Category Filter + Search */}
       <section className="py-8 bg-white border-b">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => setSelectedCategory('ALL')}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                selectedCategory === 'ALL'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              전체
-            </button>
-            {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Category Tabs */}
+            <div className="flex flex-wrap gap-3">
               <button
-                key={value}
-                onClick={() => setSelectedCategory(value)}
+                onClick={() => setSelectedCategory('ALL')}
                 className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                  selectedCategory === value
+                  selectedCategory === 'ALL'
                     ? 'bg-primary-500 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {label}
+                전체
               </button>
-            ))}
+              {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setSelectedCategory(value)}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    selectedCategory === value
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Input */}
+            <div className="flex-1 lg:max-w-md">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="제목/내용 검색..."
+                className="
+                  w-full px-4 py-2
+                  text-base text-gray-900
+                  border border-gray-300 rounded-lg
+                  transition-colors duration-200
+                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                "
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -132,7 +166,9 @@ export default function LibraryPage() {
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📚</div>
               <h3 className="text-2xl font-bold text-gray-700 mb-2">자료가 없습니다</h3>
-              <p className="text-gray-600">곧 새로운 자료가 추가될 예정입니다.</p>
+              <p className="text-gray-600">
+                {searchQuery ? '검색 결과가 없습니다. 다른 키워드로 시도해보세요.' : '곧 새로운 자료가 추가될 예정입니다.'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

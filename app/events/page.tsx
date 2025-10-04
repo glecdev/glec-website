@@ -76,7 +76,7 @@ function ErrorMessage({ error, onRetry }: { error: string; onRetry: () => void }
 }
 
 // Empty state component
-function EmptyState({ filter }: { filter: string }) {
+function EmptyState({ filter, hasSearch }: { filter: string; hasSearch: boolean }) {
   return (
     <div className="col-span-full text-center py-16" role="status">
       <svg
@@ -94,9 +94,15 @@ function EmptyState({ filter }: { filter: string }) {
         />
       </svg>
       <h3 className="text-xl font-semibold text-gray-700 mb-2">
-        {filter === 'all' ? '등록된 이벤트가 없습니다' : `${filter} 이벤트가 없습니다`}
+        {hasSearch
+          ? '검색 결과가 없습니다'
+          : filter === 'all'
+            ? '등록된 이벤트가 없습니다'
+            : `${filter} 이벤트가 없습니다`}
       </h3>
-      <p className="text-gray-500">나중에 다시 확인해주세요.</p>
+      <p className="text-gray-500">
+        {hasSearch ? '다른 키워드로 시도해보세요.' : '나중에 다시 확인해주세요.'}
+      </p>
     </div>
   );
 }
@@ -106,6 +112,17 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<EventStatus | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Fetch events from API
   async function fetchEvents(status?: EventStatus | 'all') {
@@ -118,6 +135,9 @@ export default function EventsPage() {
       params.append('per_page', '12');
       if (status && status !== 'all') {
         params.append('status', status);
+      }
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
       }
 
       const response = await fetch(`/api/events?${params.toString()}`, {
@@ -152,14 +172,14 @@ export default function EventsPage() {
     fetchEvents();
   }, []);
 
-  // Refetch when filter changes
+  // Refetch when filter or search changes
   useEffect(() => {
     if (statusFilter === 'all') {
       fetchEvents();
     } else {
       fetchEvents(statusFilter);
     }
-  }, [statusFilter]);
+  }, [statusFilter, debouncedSearch]);
 
   // Handle filter button click
   function handleFilterChange(filter: EventStatus | 'all') {
@@ -191,67 +211,87 @@ export default function EventsPage() {
         </div>
       </section>
 
-      {/* Filter Tabs */}
+      {/* Filter Tabs + Search */}
       <section className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <nav
-            className="flex gap-2 sm:gap-4 overflow-x-auto py-4"
-            role="tablist"
-            aria-label="이벤트 상태 필터"
-          >
-            <button
-              onClick={() => handleFilterChange('all')}
-              className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
-                statusFilter === 'all'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-              role="tab"
-              aria-selected={statusFilter === 'all'}
-              aria-controls="events-list"
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Status Filter Tabs */}
+            <nav
+              className="flex gap-2 sm:gap-4 overflow-x-auto"
+              role="tablist"
+              aria-label="이벤트 상태 필터"
             >
-              전체
-            </button>
-            <button
-              onClick={() => handleFilterChange('UPCOMING')}
-              className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
-                statusFilter === 'UPCOMING'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-              role="tab"
-              aria-selected={statusFilter === 'UPCOMING'}
-              aria-controls="events-list"
-            >
-              예정
-            </button>
-            <button
-              onClick={() => handleFilterChange('ONGOING')}
-              className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
-                statusFilter === 'ONGOING'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-              role="tab"
-              aria-selected={statusFilter === 'ONGOING'}
-              aria-controls="events-list"
-            >
-              진행중
-            </button>
-            <button
-              onClick={() => handleFilterChange('COMPLETED')}
-              className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
-                statusFilter === 'COMPLETED'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-              role="tab"
-              aria-selected={statusFilter === 'COMPLETED'}
-              aria-controls="events-list"
-            >
-              종료
-            </button>
-          </nav>
+              <button
+                onClick={() => handleFilterChange('all')}
+                className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
+                  statusFilter === 'all'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                role="tab"
+                aria-selected={statusFilter === 'all'}
+                aria-controls="events-list"
+              >
+                전체
+              </button>
+              <button
+                onClick={() => handleFilterChange('UPCOMING')}
+                className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
+                  statusFilter === 'UPCOMING'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                role="tab"
+                aria-selected={statusFilter === 'UPCOMING'}
+                aria-controls="events-list"
+              >
+                예정
+              </button>
+              <button
+                onClick={() => handleFilterChange('ONGOING')}
+                className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
+                  statusFilter === 'ONGOING'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                role="tab"
+                aria-selected={statusFilter === 'ONGOING'}
+                aria-controls="events-list"
+              >
+                진행중
+              </button>
+              <button
+                onClick={() => handleFilterChange('COMPLETED')}
+                className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
+                  statusFilter === 'COMPLETED'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                role="tab"
+                aria-selected={statusFilter === 'COMPLETED'}
+                aria-controls="events-list"
+              >
+                종료
+              </button>
+            </nav>
+
+            {/* Search Input */}
+            <div className="flex-1 lg:max-w-md">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="제목/설명 검색..."
+                className="
+                  w-full px-4 py-2
+                  text-base text-gray-900
+                  border border-gray-300 rounded-lg
+                  transition-colors duration-200
+                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                "
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -275,7 +315,7 @@ export default function EventsPage() {
                 </>
               ) : events.length === 0 ? (
                 // Empty state
-                <EmptyState filter={statusFilter === 'all' ? 'all' : statusFilter} />
+                <EmptyState filter={statusFilter === 'all' ? 'all' : statusFilter} hasSearch={!!searchQuery} />
               ) : (
                 // Event cards
                 events.map((event) => <EventCard key={event.id} event={event} />)

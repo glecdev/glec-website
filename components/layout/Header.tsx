@@ -58,8 +58,8 @@ const navigation: NavItem[] = [
     href: '/knowledge',
     submenu: [
       { label: '라이브러리', href: '/knowledge/library' },
-      { label: '언론기사', href: '/knowledge/press' },
-      { label: '영상', href: '/knowledge/videos' },
+      { label: '언론보도', href: '/knowledge/press' },
+      { label: '영상자료', href: '/knowledge/videos' },
       { label: '블로그', href: '/knowledge/blog' },
       { label: '공지사항', href: '/notices' },
     ],

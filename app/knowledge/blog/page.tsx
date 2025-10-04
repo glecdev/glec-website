@@ -1,8 +1,8 @@
 /**
  * Knowledge Blog Page
  *
- * Purpose: 업계 인사이트 및 트렌드 분석 블로그
- * API: GET /api/knowledge/blog
+ * Based on: GLEC-Functional-Requirements-Specification.md
+ * Purpose: Display industry insights and trend analysis with category filter and search
  */
 
 'use client';
@@ -25,18 +25,50 @@ interface BlogPost {
   tags: string[];
 }
 
+const CATEGORIES = {
+  ALL: { value: '', label: '전체' },
+  TECHNOLOGY: { value: 'TECHNOLOGY', label: '기술' },
+  INDUSTRY: { value: 'INDUSTRY', label: '산업 동향' },
+  CASE_STUDY: { value: 'CASE_STUDY', label: '사례 연구' },
+  INSIGHT: { value: 'INSIGHT', label: '인사이트' },
+} as const;
+
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchBlog();
-  }, []);
+  }, [selectedCategory, debouncedSearch]);
 
   const fetchBlog = async () => {
     try {
-      const response = await fetch('/api/knowledge/blog');
+      setIsLoading(true);
+      const params = new URLSearchParams();
+      params.append('per_page', '20');
+
+      if (selectedCategory) {
+        params.append('category', selectedCategory);
+      }
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
+      }
+
+      const response = await fetch(`/api/knowledge/blog?${params.toString()}`);
       const data = await response.json();
+
       if (data.success) {
         setPosts(data.data);
       }
@@ -68,12 +100,53 @@ export default function BlogPage() {
         </div>
       </section>
 
+      {/* Category Filter + Search */}
+      <section className="py-8 bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Category Tabs */}
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(CATEGORIES).map(([key, { value, label }]) => (
+                <button
+                  key={key}
+                  onClick={() => setSelectedCategory(value)}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    selectedCategory === value
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Input */}
+            <div className="flex-1 lg:max-w-md">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="제목/내용 검색..."
+                className="
+                  w-full px-4 py-2
+                  text-base text-gray-900
+                  border border-gray-300 rounded-lg
+                  transition-colors duration-200
+                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                "
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Blog Posts */}
       <section className="py-12">
         <div className="container mx-auto px-4">
           {isLoading ? (
             <div className="space-y-8">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="bg-white rounded-lg shadow-sm border p-6 animate-pulse flex gap-6">
                   <div className="w-64 h-40 bg-gray-200 rounded-lg flex-shrink-0"></div>
                   <div className="flex-1">
@@ -88,7 +161,9 @@ export default function BlogPage() {
             <div className="text-center py-16">
               <div className="text-6xl mb-4">✍️</div>
               <h3 className="text-2xl font-bold text-gray-700 mb-2">블로그 포스트가 없습니다</h3>
-              <p className="text-gray-600">곧 새로운 포스트가 추가될 예정입니다.</p>
+              <p className="text-gray-600">
+                {searchQuery ? '검색 결과가 없습니다. 다른 키워드로 시도해보세요.' : '곧 새로운 포스트가 추가될 예정입니다.'}
+              </p>
             </div>
           ) : (
             <div className="space-y-8">
@@ -99,46 +174,50 @@ export default function BlogPage() {
                   className="block bg-white rounded-lg shadow-sm border hover:shadow-lg transition-shadow"
                 >
                   <div className="md:flex gap-6 p-6">
-                    {/* Thumbnail */}
-                    <div className="md:w-64 h-48 md:h-40 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg flex-shrink-0 mb-4 md:mb-0 flex items-center justify-center overflow-hidden">
-                      {post.thumbnailUrl ? (
-                        <img src={post.thumbnailUrl} alt={post.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="text-6xl">📝</div>
-                      )}
-                    </div>
-
-                    {/* Content */}
+                    {post.thumbnailUrl && (
+                      <div className="md:w-64 h-40 bg-gray-200 rounded-lg flex-shrink-0 mb-4 md:mb-0 overflow-hidden">
+                        <img
+                          src={post.thumbnailUrl}
+                          alt={post.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="px-3 py-1 bg-primary-100 text-primary-800 text-xs font-semibold rounded-full">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-semibold text-primary-500 bg-primary-50 px-2 py-1 rounded">
                           {post.category}
                         </span>
-                        <span className="text-sm text-gray-500">{post.readTime} 읽기</span>
+                        <span className="text-xs text-gray-500">{post.readTime} 읽기</span>
                       </div>
-
-                      <h2 className="text-2xl font-bold mb-3 hover:text-primary-500 transition-colors">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3 hover:text-primary-500 transition-colors">
                         {post.title}
-                      </h2>
-
-                      <p className="text-gray-600 mb-4 line-clamp-2">
-                        {post.excerpt}
-                      </p>
-
+                      </h3>
+                      <p className="text-gray-600 mb-4 line-clamp-2">{post.excerpt}</p>
                       <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                            {post.authorAvatar ? (
-                              <img src={post.authorAvatar} alt={post.author} className="w-full h-full rounded-full" />
-                            ) : (
-                              <span className="text-xs font-semibold">{post.author[0]}</span>
-                            )}
+                        {post.authorAvatar ? (
+                          <img src={post.authorAvatar} alt={post.author} className="w-8 h-8 rounded-full" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
+                            {post.author.charAt(0).toUpperCase()}
                           </div>
-                          <span>{post.author}</span>
-                        </div>
+                        )}
+                        <span className="font-medium">{post.author}</span>
                         <span>•</span>
-                        <span>{formatDate(post.publishedAt)}</span>
+                        <time>{formatDate(post.publishedAt)}</time>
                       </div>
+                      {post.tags && post.tags.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {post.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Link>
