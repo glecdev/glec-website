@@ -3,9 +3,6 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-// Force dynamic rendering for this page (uses searchParams)
-export const dynamic = 'force-dynamic';
-
 // Types (API Spec 기반)
 interface Notice {
   id: string;
@@ -64,7 +61,7 @@ const CATEGORY_COLORS = {
 
 const PER_PAGE = 12;
 
-export default function NewsPage() {
+function NewsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -462,5 +459,34 @@ function NoticeCard({ notice, onClick }: NoticeCardProps) {
         </span>
       </div>
     </div>
+  );
+}
+
+// Loading fallback for Suspense
+function NewsPageLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-blue-50 py-20">
+      <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">
+              뉴스 & 소식
+            </h1>
+            <p className="text-xl text-gray-600">
+              Loading...
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Default export with Suspense wrapper
+export default function NewsPage() {
+  return (
+    <Suspense fallback={<NewsPageLoading />}>
+      <NewsPageContent />
+    </Suspense>
   );
 }
