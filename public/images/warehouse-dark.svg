@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" role="img" aria-label="Modern warehouse background">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="warehouseBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#000a42;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0600f7;stop-opacity:0.8" />
+    </linearGradient>
+
+    <linearGradient id="gridGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:white;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:white;stop-opacity:0.02" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base gradient -->
+  <rect width="1920" height="1080" fill="url(#warehouseBg)"/>
+
+  <!-- Grid pattern (warehouse shelves abstraction) -->
+  <g opacity="0.15">
+    <!-- Vertical lines -->
+    <line x1="200" y1="0" x2="200" y2="1080" stroke="white" stroke-width="2"/>
+    <line x1="400" y1="0" x2="400" y2="1080" stroke="white" stroke-width="2"/>
+    <line x1="600" y1="0" x2="600" y2="1080" stroke="white" stroke-width="2"/>
+    <line x1="800" y1="0" x2="800" y2="1080" stroke="white" stroke-width="2"/>
+    <line x1="1000" y1="0" x2="1000" y2="1080" stroke="white" stroke-width="2"/>
+    <line x1="1200" y1="0" x2="1200" y2="1080" stroke="white" stroke-width="2"/>
+    <line x1="1400" y1="0" x2="1400" y2="1080" stroke="white" stroke-width="2"/>
+    <line x1="1600" y1="0" x2="1600" y2="1080" stroke="white" stroke-width="2"/>
+
+    <!-- Horizontal lines -->
+    <line x1="0" y1="200" x2="1920" y2="200" stroke="white" stroke-width="2"/>
+    <line x1="0" y1="400" x2="1920" y2="400" stroke="white" stroke-width="2"/>
+    <line x1="0" y1="600" x2="1920" y2="600" stroke="white" stroke-width="2"/>
+    <line x1="0" y1="800" x2="1920" y2="800" stroke="white" stroke-width="2"/>
+  </g>
+
+  <!-- Abstract cargo/boxes -->
+  <g opacity="0.1">
+    <!-- Left side boxes -->
+    <rect x="50" y="600" width="120" height="120" fill="white"/>
+    <rect x="50" y="750" width="120" height="80" fill="white"/>
+    <rect x="200" y="650" width="100" height="100" fill="white"/>
+
+    <!-- Right side boxes -->
+    <rect x="1650" y="700" width="150" height="150" fill="white"/>
+    <rect x="1500" y="750" width="100" height="100" fill="white"/>
+    <rect x="1650" y="600" width="80" height="80" fill="white"/>
+  </g>
+
+  <!-- Spotlight effect (center) -->
+  <ellipse cx="960" cy="540" rx="800" ry="400" fill="white" opacity="0.05"/>
+
+  <!-- Subtle data points (IoT sensors abstraction) -->
+  <g opacity="0.3">
+    <circle cx="300" cy="300" r="8" fill="#22c55e"/>
+    <circle cx="700" cy="450" r="8" fill="#22c55e"/>
+    <circle cx="1200" cy="250" r="8" fill="#22c55e"/>
+    <circle cx="1500" cy="400" r="8" fill="#22c55e"/>
+    <circle cx="500" cy="700" r="8" fill="#22c55e"/>
+    <circle cx="1300" cy="650" r="8" fill="#22c55e"/>
+
+    <!-- Connection lines -->
+    <line x1="300" y1="300" x2="700" y2="450" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="700" y1="450" x2="1200" y2="250" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="1200" y1="250" x2="1500" y2="400" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="500" y1="700" x2="1300" y2="650" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,4"/>
+  </g>
+
+  <!-- Bottom gradient fade -->
+  <rect width="1920" height="300" y="780" fill="url(#gridGrad)"/>
+
+  <!-- Subtle CO2 icon in corner -->
+  <g opacity="0.08" transform="translate(1700, 900)">
+    <text x="0" y="0" font-size="120" font-weight="bold" fill="white">CO₂</text>
+  </g>
+</svg>

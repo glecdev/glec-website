@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Excel manual work pain point illustration">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f9fafb"/>
+
+  <!-- Icon: Spreadsheet with stressed person -->
+  <g transform="translate(400, 200)">
+    <!-- Spreadsheet -->
+    <rect x="-100" y="-80" width="200" height="140" rx="8" fill="white" stroke="#22c55e" stroke-width="3"/>
+
+    <!-- Grid lines -->
+    <line x1="-100" y1="-40" x2="100" y2="-40" stroke="#e5e7eb" stroke-width="2"/>
+    <line x1="-100" y1="0" x2="100" y2="0" stroke="#e5e7eb" stroke-width="2"/>
+    <line x1="-100" y1="40" x2="100" y2="40" stroke="#e5e7eb" stroke-width="2"/>
+    <line x1="-60" y1="-80" x2="-60" y2="60" stroke="#e5e7eb" stroke-width="2"/>
+    <line x1="-20" y1="-80" x2="-20" y2="60" stroke="#e5e7eb" stroke-width="2"/>
+    <line x1="20" y1="-80" x2="20" y2="60" stroke="#e5e7eb" stroke-width="2"/>
+    <line x1="60" y1="-80" x2="60" y2="60" stroke="#e5e7eb" stroke-width="2"/>
+
+    <!-- Clock icon (time wasted) -->
+    <circle cx="80" cy="-60" r="30" fill="#ef4444"/>
+    <line x1="80" y1="-60" x2="80" y2="-75" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <line x1="80" y1="-60" x2="90" y2="-50" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Title -->
+  <text x="400" y="380" font-size="24" font-weight="bold" fill="#1f2937" text-anchor="middle">엑셀 수작업의 고통</text>
+
+  <!-- Description -->
+  <text x="400" y="420" font-size="16" fill="#6b7280" text-anchor="middle">3시간 걸리는 보고서 작성</text>
+
+  <!-- GLEC Watermark -->
+  <text x="400" y="560" font-size="12" fill="#9ca3af" text-anchor="middle">GLEC - ISO-14083 표준 물류 탄소배출 측정</text>
+</svg>

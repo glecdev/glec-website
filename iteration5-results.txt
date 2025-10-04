@@ -1,0 +1,237 @@
+
+Running 1 test using 1 worker
+
+
+================================================================================
+🔐 STEP 1: LOGIN
+================================================================================
+✅ Login successful in 4430ms
+
+================================================================================
+📊 STEP 2: PAGE LOAD TESTS
+================================================================================
+
+📄 Testing: Dashboard (/admin/dashboard)
+✅ Dashboard: 1608ms (success)
+
+📄 Testing: Analytics (/admin/analytics)
+✅ Analytics: 1910ms (success)
+
+📄 Testing: Notices (/admin/notices)
+✅ Notices: 1850ms (success)
+
+📄 Testing: Press (/admin/press)
+✅ Press: 1814ms (success)
+
+📄 Testing: Popups (/admin/popups)
+✅ Popups: 1774ms (success)
+
+📄 Testing: Demo Requests (/admin/demo-requests)
+✅ Demo Requests: 1915ms (success)
+
+📄 Testing: Knowledge Library (/admin/knowledge-library)
+✅ Knowledge Library: 1840ms (success)
+
+📄 Testing: Knowledge Videos (/admin/knowledge-videos)
+✅ Knowledge Videos: 1966ms (success)
+
+📄 Testing: Knowledge Blog (/admin/knowledge-blog)
+✅ Knowledge Blog: 1967ms (success)
+
+================================================================================
+🔧 STEP 3: CRUD OPERATIONS TESTS
+================================================================================
+
+🔧 CRUD Test (Page): Notices
+  📝 Testing CREATE...
+  ❌ CREATE: Failed - locator.click: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for locator('button[type="submit"]').first()[22m
+
+  📖 Testing READ...
+  ❌ READ: Failed
+  ✏️  Testing UPDATE...
+  ⚠️  UPDATE: Edit link not found
+  🗑️  Testing DELETE...
+  ⚠️  DELETE: Delete button not found
+
+🔧 CRUD Test (Page): Press
+  📝 Testing CREATE...
+  ✅ CREATE: Success
+  📖 Testing READ...
+  ✅ READ: Success
+  ✏️  Testing UPDATE...
+  ❌ UPDATE: Failed - locator.fill: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[type="text"]').first()[22m
+
+  🗑️  Testing DELETE...
+  ⚠️  DELETE: Delete button not found
+
+🔧 CRUD Test (Page): Popups
+  📝 Testing CREATE...
+  ✅ CREATE: Success
+  📖 Testing READ...
+  ✅ READ: Success
+  ✏️  Testing UPDATE...
+  ❌ UPDATE: Failed
+  🗑️  Testing DELETE...
+  ⚠️  DELETE: Delete button not found
+
+🔧 CRUD Test (Modal): Knowledge Library
+  📝 Testing CREATE...
+  ✅ CREATE: Success
+  📖 Testing READ...
+  ✅ READ: Success
+  ✏️  Testing UPDATE...
+  ✅ UPDATE: Success
+  🗑️  Testing DELETE...
+  ✅ DELETE: Success
+
+🔧 CRUD Test (Modal): Knowledge Videos
+  📝 Testing CREATE...
+  ✅ CREATE: Success
+  📖 Testing READ...
+  ✅ READ: Success
+  ✏️  Testing UPDATE...
+  ✅ UPDATE: Success
+  🗑️  Testing DELETE...
+  ✅ DELETE: Success
+
+🔧 CRUD Test (Modal): Knowledge Blog
+  📝 Testing CREATE...
+  ❌ CREATE: Failed
+  📖 Testing READ...
+  ❌ READ: Failed
+  ✏️  Testing UPDATE...
+  ❌ UPDATE: Failed
+  🗑️  Testing DELETE...
+  ⚠️  DELETE: Delete button not found
+
+================================================================================
+📋 FINAL REPORT
+================================================================================
+
+📊 PAGE LOAD SUMMARY:
+--------------------------------------------------------------------------------
+| Page                  | Load Time | Status   |
+|-----------------------|-----------|----------|
+| Dashboard             | 1608ms    | ✅        |
+| Analytics             | 1910ms    | ✅        |
+| Notices               | 1850ms    | ✅        |
+| Press                 | 1814ms    | ✅        |
+| Popups                | 1774ms    | ✅        |
+| Demo Requests         | 1915ms    | ✅        |
+| Knowledge Library     | 1840ms    | ✅        |
+| Knowledge Videos      | 1966ms    | ✅        |
+| Knowledge Blog        | 1967ms    | ✅        |
+--------------------------------------------------------------------------------
+Total Pages: 9
+Successful: 9
+Failed: 0
+Average Load Time: 1849ms
+
+🔧 CRUD OPERATIONS SUMMARY:
+--------------------------------------------------------------------------------
+| Page                  | C | R | U | D | Score |
+|-----------------------|---|---|---|---|-------|
+| Notices               | ❌ | ❌ | ❌ | ❌ | 0/4   |
+| Press                 | ✅ | ✅ | ❌ | ❌ | 2/4   |
+| Popups                | ✅ | ✅ | ❌ | ❌ | 2/4   |
+| Knowledge Library     | ✅ | ✅ | ✅ | ✅ | 4/4   |
+| Knowledge Videos      | ✅ | ✅ | ✅ | ✅ | 4/4   |
+| Knowledge Blog        | ❌ | ❌ | ❌ | ❌ | 0/4   |
+--------------------------------------------------------------------------------
+Total CRUD Operations: 24
+Successful: 12
+Failed: 12
+Success Rate: 50.0%
+
+🐛 CONSOLE ERRORS:
+  - [Console Error] Warning: A future version of React will block javascript: URLs as a security precaution. Use event handlers instead if you can. If you need to generate unsafe HTML try using dangerouslySetInnerHTML instead. React was passed %s.%s "javascript:void(0)" 
+    at form
+    at div
+    at div
+    at AdminLoginPage (webpack-internal:///(app-pages-browser)/./app/admin/login/page.tsx:35:78)
+    at ClientPageRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/client-page.js:14:11)
+    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)
+    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)
+    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)
+    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)
+    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)
+    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)
+    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)
+    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)
+    at AdminLayout (webpack-internal:///(app-pages-browser)/./app/admin/layout.tsx:281:11)
+    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)
+    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)
+    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)
+    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)
+    at RootLayoutClient (webpack-internal:///(app-pages-browser)/./components/RootLayoutClient.tsx:17:11)
+    at body
+    at html
+    at RootLayout (Server)
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)
+    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)
+    at DevRootNotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/dev-root-not-found-boundary.js:33:11)
+    at ReactDevOverlay (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/ReactDevOverlay.js:87:9)
+    at HotReload (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:321:11)
+    at Router (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:207:11)
+    at ErrorBoundaryHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:113:9)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)
+    at AppRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:585:13)
+    at ServerRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:112:27)
+    at Root (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:117:11)
+  - [Console Error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  - [Console Error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  - [Console Error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  - [Console Error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  - [Console Error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  - [Console Error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  - [Console Error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  - [Console Error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  - [Console Error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  ... and 185 more errors
+
+❌ FAILED REQUESTS:
+  - [HTTP 404] http://localhost:3008/images/library/thumb-7.jpg
+  - [HTTP 404] http://localhost:3008/images/library/thumb-22.jpg
+  - [HTTP 404] http://localhost:3008/images/library/thumb-13.jpg
+  - [HTTP 404] http://localhost:3008/images/library/thumb-4.jpg
+  - [HTTP 404] http://localhost:3008/images/library/thumb-19.jpg
+  - [HTTP 404] http://localhost:3008/images/library/thumb-16.jpg
+  - [HTTP 404] http://localhost:3008/images/library/thumb-10.jpg
+  - [HTTP 404] http://localhost:3008/images/library/thumb-1.jpg
+  - [HTTP 404] http://localhost:3008/images/videos/thumb-21.jpg
+  - [HTTP 404] http://localhost:3008/images/videos/thumb-15.jpg
+  ... and 181 more failures
+
+================================================================================
+⚠️  ALL PAGES LOADED - SOME CRUD OPERATIONS FAILED
+================================================================================
+
+💾 Report saved to: D:\GLEC-Website\glec-website\test-results\admin-comprehensive-report.json
+  ok 1 [chromium] › tests\e2e\admin\comprehensive-admin-test.spec.ts:578:7 › Comprehensive Admin Portal E2E Test › should test all admin pages with CRUD operations (1.9m)
+
+  1 passed (1.9m)

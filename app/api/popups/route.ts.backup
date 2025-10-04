@@ -1,0 +1,128 @@
+/**
+ * Popups API Route - GET (Public)
+ *
+ * Purpose: 활성화된 팝업 목록 조회 (웹사이트용)
+ * Standards: GLEC-API-Specification.yaml
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+
+export interface Popup {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  linkText: string | null;
+  isActive: boolean;
+  zIndex: number;
+  displayType: 'modal' | 'banner' | 'corner';
+  position: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  width: number;
+  height: number;
+  showOnce: boolean; // 오늘 하루 보지 않기
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Mock in-memory storage (개발용)
+const MOCK_POPUPS: Popup[] = [
+  {
+    id: '1',
+    title: 'GLEC DTG Series5 출시 🎉',
+    content: '<p>새로운 <strong>GLEC DTG Series5</strong>가 출시되었습니다!</p><p>지금 바로 확인하세요.</p>',
+    imageUrl: null, // 이미지 파일 없음 (404 방지)
+    linkUrl: '/dtg',
+    linkText: '자세히 보기',
+    isActive: true,
+    zIndex: 1000,
+    displayType: 'modal',
+    position: 'center',
+    width: 500,
+    height: 600,
+    showOnce: true,
+    startDate: '2025-01-01T00:00:00Z',
+    endDate: '2025-12-31T23:59:59Z',
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    title: 'ISO-14083 무료 컨설팅',
+    content: '<p>한정 기간 <strong>무료 컨설팅</strong> 진행 중!</p>',
+    imageUrl: null,
+    linkUrl: '/contact',
+    linkText: '신청하기',
+    isActive: true,
+    zIndex: 999,
+    displayType: 'banner',
+    position: 'top',
+    width: 0, // Full width
+    height: 80,
+    showOnce: false,
+    startDate: '2025-01-01T00:00:00Z',
+    endDate: '2025-12-31T23:59:59Z',
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+  },
+  {
+    id: '3',
+    title: '고객 지원',
+    content: '<p>문의사항이 있으신가요?</p>',
+    imageUrl: null,
+    linkUrl: '/contact',
+    linkText: '문의하기',
+    isActive: true,
+    zIndex: 998,
+    displayType: 'corner',
+    position: 'bottom-right',
+    width: 300,
+    height: 200,
+    showOnce: false,
+    startDate: '2025-01-01T00:00:00Z',
+    endDate: '2025-12-31T23:59:59Z',
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+  },
+];
+
+export async function GET(request: NextRequest) {
+  try {
+    const now = new Date();
+
+    // 활성화되고 기간 내인 팝업만 필터링
+    const activePopups = MOCK_POPUPS.filter((popup) => {
+      if (!popup.isActive) return false;
+
+      const startDate = new Date(popup.startDate);
+      const endDate = new Date(popup.endDate);
+
+      return now >= startDate && now <= endDate;
+    })
+      // z-index 순서대로 정렬 (높은 순)
+      .sort((a, b) => b.zIndex - a.zIndex);
+
+    return NextResponse.json({
+      success: true,
+      data: activePopups,
+      meta: {
+        total: activePopups.length,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('[GET /api/popups] Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: '팝업 목록 조회에 실패했습니다.',
+        },
+      },
+      { status: 500 }
+    );
+  }
+}

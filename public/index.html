@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLEC - 배포 준비 중</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0600f7 0%, #000a42 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #fff, #a0a0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 600;
+        }
+
+        .status-value {
+            opacity: 0.8;
+        }
+
+        .icon-check {
+            color: #4ade80;
+        }
+
+        .icon-warning {
+            color: #fbbf24;
+        }
+
+        .button {
+            display: inline-block;
+            background: white;
+            color: #0600f7;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            margin-top: 3rem;
+            opacity: 0.6;
+            font-size: 0.9rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">GLEC</div>
+        <h1>배포 진행 중</h1>
+        <p>GLEC 웹사이트가 Cloudflare Pages에 배포되고 있습니다.<br>곧 정식 서비스로 만나보실 수 있습니다.</p>
+
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">Cloudflare Pages</span>
+                <span class="status-value icon-check">✓ 프로젝트 생성됨</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">GitHub Repository</span>
+                <span class="status-value icon-check">✓ 연결됨</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Build Status</span>
+                <span class="status-value icon-warning loading">⏳ 빌드 중...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Deployment</span>
+                <span class="status-value icon-warning">⏳ 대기 중</span>
+            </div>
+        </div>
+
+        <a href="https://github.com/glecdev/website" class="button" target="_blank">
+            GitHub 저장소 보기
+        </a>
+
+        <div class="footer">
+            <p>© 2025 GLEC. All rights reserved.<br>
+            Powered by Cloudflare Pages</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh every 30 seconds to check deployment status
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "title": "Manual Test Popup",
+  "content": "Test content",
+  "displayType": "modal",
+  "isActive": true,
+  "position": "center",
+  "width": 500,
+  "height": 400,
+  "zIndex": 1001,
+  "showOnce": false
+}

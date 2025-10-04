@@ -1,0 +1,2862 @@
+{
+  "config": {
+    "configFile": "D:\\GLEC-Website\\glec-website\\playwright.config.ts",
+    "rootDir": "D:/GLEC-Website/glec-website/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 8
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "D:/GLEC-Website/glec-website/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 8
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "D:/GLEC-Website/glec-website/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/GLEC-Website/glec-website/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 8
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "D:/GLEC-Website/glec-website/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/GLEC-Website/glec-website/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 8
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "D:/GLEC-Website/glec-website/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/GLEC-Website/glec-website/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 8
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "D:/GLEC-Website/glec-website/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/GLEC-Website/glec-website/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 8
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "D:/GLEC-Website/glec-website/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/GLEC-Website/glec-website/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 8
+        },
+        "id": "iPad",
+        "name": "iPad",
+        "testDir": "D:/GLEC-Website/glec-website/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.1",
+    "workers": 8,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "admin\\login.spec.ts",
+      "file": "admin/login.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Admin Login Flow",
+          "file": "admin/login.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display login form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3303,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:08.257Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "548b3410af1c1c4329a4-ee1ced308c976b4b249a",
+              "file": "admin/login.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 16833,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\login.spec.ts:30:24",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\login.spec.ts",
+                          "column": 24,
+                          "line": 30
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m\n \u001b[90m 29 |\u001b[39m     \u001b[90m// Dashboard로 리다이렉션 확인 (최대 10초 대기)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m\n \u001b[90m 32 |\u001b[39m     \u001b[90m// 환영 메시지 확인\u001b[39m\n \u001b[90m 33 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=관리자 대시보드'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\login.spec.ts",
+                            "column": 24,
+                            "line": 30
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n  28 |\n  29 |     // Dashboard로 리다이렉션 확인 (최대 10초 대기)\n> 30 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  31 |\n  32 |     // 환영 메시지 확인\n  33 |     await expect(page.locator('text=관리자 대시보드')).toBeVisible();\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\login.spec.ts:30:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:08.323Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-login-Admin-Login-Fl-df55c-ully-with-valid-credentials-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-login-Admin-Login-Fl-df55c-ully-with-valid-credentials-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-login-Admin-Login-Fl-df55c-ully-with-valid-credentials-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\login.spec.ts",
+                        "column": 24,
+                        "line": 30
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "548b3410af1c1c4329a4-5430ff5e8b05780c8876",
+              "file": "admin/login.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "should show validation errors for empty fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 6276,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:08.418Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "548b3410af1c1c4329a4-e4ddc4e6ed4d9b97a292",
+              "file": "admin/login.spec.ts",
+              "line": 36,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "admin\\notices-crud.spec.ts",
+      "file": "admin/notices-crud.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Admin Notices CRUD",
+          "file": "admin/notices-crud.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display notices list",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 22572,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:14:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display notices list'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display notices list', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:14:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:08.510Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-cff0c-should-display-notices-list-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-cff0c-should-display-notices-list-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-cff0c-should-display-notices-list-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a0ee5807fd1313629ac5-8c94f05e087421875cb2",
+              "file": "admin/notices-crud.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "should create new notice",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 22147,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:36:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display notices list'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display notices list', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:36:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:08.627Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-45332-UD-should-create-new-notice-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-45332-UD-should-create-new-notice-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-45332-UD-should-create-new-notice-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a0ee5807fd1313629ac5-590605f7915a41731381",
+              "file": "admin/notices-crud.spec.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "should view notice detail",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 21931,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:90:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display notices list'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display notices list', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:90:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:08.904Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-c8154-D-should-view-notice-detail-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-c8154-D-should-view-notice-detail-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-c8154-D-should-view-notice-detail-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a0ee5807fd1313629ac5-5d9526ed01983a952023",
+              "file": "admin/notices-crud.spec.ts",
+              "line": 89,
+              "column": 7
+            },
+            {
+              "title": "should edit existing notice",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "failed",
+                      "duration": 21785,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:108:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display notices list'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display notices list', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:108:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:09.051Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-ae5c0-should-edit-existing-notice-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-ae5c0-should-edit-existing-notice-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-N-ae5c0-should-edit-existing-notice-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a0ee5807fd1313629ac5-9f8f30546e475e922a7f",
+              "file": "admin/notices-crud.spec.ts",
+              "line": 107,
+              "column": 7
+            },
+            {
+              "title": "should delete notice",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "failed",
+                      "duration": 21680,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:135:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display notices list'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display notices list', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts:135:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:09.105Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-Notices-CRUD-should-delete-notice-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-Notices-CRUD-should-delete-notice-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-notices-crud-Admin-Notices-CRUD-should-delete-notice-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\notices-crud.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a0ee5807fd1313629ac5-08416d5a9752832a13e9",
+              "file": "admin/notices-crud.spec.ts",
+              "line": 134,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "admin\\tiptap-editor.spec.ts",
+      "file": "admin/tiptap-editor.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "TipTap WYSIWYG Editor",
+          "file": "admin/tiptap-editor.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display TipTap editor with toolbar",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 22292,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:14:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display TipTap editor with toolbar'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display TipTap editor with toolbar', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:14:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:12.224Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-c5b71--TipTap-editor-with-toolbar-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-c5b71--TipTap-editor-with-toolbar-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-c5b71--TipTap-editor-with-toolbar-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b8952455521e7534760b-4f3ff69b0a70bc879fd0",
+              "file": "admin/tiptap-editor.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "should apply bold formatting",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 19606,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:26:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display TipTap editor with toolbar'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display TipTap editor with toolbar', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:26:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:15.727Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-d78f1-hould-apply-bold-formatting-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-d78f1-hould-apply-bold-formatting-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-d78f1-hould-apply-bold-formatting-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b8952455521e7534760b-e6071742a94f2318751b",
+              "file": "admin/tiptap-editor.spec.ts",
+              "line": 25,
+              "column": 7
+            },
+            {
+              "title": "should apply italic formatting",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 13709,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:46:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display TipTap editor with toolbar'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display TipTap editor with toolbar', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:46:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:28.039Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-40ac7-uld-apply-italic-formatting-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-40ac7-uld-apply-italic-formatting-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-40ac7-uld-apply-italic-formatting-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b8952455521e7534760b-a8954ff57fd5375fa699",
+              "file": "admin/tiptap-editor.spec.ts",
+              "line": 45,
+              "column": 7
+            },
+            {
+              "title": "should create headings",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 15858,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:66:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display TipTap editor with toolbar'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display TipTap editor with toolbar', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:66:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:36.031Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-ce254-itor-should-create-headings-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-ce254-itor-should-create-headings-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-ce254-itor-should-create-headings-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b8952455521e7534760b-7309c0f78505edf37457",
+              "file": "admin/tiptap-editor.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "should create bullet list",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 18025,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:94:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display TipTap editor with toolbar'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display TipTap editor with toolbar', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:94:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:36.271Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-4a96e-r-should-create-bullet-list-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-4a96e-r-should-create-bullet-list-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-4a96e-r-should-create-bullet-list-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b8952455521e7534760b-4903c6554399ef976889",
+              "file": "admin/tiptap-editor.spec.ts",
+              "line": 93,
+              "column": 7
+            },
+            {
+              "title": "should create ordered list",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 7,
+                      "status": "failed",
+                      "duration": 17926,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:121:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display TipTap editor with toolbar'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display TipTap editor with toolbar', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:121:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:36.262Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-3a9a5--should-create-ordered-list-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-3a9a5--should-create-ordered-list-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-3a9a5--should-create-ordered-list-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b8952455521e7534760b-4d373ac43230d4ff4271",
+              "file": "admin/tiptap-editor.spec.ts",
+              "line": 120,
+              "column": 7
+            },
+            {
+              "title": "should persist formatted content on save",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 18271,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:148:5",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                          "column": 24,
+                          "line": 10
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'admin123!'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'form button[type=\"submit\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m'http://localhost:3002/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   }\n \u001b[90m 12 |\u001b[39m\n \u001b[90m 13 |\u001b[39m   test(\u001b[32m'should display TipTap editor with toolbar'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                            "column": 24,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected string: \u001b[32m\"http://localhost:3002/admin/\u001b[7mdashboard\u001b[27m\"\u001b[39m\nReceived string: \u001b[31m\"http://localhost:3002/admin/\u001b[7mlogin?email=admin%40glec.io&password=admin123%21\u001b[27m\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    13 × unexpected value \"http://localhost:3002/admin/login?email=admin%40glec.io&password=admin123%21\"\u001b[22m\n\n\n   8 |     await page.fill('input[name=\"password\"]', 'admin123!');\n   9 |     await page.locator('form button[type=\"submit\"]').first().click();\n> 10 |     await expect(page).toHaveURL('http://localhost:3002/admin/dashboard', { timeout: 10000 });\n     |                        ^\n  11 |   }\n  12 |\n  13 |   test('should display TipTap editor with toolbar', async ({ page }) => {\n    at login (D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:10:24)\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts:148:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:36.438Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-37ac0-t-formatted-content-on-save-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-37ac0-t-formatted-content-on-save-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\admin-tiptap-editor-TipTap-37ac0-t-formatted-content-on-save-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\admin\\tiptap-editor.spec.ts",
+                        "column": 24,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b8952455521e7534760b-ef0dc9a43f41792fc174",
+              "file": "admin/tiptap-editor.spec.ts",
+              "line": 147,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "carbon-api-page.spec.ts",
+      "file": "carbon-api-page.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Carbon API Product Page",
+          "file": "carbon-api-page.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display hero section with correct content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 4964,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:36.372Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-c110625338d490329ee9",
+              "file": "carbon-api-page.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "should display pricing information",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4393,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:38.675Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-c6c5d18c844ecff02aaf",
+              "file": "carbon-api-page.spec.ts",
+              "line": 26,
+              "column": 7
+            },
+            {
+              "title": "should display 48 API endpoints overview",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 4015,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:39.693Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-048ba3ff526766e83039",
+              "file": "carbon-api-page.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "should display all 5 transport modes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 2679,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:42.196Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-1c422c629c4d5853d4ea",
+              "file": "carbon-api-page.spec.ts",
+              "line": 45,
+              "column": 7
+            },
+            {
+              "title": "should display key features section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 1408,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:44.990Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-b28de5f55abc669a7424",
+              "file": "carbon-api-page.spec.ts",
+              "line": 68,
+              "column": 7
+            },
+            {
+              "title": "should display API documentation preview with code examples",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2671,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:43.667Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-64f3e462b28dc7883bfd",
+              "file": "carbon-api-page.spec.ts",
+              "line": 84,
+              "column": 7
+            },
+            {
+              "title": "should display benefits section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 1248,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:44.467Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-dd9c7bc84b3fe6404dde",
+              "file": "carbon-api-page.spec.ts",
+              "line": 105,
+              "column": 7
+            },
+            {
+              "title": "should display CTA section with free trial offer",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 1266,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:44.918Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-d22f6ae1b9bde71c6dac",
+              "file": "carbon-api-page.spec.ts",
+              "line": 125,
+              "column": 7
+            },
+            {
+              "title": "should have correct SEO metadata",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 1201,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:45.749Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-738cca9479a42ecab55b",
+              "file": "carbon-api-page.spec.ts",
+              "line": 144,
+              "column": 7
+            },
+            {
+              "title": "should navigate to demo section when clicking demo button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 1722,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:46.211Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-68c80c7fae9959d0a2dc",
+              "file": "carbon-api-page.spec.ts",
+              "line": 154,
+              "column": 7
+            },
+            {
+              "title": "should display API endpoint examples with proper formatting",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1250,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:46.365Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-72de4e7a211174ce05a6",
+              "file": "carbon-api-page.spec.ts",
+              "line": 167,
+              "column": 7
+            },
+            {
+              "title": "should be responsive on mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 1258,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:46.768Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-1b79feee377142979029",
+              "file": "carbon-api-page.spec.ts",
+              "line": 177,
+              "column": 7
+            },
+            {
+              "title": "should be responsive on tablet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 1291,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:46.973Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95b42caa92f49b41ee2c-5268f66281b9b4a4045e",
+              "file": "carbon-api-page.spec.ts",
+              "line": 194,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "cloud-page.spec.ts",
+      "file": "cloud-page.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "GLEC Cloud Product Page",
+          "file": "cloud-page.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display hero section with correct content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1083,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:47.649Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-02d8aa62f659364248c6",
+              "file": "cloud-page.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "should display all 3 pricing tiers",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 1323,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:47.977Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-0bf96fb45212522a276b",
+              "file": "cloud-page.spec.ts",
+              "line": 26,
+              "column": 7
+            },
+            {
+              "title": "should highlight Pro tier as featured",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 1406,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:48.078Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-1b28362287401cf38400",
+              "file": "cloud-page.spec.ts",
+              "line": 46,
+              "column": 7
+            },
+            {
+              "title": "should display all 6 key features",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 1440,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:48.303Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-10c3a6d7963d1f928f57",
+              "file": "cloud-page.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "should display dashboard preview section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1268,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:48.765Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-e0bd3839f07b786d0999",
+              "file": "cloud-page.spec.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "should display integration ecosystem section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 1329,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:49.322Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-10b6f0404516492f7c80",
+              "file": "cloud-page.spec.ts",
+              "line": 87,
+              "column": 7
+            },
+            {
+              "title": "should display benefits section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 1710,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:49.522Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-a1750e6a329a17a85ad8",
+              "file": "cloud-page.spec.ts",
+              "line": 106,
+              "column": 7
+            },
+            {
+              "title": "should display customer results",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 2295,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:49.774Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-d3cbbecf4d51b492d1f5",
+              "file": "cloud-page.spec.ts",
+              "line": 122,
+              "column": 7
+            },
+            {
+              "title": "should display CTA section with free trial",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1762,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:50.059Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-d43a9f1707c43e41562c",
+              "file": "cloud-page.spec.ts",
+              "line": 139,
+              "column": 7
+            },
+            {
+              "title": "should have correct SEO metadata",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 1843,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:50.672Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-f8745ec73ffc5bfb17d4",
+              "file": "cloud-page.spec.ts",
+              "line": 159,
+              "column": 7
+            },
+            {
+              "title": "should navigate to pricing section when clicking pricing button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2668,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:51.265Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-7f4b787599662b00b07d",
+              "file": "cloud-page.spec.ts",
+              "line": 169,
+              "column": 7
+            },
+            {
+              "title": "should display pricing tier CTAs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1855,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:51.854Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-f533ff4079183948f357",
+              "file": "cloud-page.spec.ts",
+              "line": 182,
+              "column": 7
+            },
+            {
+              "title": "should display Basic tier features",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 2376,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:52.109Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-bfd8b883d315e98ffed8",
+              "file": "cloud-page.spec.ts",
+              "line": 195,
+              "column": 7
+            },
+            {
+              "title": "should display Pro tier features",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 3065,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:52.544Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-8e40e1b843ef4e6fcb84",
+              "file": "cloud-page.spec.ts",
+              "line": 205,
+              "column": 7
+            },
+            {
+              "title": "should display Enterprise tier features",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 2082,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:59.390Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-79ab8920d416c34383b3",
+              "file": "cloud-page.spec.ts",
+              "line": 215,
+              "column": 7
+            },
+            {
+              "title": "should be responsive on mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2620,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:53.748Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-f35481aaab2b0a6396a2",
+              "file": "cloud-page.spec.ts",
+              "line": 226,
+              "column": 7
+            },
+            {
+              "title": "should be responsive on tablet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3448,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:53.980Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "eb5dba92e1f6f4a2454e-5964d2b8d51893a8f3e7",
+              "file": "cloud-page.spec.ts",
+              "line": 244,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "homepage.spec.ts",
+      "file": "homepage.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Homepage",
+          "file": "homepage.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display hero section with CTA buttons",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 2138,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:54.534Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "84e7eb052e8cbae1c9f0-e7d48c3eb1618e14e00f",
+              "file": "homepage.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should have responsive navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 1915,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:55.651Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "84e7eb052e8cbae1c9f0-287dfbbc60009372b3a2",
+              "file": "homepage.spec.ts",
+              "line": 15,
+              "column": 7
+            },
+            {
+              "title": "should display features section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 18,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 1852,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:11:02.574Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "84e7eb052e8cbae1c9f0-c28bd4d66c0f137fe5b1",
+              "file": "homepage.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "should have footer with links",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3956,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:56.467Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "84e7eb052e8cbae1c9f0-5a34a73f63236dbf2406",
+              "file": "homepage.spec.ts",
+              "line": 42,
+              "column": 7
+            },
+            {
+              "title": "should be accessible (WCAG 2.1 AA)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3783,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:56.727Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "84e7eb052e8cbae1c9f0-7b0619bb785823465d36",
+              "file": "homepage.spec.ts",
+              "line": 56,
+              "column": 7
+            },
+            {
+              "title": "should load within 3 seconds",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 19,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 1978,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:11:02.796Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "84e7eb052e8cbae1c9f0-4477d3979741817345f2",
+              "file": "homepage.spec.ts",
+              "line": 81,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "screenshots.spec.ts",
+      "file": "screenshots.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Homepage Screenshots",
+          "file": "screenshots.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should capture mobile screenshots",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 18736,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:57.501Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "677a4938ef65bfc6a6e5-1df7db258d3d162c6230",
+              "file": "screenshots.spec.ts",
+              "line": 19,
+              "column": 9
+            },
+            {
+              "title": "should capture tablet screenshots",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 25084,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:10:57.730Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "677a4938ef65bfc6a6e5-9f55162a30c1961fa394",
+              "file": "screenshots.spec.ts",
+              "line": 19,
+              "column": 9
+            },
+            {
+              "title": "should capture desktop screenshots",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 20,
+                      "parallelIndex": 3,
+                      "status": "timedOut",
+                      "duration": 30412,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\screenshots.spec.ts",
+                            "column": 18,
+                            "line": 112
+                          },
+                          "message": "Error: page.waitForTimeout: Test timeout of 30000ms exceeded.\n\n  110 |       const ctaSection = page.getByRole('region', { name: '무료 상담 신청 섹션' });\n  111 |       await ctaSection.scrollIntoViewIfNeeded();\n> 112 |       await page.waitForTimeout(1000);\n      |                  ^\n  113 |       await ctaSection.screenshot({\n  114 |         path: `tests/screenshots/footer-cta-${viewport.name}.png`,\n  115 |       });\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\screenshots.spec.ts:112:18"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:11:03.313Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\screenshots-Homepage-Scree-fb65c-capture-desktop-screenshots-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\screenshots-Homepage-Scree-fb65c-capture-desktop-screenshots-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\screenshots-Homepage-Scree-fb65c-capture-desktop-screenshots-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "677a4938ef65bfc6a6e5-1941bb23ad9432bbc06e",
+              "file": "screenshots.spec.ts",
+              "line": 19,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "site-crawler.spec.ts",
+      "file": "site-crawler.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Site Crawler - 전체 사이트 검증",
+          "file": "site-crawler.spec.ts",
+          "line": 19,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should crawl all public pages and find 404/500 errors",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 25504,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"error\": \"page.goto: Timeout 10000ms exceeded.\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - navigating to \\\"http://localhost:3004/\\\", waiting until \\\"networkidle\\\"\u001b[22m\u001b[39m\n\u001b[31m\", \"url\": \"http://localhost:3004/\"}]\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"error\": \"page.goto: Timeout 10000ms exceeded.\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - navigating to \\\"http://localhost:3004/\\\", waiting until \\\"networkidle\\\"\u001b[22m\u001b[39m\n\u001b[31m\", \"url\": \"http://localhost:3004/\"}]\u001b[39m\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\site-crawler.spec.ts:98:20",
+                        "location": {
+                          "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\site-crawler.spec.ts",
+                          "column": 20,
+                          "line": 98
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  96 |\u001b[39m\n \u001b[90m  97 |\u001b[39m     \u001b[90m// 에러가 없어야 성공\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  98 |\u001b[39m     expect(errors)\u001b[33m.\u001b[39mtoHaveLength(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  99 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 100 |\u001b[39m\n \u001b[90m 101 |\u001b[39m   test(\u001b[32m'should test all buttons on admin portal'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\site-crawler.spec.ts",
+                            "column": 20,
+                            "line": 98
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"error\": \"page.goto: Timeout 10000ms exceeded.\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - navigating to \\\"http://localhost:3004/\\\", waiting until \\\"networkidle\\\"\u001b[22m\u001b[39m\n\u001b[31m\", \"url\": \"http://localhost:3004/\"}]\u001b[39m\n\n   96 |\n   97 |     // 에러가 없어야 성공\n>  98 |     expect(errors).toHaveLength(0);\n      |                    ^\n   99 |   });\n  100 |\n  101 |   test('should test all buttons on admin portal', async ({ page }) => {\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\site-crawler.spec.ts:98:20"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "[1/50] Crawling: http://localhost:3004/\n"
+                        },
+                        {
+                          "text": "\n=== Crawl Results ===\n"
+                        },
+                        {
+                          "text": "Total pages crawled: 1\n"
+                        },
+                        {
+                          "text": "Errors found: 1\n"
+                        },
+                        {
+                          "text": "\n=== Errors ===\n"
+                        },
+                        {
+                          "text": "❌ http://localhost:3004/: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3004/\", waiting until \"networkidle\"\u001b[22m\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:11:00.519Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\site-crawler-Site-Crawler--8b607-ges-and-find-404-500-errors-chromium\\video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\site-crawler.spec.ts",
+                        "column": 20,
+                        "line": 98
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae19bf33ca52beca987e-5117d22c47321634cd0d",
+              "file": "site-crawler.spec.ts",
+              "line": 20,
+              "column": 7
+            },
+            {
+              "title": "should test all buttons on admin portal",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "timedOut",
+                      "duration": 48142,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\site-crawler.spec.ts",
+                            "column": 16,
+                            "line": 105
+                          },
+                          "message": "TimeoutError: page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3004/admin/login\", waiting until \"load\"\u001b[22m\n\n\n  103 |\n  104 |     // Admin 로그인\n> 105 |     await page.goto(`${baseUrl}/admin/login`);\n      |                ^\n  106 |     await page.fill('input[name=\"email\"]', 'admin@glec.io');\n  107 |     await page.fill('input[name=\"password\"]', 'admin123!');\n  108 |     await page.locator('form button[type=\"submit\"]').first().click();\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\site-crawler.spec.ts:105:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:11:00.567Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\site-crawler-Site-Crawler--e42d6-all-buttons-on-admin-portal-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae19bf33ca52beca987e-ffa4d935cb7805fcd568",
+              "file": "site-crawler.spec.ts",
+              "line": 101,
+              "column": 7
+            },
+            {
+              "title": "should test all clickable elements on homepage",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 4,
+                      "status": "timedOut",
+                      "duration": 47221,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "D:\\GLEC-Website\\glec-website\\tests\\e2e\\site-crawler.spec.ts",
+                            "column": 16,
+                            "line": 164
+                          },
+                          "message": "TimeoutError: page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3004/\", waiting until \"load\"\u001b[22m\n\n\n  162 |     const baseUrl = process.env.BASE_URL || 'http://localhost:3004';\n  163 |\n> 164 |     await page.goto(`${baseUrl}/`);\n      |                ^\n  165 |\n  166 |     const errors: Array<{ element: string; error: string }> = [];\n  167 |\n    at D:\\GLEC-Website\\glec-website\\tests\\e2e\\site-crawler.spec.ts:164:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-02T16:11:02.629Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\GLEC-Website\\glec-website\\test-results\\site-crawler-Site-Crawler--8a744-ckable-elements-on-homepage-chromium\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ae19bf33ca52beca987e-941a19ac0c626002cdec",
+              "file": "site-crawler.spec.ts",
+              "line": 161,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-10-02T16:10:04.436Z",
+    "duration": 105549.544,
+    "expected": 40,
+    "skipped": 0,
+    "unexpected": 17,
+    "flaky": 0
+  }
+}

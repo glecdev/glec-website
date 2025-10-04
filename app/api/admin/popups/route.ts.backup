@@ -1,0 +1,217 @@
+/**
+ * Admin Popups API Route
+ *
+ * Purpose: 팝업 관리 (생성, 조회, 수정, 삭제, 순서 변경)
+ * Auth: JWT required
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+
+interface Popup {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  linkText: string | null;
+  isActive: boolean;
+  zIndex: number;
+  displayType: 'modal' | 'banner' | 'corner';
+  position: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  width: number;
+  height: number;
+  showOnce: boolean;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Mock in-memory storage
+let POPUPS: Popup[] = [
+  {
+    id: '1',
+    title: 'GLEC DTG Series5 출시 🎉',
+    content: '<p>새로운 <strong>GLEC DTG Series5</strong>가 출시되었습니다!</p><p>지금 바로 확인하세요.</p>',
+    imageUrl: null, // 이미지 파일 없음 (404 방지)
+    linkUrl: '/dtg',
+    linkText: '자세히 보기',
+    isActive: true,
+    zIndex: 1000,
+    displayType: 'modal',
+    position: 'center',
+    width: 500,
+    height: 600,
+    showOnce: true,
+    startDate: '2025-01-01T00:00:00Z',
+    endDate: '2025-12-31T23:59:59Z',
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+  },
+];
+
+// GET - 모든 팝업 조회 (관리자용)
+export async function GET(request: NextRequest) {
+  try {
+    // TODO: JWT 인증 체크
+    // const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+
+    // z-index 순서대로 정렬
+    const sortedPopups = [...POPUPS].sort((a, b) => b.zIndex - a.zIndex);
+
+    return NextResponse.json({
+      success: true,
+      data: sortedPopups,
+      meta: {
+        total: sortedPopups.length,
+      },
+    });
+  } catch (error) {
+    console.error('[GET /api/admin/popups] Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: '팝업 조회에 실패했습니다.' },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - 팝업 생성
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const newPopup: Popup = {
+      id: Date.now().toString(),
+      title: body.title,
+      content: body.content,
+      imageUrl: body.imageUrl || null,
+      linkUrl: body.linkUrl || null,
+      linkText: body.linkText || null,
+      isActive: body.isActive ?? true,
+      zIndex: body.zIndex ?? 1000,
+      displayType: body.displayType || 'modal',
+      position: body.position || 'center',
+      width: body.width || 500,
+      height: body.height || 600,
+      showOnce: body.showOnce ?? false,
+      startDate: body.startDate,
+      endDate: body.endDate,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    POPUPS.push(newPopup);
+
+    console.log('[POST /api/admin/popups] Created popup:', {
+      id: newPopup.id,
+      title: newPopup.title,
+      displayType: newPopup.displayType,
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: newPopup,
+    }, { status: 201 });
+  } catch (error) {
+    console.error('[POST /api/admin/popups] Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: '팝업 생성에 실패했습니다.' },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT - 팝업 수정
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id } = body;
+
+    const index = POPUPS.findIndex((p) => p.id === id);
+    if (index === -1) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'NOT_FOUND', message: '팝업을 찾을 수 없습니다.' },
+        },
+        { status: 404 }
+      );
+    }
+
+    POPUPS[index] = {
+      ...POPUPS[index],
+      ...body,
+      id, // ID는 변경 불가
+      updatedAt: new Date().toISOString(),
+    };
+
+    console.log('[PUT /api/admin/popups] Updated popup:', { id, title: POPUPS[index].title });
+
+    return NextResponse.json({
+      success: true,
+      data: POPUPS[index],
+    });
+  } catch (error) {
+    console.error('[PUT /api/admin/popups] Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: '팝업 수정에 실패했습니다.' },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - 팝업 삭제
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'BAD_REQUEST', message: 'ID가 필요합니다.' },
+        },
+        { status: 400 }
+      );
+    }
+
+    const index = POPUPS.findIndex((p) => p.id === id);
+    if (index === -1) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'NOT_FOUND', message: '팝업을 찾을 수 없습니다.' },
+        },
+        { status: 404 }
+      );
+    }
+
+    const deleted = POPUPS.splice(index, 1)[0];
+
+    console.log('[DELETE /api/admin/popups] Deleted popup:', { id, title: deleted.title });
+
+    return NextResponse.json({
+      success: true,
+      data: deleted,
+    });
+  } catch (error) {
+    console.error('[DELETE /api/admin/popups] Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'INTERNAL_SERVER_ERROR', message: '팝업 삭제에 실패했습니다.' },
+      },
+      { status: 500 }
+    );
+  }
+}

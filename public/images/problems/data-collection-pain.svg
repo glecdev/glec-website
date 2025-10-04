@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Data collection pain point illustration">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f9fafb"/>
+
+  <!-- Icon: Database with warning -->
+  <g transform="translate(400, 200)">
+    <!-- Database -->
+    <ellipse cx="0" cy="-60" rx="80" ry="20" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+    <rect x="-80" y="-60" width="160" height="100" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+    <ellipse cx="0" cy="40" rx="80" ry="20" fill="#d1d5db" stroke="#9ca3af" stroke-width="2"/>
+
+    <!-- Warning icon -->
+    <circle cx="60" cy="-40" r="25" fill="#ef4444"/>
+    <text x="60" y="-30" font-size="30" font-weight="bold" fill="white" text-anchor="middle">!</text>
+  </g>
+
+  <!-- Title -->
+  <text x="400" y="380" font-size="24" font-weight="bold" fill="#1f2937" text-anchor="middle">데이터 수집의 어려움</text>
+
+  <!-- Description -->
+  <text x="400" y="420" font-size="16" fill="#6b7280" text-anchor="middle">수작업 데이터 입력으로 인한 시간 낭비</text>
+
+  <!-- GLEC Watermark -->
+  <text x="400" y="560" font-size="12" fill="#9ca3af" text-anchor="middle">GLEC - ISO-14083 표준 물류 탄소배출 측정</text>
+</svg>

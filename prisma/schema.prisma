@@ -1,0 +1,290 @@
+// GLEC Website Database Schema
+// Version: 1.0.0
+// Database: Neon PostgreSQL (Serverless)
+// Based on: GLEC-API-Specification.yaml
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  SUPER_ADMIN
+  CONTENT_MANAGER
+  ANALYST
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum NoticeCategory {
+  GENERAL
+  PRODUCT
+  EVENT
+  PRESS
+}
+
+enum ContactInquiryType {
+  PRODUCT
+  PARTNERSHIP
+  SUPPORT
+  GENERAL
+}
+
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  COMPLETED
+  SPAM
+}
+
+enum NewsletterStatus {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+// ============================================================
+// USER MODEL
+// ============================================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  passwordHash  String    @map("password_hash")
+  role          UserRole  @default(CONTENT_MANAGER)
+  phone         String?
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  notices       Notice[]
+  presses       Press[]
+  videos        Video[]
+  blogs         Blog[]
+  libraries     Library[]
+  mediaUploads  Media[]   @relation("MediaUploader")
+  assignedContacts Contact[] @relation("AssignedTo")
+
+  @@map("users")
+}
+
+// ============================================================
+// CONTENT MODELS
+// ============================================================
+
+model Notice {
+  id            String         @id @default(uuid())
+  title         String
+  slug          String         @unique
+  content       String         @db.Text
+  excerpt       String?
+  status        ContentStatus  @default(DRAFT)
+  category      NoticeCategory @default(GENERAL)
+  thumbnailUrl  String?        @map("thumbnail_url")
+  viewCount     Int            @default(0) @map("view_count")
+  publishedAt   DateTime?      @map("published_at")
+
+  // Relations
+  authorId      String         @map("author_id")
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([category, status])
+  @@map("notices")
+}
+
+model Press {
+  id            String        @id @default(uuid())
+  title         String
+  slug          String        @unique
+  content       String        @db.Text
+  excerpt       String?
+  status        ContentStatus @default(DRAFT)
+  thumbnailUrl  String?       @map("thumbnail_url")
+  mediaOutlet   String?       @map("media_outlet") // 언론사
+  externalUrl   String?       @map("external_url") // 원문 링크
+  viewCount     Int           @default(0) @map("view_count")
+  publishedAt   DateTime?     @map("published_at")
+
+  // Relations
+  authorId      String        @map("author_id")
+  author        User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([status, publishedAt(sort: Desc)])
+  @@map("presses")
+}
+
+model Video {
+  id              String        @id @default(uuid())
+  title           String
+  slug            String        @unique
+  description     String?       @db.Text
+  youtubeUrl      String        @map("youtube_url")
+  youtubeVideoId  String        @map("youtube_video_id")
+  thumbnailUrl    String        @map("thumbnail_url") // OpenGraph image
+  channelName     String?       @map("channel_name")
+  duration        String?       // e.g., "5:32"
+  viewCount       Int           @default(0) @map("view_count")
+  status          ContentStatus @default(DRAFT)
+  tab             String        @default("전체") // 전체, 글렉, 팟캐스트
+  publishedAt     DateTime?     @map("published_at")
+
+  // Relations
+  authorId        String        @map("author_id")
+  author          User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([status, tab, publishedAt(sort: Desc)])
+  @@map("videos")
+}
+
+model Blog {
+  id            String        @id @default(uuid())
+  title         String
+  slug          String        @unique
+  content       String        @db.Text
+  excerpt       String?
+  status        ContentStatus @default(DRAFT)
+  thumbnailUrl  String?       @map("thumbnail_url")
+  tags          String[]      @default([])
+  viewCount     Int           @default(0) @map("view_count")
+  readingTime   Int?          @map("reading_time") // minutes
+  publishedAt   DateTime?     @map("published_at")
+
+  // Relations
+  authorId      String        @map("author_id")
+  author        User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([tags])
+  @@map("blogs")
+}
+
+model Library {
+  id            String        @id @default(uuid())
+  title         String
+  slug          String        @unique
+  description   String?       @db.Text
+  category      String        // 산업 리포트, 백서, 케이스 스터디, 기술 문서
+  thumbnailUrl  String?       @map("thumbnail_url")
+  fileUrl       String?       @map("file_url") // Gated content - null until requested
+  fileSize      String?       @map("file_size") // e.g., "2.5MB"
+  pageCount     Int?          @map("page_count")
+  isGated       Boolean       @default(true) @map("is_gated") // true = 열람 신청 필요
+  downloadCount Int           @default(0) @map("download_count")
+  status        ContentStatus @default(DRAFT)
+  publishedAt   DateTime?     @map("published_at")
+
+  // Relations
+  authorId      String        @map("author_id")
+  author        User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([category])
+  @@map("libraries")
+}
+
+// ============================================================
+// CONTACT & NEWSLETTER
+// ============================================================
+
+model Contact {
+  id              String              @id @default(uuid())
+  companyName     String              @map("company_name")
+  contactName     String              @map("contact_name")
+  email           String
+  phone           String
+  inquiryType     ContactInquiryType  @map("inquiry_type")
+  message         String              @db.Text
+  privacyConsent  Boolean             @map("privacy_consent")
+  status          ContactStatus       @default(NEW)
+  ipAddress       String?             @map("ip_address")
+  notes           String?             @db.Text // 관리자 메모
+
+  // Relations
+  assignedToId    String?             @map("assigned_to_id")
+  assignedTo      User?               @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([email])
+  @@map("contacts")
+}
+
+model NewsletterSubscription {
+  id                String            @id @default(uuid())
+  email             String            @unique
+  status            NewsletterStatus  @default(ACTIVE)
+  verificationToken String?           @map("verification_token")
+  verifiedAt        DateTime?         @map("verified_at")
+  unsubscribedAt    DateTime?         @map("unsubscribed_at")
+
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([status])
+  @@map("newsletter_subscriptions")
+}
+
+// ============================================================
+// MEDIA
+// ============================================================
+
+model Media {
+  id                String   @id @default(uuid())
+  filename          String
+  originalFilename  String   @map("original_filename")
+  url               String
+  mimeType          String   @map("mime_type")
+  sizeBytes         Int      @map("size_bytes")
+  width             Int?
+  height            Int?
+  altText           String?  @map("alt_text")
+
+  // Relations
+  uploadedById      String   @map("uploaded_by_id")
+  uploadedBy        User     @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([mimeType])
+  @@index([createdAt(sort: Desc)])
+  @@map("media")
+}

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Customer pressure pain point illustration">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f9fafb"/>
+
+  <!-- Icon: Multiple demand arrows -->
+  <g transform="translate(400, 250)">
+    <!-- Center circle (company) -->
+    <circle cx="0" cy="0" r="50" fill="#0600f7" opacity="0.2" stroke="#0600f7" stroke-width="3"/>
+    <text x="0" y="10" font-size="20" font-weight="bold" fill="#0600f7" text-anchor="middle">회사</text>
+
+    <!-- Pressure arrows -->
+    <g id="arrow1" transform="rotate(-45)">
+      <line x1="80" y1="0" x2="140" y2="0" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      <polygon points="140,0 130,-8 130,8" fill="#ef4444"/>
+    </g>
+
+    <g id="arrow2" transform="rotate(45)">
+      <line x1="80" y1="0" x2="140" y2="0" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      <polygon points="140,0 130,-8 130,8" fill="#ef4444"/>
+    </g>
+
+    <g id="arrow3" transform="rotate(135)">
+      <line x1="80" y1="0" x2="140" y2="0" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      <polygon points="140,0 130,-8 130,8" fill="#ef4444"/>
+    </g>
+
+    <g id="arrow4" transform="rotate(225)">
+      <line x1="80" y1="0" x2="140" y2="0" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      <polygon points="140,0 130,-8 130,8" fill="#ef4444"/>
+    </g>
+
+    <!-- Labels -->
+    <text x="0" y="-110" font-size="14" fill="#6b7280" text-anchor="middle">투자자</text>
+    <text x="110" y="10" font-size="14" fill="#6b7280" text-anchor="middle">고객</text>
+    <text x="0" y="130" font-size="14" fill="#6b7280" text-anchor="middle">규제</text>
+    <text x="-110" y="10" font-size="14" fill="#6b7280" text-anchor="middle">경쟁사</text>
+  </g>
+
+  <!-- Title -->
+  <text x="400" y="450" font-size="24" font-weight="bold" fill="#1f2937" text-anchor="middle">ESG 보고 압박</text>
+
+  <!-- Description -->
+  <text x="400" y="490" font-size="16" fill="#6b7280" text-anchor="middle">이해관계자들의 탄소배출 데이터 요구</text>
+
+  <!-- GLEC Watermark -->
+  <text x="400" y="560" font-size="12" fill="#9ca3af" text-anchor="middle">GLEC - ISO-14083 표준 물류 탄소배출 측정</text>
+</svg>
