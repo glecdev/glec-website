@@ -70,7 +70,7 @@ export default function LibraryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <section className="py-16 bg-gradient-to-br from-blue-500 to-blue-700 text-white">
+      <section className="py-16 bg-gradient-to-br from-primary-500 to-navy-900 text-white">
         <div className="container mx-auto px-4">
           <Link href="/knowledge" className="inline-flex items-center text-white/80 hover:text-white mb-4">
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -139,7 +139,7 @@ export default function LibraryPage() {
               {items.map((item) => (
                 <div key={item.id} className="bg-white rounded-lg shadow-sm border hover:shadow-lg transition-shadow">
                   {/* Thumbnail */}
-                  <div className="h-48 bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-lg flex items-center justify-center">
+                  <div className="h-48 bg-gradient-to-br from-primary-50 to-primary-100 rounded-t-lg flex items-center justify-center">
                     <div className="text-6xl">📄</div>
                   </div>
 

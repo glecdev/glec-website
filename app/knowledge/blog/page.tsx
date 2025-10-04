@@ -55,7 +55,7 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <section className="py-16 bg-gradient-to-br from-green-500 to-green-700 text-white">
+      <section className="py-16 bg-gradient-to-br from-primary-500 to-navy-900 text-white">
         <div className="container mx-auto px-4">
           <Link href="/knowledge" className="inline-flex items-center text-white/80 hover:text-white mb-4">
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,7 +100,7 @@ export default function BlogPage() {
                 >
                   <div className="md:flex gap-6 p-6">
                     {/* Thumbnail */}
-                    <div className="md:w-64 h-48 md:h-40 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex-shrink-0 mb-4 md:mb-0 flex items-center justify-center overflow-hidden">
+                    <div className="md:w-64 h-48 md:h-40 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg flex-shrink-0 mb-4 md:mb-0 flex items-center justify-center overflow-hidden">
                       {post.thumbnailUrl ? (
                         <img src={post.thumbnailUrl} alt={post.title} className="w-full h-full object-cover" />
                       ) : (
@@ -111,7 +111,7 @@ export default function BlogPage() {
                     {/* Content */}
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
-                        <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                        <span className="px-3 py-1 bg-primary-100 text-primary-800 text-xs font-semibold rounded-full">
                           {post.category}
                         </span>
                         <span className="text-sm text-gray-500">{post.readTime} 읽기</span>

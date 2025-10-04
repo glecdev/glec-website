@@ -54,7 +54,7 @@ export default function VideosPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <section className="py-16 bg-gradient-to-br from-red-500 to-red-700 text-white">
+      <section className="py-16 bg-gradient-to-br from-primary-500 to-navy-900 text-white">
         <div className="container mx-auto px-4">
           <Link href="/knowledge" className="inline-flex items-center text-white/80 hover:text-white mb-4">
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
