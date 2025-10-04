@@ -11,6 +11,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { useCodeTyping } from '@/hooks/useCodeTyping';
+import { useTypingAnimation } from '@/hooks/useTypingAnimation';
 import { cn } from '@/lib/utils';
 
 type SolutionTab = 'dtg' | 'api' | 'cloud';
@@ -31,6 +32,11 @@ const API_RESPONSE_CODE = `{
 export function SolutionOverviewSection() {
   const [activeTab, setActiveTab] = useState<SolutionTab>('dtg');
   const [showResponse, setShowResponse] = useState(false);
+
+  const { displayedText: headerText } = useTypingAnimation(
+    'DTG 하드웨어부터 API, 클라우드까지\n완벽한 탄소배출 측정 생태계를\n단 하나의 플랫폼으로',
+    50
+  );
 
   const { displayedCode: requestCode, isComplete: requestComplete } = useCodeTyping(
     API_REQUEST_CODE,
@@ -60,11 +66,11 @@ export function SolutionOverviewSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            3가지 솔루션, 하나의 목표
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 whitespace-pre-line">
+            {headerText}
           </h2>
           <p className="text-xl text-gray-600">
-            DTG 하드웨어부터 API, 클라우드까지 완벽한 탄소배출 측정 생태계
+            지입차 데이터 수집부터 국제표준 보고서 생성까지, 모든 과정을 자동화합니다
           </p>
         </div>
 
