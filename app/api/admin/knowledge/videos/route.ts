@@ -103,12 +103,12 @@ export const GET = withAuth(
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-      // Count total using sql.query()
+      // Count total using sql.query() - returns array directly
       const countQuery = `SELECT COUNT(*) as total FROM videos ${whereClause}`;
       const countResult = await sql.query(countQuery, params);
-      const total = parseInt(countResult.rows[0].total, 10);
+      const total = parseInt(countResult[0].total, 10);
 
-      // Get paginated items using sql.query()
+      // Get paginated items using sql.query() - returns array directly
       const offset = (page - 1) * per_page;
       const itemsQuery = `
         SELECT *
@@ -119,10 +119,10 @@ export const GET = withAuth(
       `;
       params.push(per_page, offset);
 
-      const itemsResult = await sql.query(itemsQuery, params);
+      const items = await sql.query(itemsQuery, params);
 
       // Transform to Knowledge Video format
-      const transformedItems = itemsResult.rows.map((item: any) => ({
+      const transformedItems = items.map((item: any) => ({
         id: item.id,
         title: item.title,
         description: item.description || '',
@@ -276,8 +276,8 @@ export const PUT = withAuth(
       const validated = validationResult.data;
 
       // Check if item exists
-      const existingResult = await sql.query('SELECT id FROM videos WHERE id = $1', [id]);
-      if (existingResult.rows.length === 0) {
+      const existing = await sql.query('SELECT id FROM videos WHERE id = $1', [id]);
+      if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Video not found' } },
           { status: 404 }
@@ -325,8 +325,8 @@ export const PUT = withAuth(
       `;
       params.push(id);
 
-      const updatedResult = await sql.query(updateQuery, params);
-      const result = updatedResult.rows[0];
+      const updated = await sql.query(updateQuery, params);
+      const result = updated[0];
 
       return NextResponse.json({
         success: true,
@@ -374,8 +374,8 @@ export const DELETE = withAuth(
       }
 
       // Check if item exists
-      const existingResult = await sql.query('SELECT id FROM videos WHERE id = $1', [id]);
-      if (existingResult.rows.length === 0) {
+      const existing = await sql.query('SELECT id FROM videos WHERE id = $1', [id]);
+      if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Video not found' } },
           { status: 404 }
