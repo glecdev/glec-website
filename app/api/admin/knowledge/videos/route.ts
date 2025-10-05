@@ -190,15 +190,15 @@ export const POST = withAuth(
       const slug = generateSlug(validated.title);
       const youtubeVideoId = extractYouTubeId(validated.videoUrl);
 
-      // Insert new video with explicit UUID
+      // Insert new video with explicit UUID and timestamps
       const newItem = await sql`
         INSERT INTO videos (
           id, title, slug, description, youtube_url, youtube_video_id, thumbnail_url,
-          duration, tab, author_id, status, published_at
+          duration, tab, author_id, status, published_at, created_at, updated_at
         ) VALUES (
           ${id}, ${validated.title}, ${slug}, ${validated.description}, ${validated.videoUrl},
           ${youtubeVideoId}, ${validated.thumbnailUrl || `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`},
-          ${validated.duration}, '전체', ${user.userId}, 'PUBLISHED', NOW()
+          ${validated.duration}, '전체', ${user.userId}, 'PUBLISHED', NOW(), NOW(), NOW()
         )
         RETURNING *
       `;

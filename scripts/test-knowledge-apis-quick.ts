@@ -3,7 +3,7 @@
  * Tests all 3 Knowledge Center APIs (Library, Videos, Blog)
  */
 
-const BASE_URL = 'http://localhost:3008';
+const BASE_URL = 'http://localhost:3010';
 const ADMIN_EMAIL = 'admin@glec.io';
 const ADMIN_PASSWORD = 'GLEC2025Admin!';
 

@@ -177,15 +177,15 @@ export const POST = withAuth(
       const id = randomUUID();
       const slug = generateSlug(validated.title);
 
-      // Insert new item using tagged template with explicit UUID
+      // Insert new item using tagged template with explicit UUID and timestamps
       const newItem = await sql`
         INSERT INTO libraries (
           id, title, slug, description, category, file_type, file_size, file_url,
-          thumbnail_url, tags, author_id, status, published_at
+          thumbnail_url, tags, author_id, status, published_at, created_at, updated_at
         ) VALUES (
           ${id}, ${validated.title}, ${slug}, ${validated.description}, ${validated.category},
           ${validated.fileType}, ${validated.fileSize}, ${validated.fileUrl},
-          ${validated.thumbnailUrl || null}, ${validated.tags}, ${user.userId}, 'PUBLISHED', NOW()
+          ${validated.thumbnailUrl || null}, ${validated.tags}, ${user.userId}, 'PUBLISHED', NOW(), NOW(), NOW()
         )
         RETURNING *
       `;

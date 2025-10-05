@@ -170,13 +170,13 @@ export const POST = withAuth(
       const id = randomUUID();
       const slug = generateSlug(validated.title);
 
-      // Insert new blog post with explicit UUID
+      // Insert new blog post with explicit UUID and timestamps
       const newItem = await sql`
         INSERT INTO blogs (
-          id, title, slug, content, excerpt, thumbnail_url, tags, author_id, status, published_at
+          id, title, slug, content, excerpt, thumbnail_url, tags, author_id, status, published_at, created_at, updated_at
         ) VALUES (
           ${id}, ${validated.title}, ${slug}, ${validated.content}, ${validated.excerpt},
-          ${validated.thumbnailUrl || null}, ${validated.tags}, ${user.userId}, 'PUBLISHED', NOW()
+          ${validated.thumbnailUrl || null}, ${validated.tags}, ${user.userId}, 'PUBLISHED', NOW(), NOW(), NOW()
         )
         RETURNING *
       `;
