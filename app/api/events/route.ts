@@ -110,38 +110,48 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // Build WHERE clause (always filter PUBLISHED only for public API)
-    const conditions: string[] = ["status = 'PUBLISHED'"];
-    const params: any[] = [];
-
+    // Count total (using tagged template)
+    let countResult;
     if (search) {
-      conditions.push(`title ILIKE $${params.length + 1}`);
-      params.push(`%${search}%`);
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM events
+        WHERE status = 'PUBLISHED' AND title ILIKE ${'%' + search + '%'}
+      `;
+    } else {
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM events WHERE status = 'PUBLISHED'
+      `;
     }
-
-    const whereClause = `WHERE ${conditions.join(' AND ')}`;
-
-    // Count total
-    const countQuery = `SELECT COUNT(*) as total FROM events ${whereClause}`;
-    const countResult = await sql(countQuery, params);
     const total = parseInt(countResult[0].total, 10);
 
     // Get paginated events with registration count
     const offset = (page - 1) * per_page;
-    const eventsQuery = `
-      SELECT
-        e.*,
-        COALESCE(COUNT(er.id), 0)::int as registration_count
-      FROM events e
-      LEFT JOIN event_registrations er ON e.id = er.event_id AND er.status IN ('PENDING', 'APPROVED')
-      ${whereClause}
-      GROUP BY e.id
-      ORDER BY e.start_date ASC
-      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
-    `;
-    params.push(per_page, offset);
-
-    const events = await sql(eventsQuery, params);
+    let events;
+    if (search) {
+      events = await sql`
+        SELECT
+          e.*,
+          COALESCE(COUNT(er.id), 0)::int as registration_count
+        FROM events e
+        LEFT JOIN event_registrations er ON e.id = er.event_id AND er.status IN ('PENDING', 'APPROVED')
+        WHERE e.status = 'PUBLISHED' AND e.title ILIKE ${'%' + search + '%'}
+        GROUP BY e.id
+        ORDER BY e.start_date ASC
+        LIMIT ${per_page} OFFSET ${offset}
+      `;
+    } else {
+      events = await sql`
+        SELECT
+          e.*,
+          COALESCE(COUNT(er.id), 0)::int as registration_count
+        FROM events e
+        LEFT JOIN event_registrations er ON e.id = er.event_id AND er.status IN ('PENDING', 'APPROVED')
+        WHERE e.status = 'PUBLISHED'
+        GROUP BY e.id
+        ORDER BY e.start_date ASC
+        LIMIT ${per_page} OFFSET ${offset}
+      `;
+    }
 
     // Transform snake_case to camelCase
     const transformedEvents: EventResponse[] = events.map((event: any) => ({
