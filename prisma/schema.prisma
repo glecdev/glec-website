@@ -93,6 +93,7 @@ model User {
   mediaUploads  Media[]   @relation("MediaUploader")
   assignedContacts Contact[] @relation("AssignedTo")
   events        Event[]
+  assignedDemoRequests DemoRequest[] @relation("DemoAssignedTo")
 
   @@map("users")
 }
@@ -359,4 +360,146 @@ model EventRegistration {
   @@index([email])
   @@index([createdAt(sort: Desc)])
   @@map("event_registrations")
+}
+
+// ============================================================
+// ANALYTICS MODELS
+// ============================================================
+
+model AnalyticsSession {
+  id            String   @id @default(uuid())
+  sessionId     String   @unique @map("session_id")
+  userId        String?  @map("user_id") // Nullable for anonymous users
+  ipAddress     String   @map("ip_address") // Last octet masked for GDPR (e.g., 192.168.1.0)
+  userAgent     String   @map("user_agent")
+  country       String?
+  city          String?
+  device        String   // desktop, mobile, tablet
+  browser       String
+  os            String
+  referrer      String?
+  landingPage   String   @map("landing_page")
+  cookieConsent Json     @map("cookie_consent") // {analytics: boolean, marketing: boolean, functional: boolean}
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  pageViews     AnalyticsPageView[]
+  events        AnalyticsEvent[]
+  conversions   AnalyticsConversion[]
+
+  @@index([sessionId])
+  @@index([createdAt(sort: Desc)])
+  @@index([device])
+  @@index([browser])
+  @@map("analytics_sessions")
+}
+
+model AnalyticsPageView {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  path        String
+  title       String
+  referrer    String?
+  duration    Int?     // seconds spent on page
+  scrollDepth Int?     @map("scroll_depth") // percentage scrolled (0-100)
+  exitPage    Boolean  @default(false) @map("exit_page")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  session     AnalyticsSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([path])
+  @@index([createdAt(sort: Desc)])
+  @@map("analytics_pageviews")
+}
+
+model AnalyticsEvent {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  eventType   String   @map("event_type") // click, form_submit, cta_click, download, video_play, etc.
+  eventName   String   @map("event_name")
+  eventData   Json?    @map("event_data") // Additional event metadata
+  page        String
+  elementId   String?  @map("element_id")
+  elementText String?  @map("element_text")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  session     AnalyticsSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([eventName])
+  @@index([createdAt(sort: Desc)])
+  @@map("analytics_events")
+}
+
+model AnalyticsConversion {
+  id             String   @id @default(uuid())
+  sessionId      String   @map("session_id")
+  conversionType String   @map("conversion_type") // demo_request, contact_form, download, newsletter_signup, etc.
+  formData       Json?    @map("form_data") // Anonymized form data
+  value          Float?   // Estimated conversion value in KRW
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  session        AnalyticsSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([conversionType])
+  @@index([createdAt(sort: Desc)])
+  @@map("analytics_conversions")
+}
+
+// ============================================================
+// DEMO REQUESTS
+// ============================================================
+
+enum DemoRequestStatus {
+  NEW
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model DemoRequest {
+  id                String             @id @default(uuid())
+
+  // Step 1: Company Information
+  companyName       String             @map("company_name")
+  contactName       String             @map("contact_name")
+  email             String
+  phone             String
+  companySize       String             @map("company_size") // 1-10, 11-50, 51-200, 201-1000, 1000+
+
+  // Step 2: Interest & Requirements
+  productInterests  String[]           @map("product_interests") // DTG Series5, Carbon API, GLEC Cloud, AI DTG
+  useCase           String             @map("use_case") @db.Text
+  currentSolution   String?            @map("current_solution")
+  monthlyShipments  String             @map("monthly_shipments") // <100, 100-1000, 1000-10000, 10000+
+
+  // Step 3: Schedule Demo
+  preferredDate     DateTime           @map("preferred_date")
+  preferredTime     String             @map("preferred_time") // HH:MM format
+  additionalMessage String?            @map("additional_message") @db.Text
+
+  // Metadata
+  status            DemoRequestStatus  @default(NEW)
+  privacyConsent    Boolean            @map("privacy_consent")
+  ipAddress         String?            @map("ip_address")
+  notes             String?            @db.Text // Admin notes
+
+  // Relations
+  assignedToId      String?            @map("assigned_to_id")
+  assignedTo        User?              @relation("DemoAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([email])
+  @@index([preferredDate])
+  @@map("demo_requests")
 }

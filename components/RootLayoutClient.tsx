@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Header, Footer } from '@/components/layout';
 import { PopupManager } from '@/components/PopupManager';
 import { BannerPopupManager } from '@/components/BannerPopupManager';
+import { CookieConsent } from '@/components/CookieConsent';
 
 export function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -22,6 +23,7 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
       <main className="min-h-screen">{children}</main>
       <Footer />
       <PopupManager />
+      <CookieConsent />
     </>
   );
 }
