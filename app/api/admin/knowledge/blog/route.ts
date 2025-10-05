@@ -1,264 +1,371 @@
 /**
- * Admin API: Knowledge Blog CRUD
+ * Admin Knowledge Blog API - Database Implementation
  *
- * Purpose: Full CRUD operations for Knowledge Blog Posts
- * Auth: JWT Bearer token required
- * Standards: GLEC-API-Specification.yaml, CLAUDE.md (NO HARDCODING)
+ * Endpoints:
+ * - GET /api/admin/knowledge/blog - List blog posts (paginated)
+ * - POST /api/admin/knowledge/blog - Create new blog post
+ * - PUT /api/admin/knowledge/blog?id={id} - Update blog post
+ * - DELETE /api/admin/knowledge/blog?id={id} - Delete blog post
+ *
+ * Security: CONTENT_MANAGER 이상 권한 필요
+ * Database: Neon PostgreSQL (blogs table)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-  KnowledgeBlogPost,
-  CreateKnowledgeBlogPostInput,
-  UpdateKnowledgeBlogPostInput,
-  BlogCategory,
-} from '@/lib/types/knowledge';
-import { generateMockBlogPosts, searchBlogPosts } from '@/lib/mock-knowledge-data';
+import { withAuth } from '@/lib/auth-middleware';
+import { neon } from '@neondatabase/serverless';
+
+const sql = neon(process.env.DATABASE_URL!);
 
 // ============================================================
-// VALIDATION SCHEMAS
+// Validation Schemas
 // ============================================================
 
-const CreateBlogPostSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  content: z.string().min(50, 'Content must be at least 50 characters'),
-  excerpt: z.string().max(300, 'Excerpt must not exceed 300 characters'),
-  author: z.string().min(1, 'Author is required'),
-  category: z.enum([
-    'TECHNICAL',
-    'GUIDE',
-    'NEWS',
-    'CASE_STUDY',
-    'TUTORIAL',
-    'INDUSTRY_INSIGHTS',
-    'PRODUCT_UPDATES',
-  ]),
-  tags: z.array(z.string()).min(1, 'At least one tag is required'),
-  thumbnailUrl: z.string().url('Invalid thumbnail URL').optional(),
-  publishedAt: z.string().datetime().optional(),
+const BlogPostCreateSchema = z.object({
+  title: z.string().min(1).max(200),
+  content: z.string().min(50),
+  excerpt: z.string().max(300),
+  author: z.string().min(1),
+  category: z.enum(['TECHNICAL', 'GUIDE', 'NEWS', 'CASE_STUDY', 'TUTORIAL', 'INDUSTRY_INSIGHTS', 'PRODUCT_UPDATES']),
+  tags: z.array(z.string()).min(1),
+  thumbnailUrl: z.string().url().optional(),
 });
 
-const UpdateBlogPostSchema = CreateBlogPostSchema.partial();
+const BlogPostUpdateSchema = BlogPostCreateSchema.partial();
 
 // ============================================================
-// IN-MEMORY STORAGE (Mock Database)
+// Helper: Generate slug from title
 // ============================================================
 
-let blogPosts: KnowledgeBlogPost[] = generateMockBlogPosts(30);
-
-// ============================================================
-// AUTH MIDDLEWARE
-// ============================================================
-
-function verifyAuth(request: NextRequest): boolean {
-  const authHeader = request.headers.get('Authorization');
-  return !!(authHeader?.startsWith('Bearer ') && authHeader.substring(7).length > 0);
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .substring(0, 200) + '-' + Date.now().toString(36);
 }
 
 // ============================================================
-// GET - List blog posts
+// GET /api/admin/knowledge/blog - List blog posts
 // ============================================================
 
-export async function GET(request: NextRequest) {
-  try {
-    if (!verifyAuth(request)) {
+export const GET = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const per_page = Math.min(parseInt(searchParams.get('per_page') || '20', 10), 100);
+      const category = searchParams.get('category');
+      const search = searchParams.get('search');
+
+      if (page < 1 || isNaN(page)) {
+        return NextResponse.json(
+          { success: false, error: { code: 'INVALID_PAGE', message: 'Page number must be >= 1' } },
+          { status: 400 }
+        );
+      }
+
+      // Build WHERE clause
+      const conditions: string[] = [];
+      const params: any[] = [];
+
+      // Note: Blogs table doesn't have a category field in schema, filtering by tags instead
+      if (category) {
+        conditions.push(`$${params.length + 1} = ANY(tags)`);
+        params.push(category);
+      }
+
+      if (search) {
+        conditions.push(`title ILIKE $${params.length + 1}`);
+        params.push(`%${search}%`);
+      }
+
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+      // Count total
+      const countQuery = `SELECT COUNT(*) as total FROM blogs ${whereClause}`;
+      const countResult = await sql(countQuery, params);
+      const total = parseInt(countResult[0].total, 10);
+
+      // Get paginated items
+      const offset = (page - 1) * per_page;
+      const itemsQuery = `
+        SELECT *
+        FROM blogs
+        ${whereClause}
+        ORDER BY published_at DESC NULLS LAST, created_at DESC
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+      `;
+      params.push(per_page, offset);
+
+      const items = await sql(itemsQuery, params);
+
+      // Transform to Knowledge Blog format
+      const transformedItems = items.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        excerpt: item.excerpt || '',
+        author: 'GLEC Team', // Default author since blogs table doesn't have author field
+        category: 'TECHNICAL', // Default category
+        tags: item.tags || [],
+        thumbnailUrl: item.thumbnail_url,
+        viewCount: item.view_count,
+        publishedAt: item.published_at,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+      }));
+
+      return NextResponse.json({
+        success: true,
+        data: transformedItems,
+        meta: {
+          page,
+          perPage: per_page,
+          total,
+          totalPages: Math.ceil(total / per_page),
+        },
+      });
+    } catch (error) {
+      console.error('[GET /api/admin/knowledge/blog] Error:', error);
       return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
-        { status: 401 }
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
-
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const perPage = parseInt(searchParams.get('per_page') || '20', 10);
-    const category = searchParams.get('category') as BlogCategory | null;
-    const search = searchParams.get('search') || '';
-
-    let filteredPosts = [...blogPosts];
-
-    if (category) {
-      filteredPosts = filteredPosts.filter((p) => p.category === category);
-    }
-
-    if (search) {
-      filteredPosts = searchBlogPosts(filteredPosts, search);
-    }
-
-    filteredPosts.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-
-    const total = filteredPosts.length;
-    const start = (page - 1) * perPage;
-    const paginatedPosts = filteredPosts.slice(start, start + perPage);
-
-    return NextResponse.json({
-      success: true,
-      data: paginatedPosts,
-      meta: { total, page, perPage, totalPages: Math.ceil(total / perPage) },
-    });
-  } catch (error) {
-    console.error('[API /admin/knowledge/blog GET] Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to fetch blog posts' } },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
 
 // ============================================================
-// POST - Create blog post
+// POST /api/admin/knowledge/blog - Create blog post
 // ============================================================
 
-export async function POST(request: NextRequest) {
-  try {
-    if (!verifyAuth(request)) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
-        { status: 401 }
-      );
-    }
+export const POST = withAuth(
+  async (request: NextRequest, { user }) => {
+    try {
+      const body = await request.json();
+      const validationResult = BlogPostCreateSchema.safeParse(body);
 
-    const body = await request.json();
-    const validation = CreateBlogPostSchema.safeParse(body);
+      if (!validationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid request data',
+              details: validationResult.error.errors.map((err) => ({
+                field: err.path.join('.'),
+                message: err.message,
+              })),
+            },
+          },
+          { status: 400 }
+        );
+      }
 
-    if (!validation.success) {
+      const validated = validationResult.data;
+      const slug = generateSlug(validated.title);
+
+      // Insert new blog post
+      const newItem = await sql`
+        INSERT INTO blogs (
+          title, slug, content, excerpt, thumbnail_url, tags, author_id, status, published_at
+        ) VALUES (
+          ${validated.title}, ${slug}, ${validated.content}, ${validated.excerpt},
+          ${validated.thumbnailUrl || null}, ${validated.tags}, ${user.userId}, 'PUBLISHED', NOW()
+        )
+        RETURNING *
+      `;
+
+      const created = newItem[0];
+
       return NextResponse.json(
         {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid input data',
-            details: validation.error.errors.map((err) => ({ field: err.path.join('.'), message: err.message })),
+          success: true,
+          data: {
+            id: created.id,
+            title: created.title,
+            content: created.content,
+            excerpt: created.excerpt,
+            author: validated.author,
+            category: validated.category,
+            tags: created.tags,
+            thumbnailUrl: created.thumbnail_url,
+            viewCount: created.view_count,
+            publishedAt: created.published_at,
+            createdAt: created.created_at,
+            updatedAt: created.updated_at,
           },
         },
-        { status: 400 }
+        { status: 201 }
+      );
+    } catch (error) {
+      console.error('[POST /api/admin/knowledge/blog] Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
-
-    const input: CreateKnowledgeBlogPostInput = validation.data;
-    const now = new Date().toISOString();
-
-    const newPost: KnowledgeBlogPost = {
-      id: `blog-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      ...input,
-      thumbnailUrl: input.thumbnailUrl || null,
-      viewCount: 0,
-      publishedAt: input.publishedAt || now,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    blogPosts.push(newPost);
-
-    return NextResponse.json({ success: true, data: newPost }, { status: 201 });
-  } catch (error) {
-    console.error('[API /admin/knowledge/blog POST] Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to create blog post' } },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
 
 // ============================================================
-// PUT - Update blog post
+// PUT /api/admin/knowledge/blog - Update blog post
 // ============================================================
 
-export async function PUT(request: NextRequest) {
-  try {
-    if (!verifyAuth(request)) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
-        { status: 401 }
-      );
-    }
+export const PUT = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: { code: 'MISSING_ID', message: 'Blog post ID is required' } },
+          { status: 400 }
+        );
+      }
 
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: { code: 'VALIDATION_ERROR', message: 'ID parameter is required' } },
-        { status: 400 }
-      );
-    }
+      const body = await request.json();
+      const validationResult = BlogPostUpdateSchema.safeParse(body);
 
-    const index = blogPosts.findIndex((p) => p.id === id);
-    if (index === -1) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NOT_FOUND', message: 'Blog post not found' } },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-    const validation = UpdateBlogPostSchema.safeParse(body);
-
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid input data',
-            details: validation.error.errors.map((err) => ({ field: err.path.join('.'), message: err.message })),
+      if (!validationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid request data',
+              details: validationResult.error.errors.map((err) => ({
+                field: err.path.join('.'),
+                message: err.message,
+              })),
+            },
           },
+          { status: 400 }
+        );
+      }
+
+      const validated = validationResult.data;
+
+      // Check if item exists
+      const existing = await sql('SELECT id FROM blogs WHERE id = $1', [id]);
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { success: false, error: { code: 'NOT_FOUND', message: 'Blog post not found' } },
+          { status: 404 }
+        );
+      }
+
+      // Build UPDATE query dynamically
+      const updates: string[] = [];
+      const params: any[] = [];
+
+      if (validated.title !== undefined) {
+        updates.push(`title = $${params.length + 1}`);
+        params.push(validated.title);
+        const newSlug = generateSlug(validated.title);
+        updates.push(`slug = $${params.length + 1}`);
+        params.push(newSlug);
+      }
+      if (validated.content !== undefined) {
+        updates.push(`content = $${params.length + 1}`);
+        params.push(validated.content);
+      }
+      if (validated.excerpt !== undefined) {
+        updates.push(`excerpt = $${params.length + 1}`);
+        params.push(validated.excerpt);
+      }
+      if (validated.thumbnailUrl !== undefined) {
+        updates.push(`thumbnail_url = $${params.length + 1}`);
+        params.push(validated.thumbnailUrl);
+      }
+      if (validated.tags !== undefined) {
+        updates.push(`tags = $${params.length + 1}`);
+        params.push(validated.tags);
+      }
+
+      updates.push(`updated_at = NOW()`);
+
+      const updateQuery = `
+        UPDATE blogs
+        SET ${updates.join(', ')}
+        WHERE id = $${params.length + 1}
+        RETURNING *
+      `;
+      params.push(id);
+
+      const updated = await sql(updateQuery, params);
+      const result = updated[0];
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: result.id,
+          title: result.title,
+          content: result.content,
+          excerpt: result.excerpt,
+          author: validated.author || 'GLEC Team',
+          category: validated.category || 'TECHNICAL',
+          tags: result.tags,
+          thumbnailUrl: result.thumbnail_url,
+          viewCount: result.view_count,
+          publishedAt: result.published_at,
+          createdAt: result.created_at,
+          updatedAt: result.updated_at,
         },
-        { status: 400 }
+      });
+    } catch (error) {
+      console.error('[PUT /api/admin/knowledge/blog] Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
-
-    blogPosts[index] = { ...blogPosts[index], ...validation.data, updatedAt: new Date().toISOString() };
-
-    return NextResponse.json({ success: true, data: blogPosts[index] });
-  } catch (error) {
-    console.error('[API /admin/knowledge/blog PUT] Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to update blog post' } },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
 
 // ============================================================
-// DELETE - Delete blog post
+// DELETE /api/admin/knowledge/blog - Delete blog post
 // ============================================================
 
-export async function DELETE(request: NextRequest) {
-  try {
-    if (!verifyAuth(request)) {
+export const DELETE = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
+
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: { code: 'MISSING_ID', message: 'Blog post ID is required' } },
+          { status: 400 }
+        );
+      }
+
+      // Check if item exists
+      const existing = await sql('SELECT id FROM blogs WHERE id = $1', [id]);
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { success: false, error: { code: 'NOT_FOUND', message: 'Blog post not found' } },
+          { status: 404 }
+        );
+      }
+
+      // Delete item
+      await sql('DELETE FROM blogs WHERE id = $1', [id]);
+
+      return new NextResponse(null, { status: 204 });
+    } catch (error) {
+      console.error('[DELETE /api/admin/knowledge/blog] Error:', error);
       return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
-        { status: 401 }
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: { code: 'VALIDATION_ERROR', message: 'ID parameter is required' } },
-        { status: 400 }
-      );
-    }
-
-    const index = blogPosts.findIndex((p) => p.id === id);
-    if (index === -1) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NOT_FOUND', message: 'Blog post not found' } },
-        { status: 404 }
-      );
-    }
-
-    blogPosts.splice(index, 1);
-
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error('[API /admin/knowledge/blog DELETE] Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to delete blog post' } },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);

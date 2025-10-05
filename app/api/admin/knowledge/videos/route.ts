@@ -1,256 +1,396 @@
 /**
- * Admin API: Knowledge Videos CRUD
+ * Admin Knowledge Videos API - Database Implementation
  *
- * Purpose: Full CRUD operations for Knowledge Videos
- * Auth: JWT Bearer token required
- * Standards: GLEC-API-Specification.yaml, CLAUDE.md (NO HARDCODING)
+ * Endpoints:
+ * - GET /api/admin/knowledge/videos - List videos (paginated)
+ * - POST /api/admin/knowledge/videos - Create new video
+ * - PUT /api/admin/knowledge/videos?id={id} - Update video
+ * - DELETE /api/admin/knowledge/videos?id={id} - Delete video
+ *
+ * Security: CONTENT_MANAGER 이상 권한 필요
+ * Database: Neon PostgreSQL (videos table)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-  KnowledgeVideo,
-  CreateKnowledgeVideoInput,
-  UpdateKnowledgeVideoInput,
-  VideoCategory,
-} from '@/lib/types/knowledge';
-import { generateMockVideos, searchVideos } from '@/lib/mock-knowledge-data';
+import { withAuth } from '@/lib/auth-middleware';
+import { neon } from '@neondatabase/serverless';
+
+const sql = neon(process.env.DATABASE_URL!);
 
 // ============================================================
-// VALIDATION SCHEMAS
+// Validation Schemas
 // ============================================================
 
-const CreateVideoSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  videoUrl: z.string().url('Invalid video URL'),
-  thumbnailUrl: z.string().url('Invalid thumbnail URL').optional(),
+const VideoCreateSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().min(1),
+  videoUrl: z.string().url(),
+  thumbnailUrl: z.string().url().optional(),
   duration: z.string().regex(/^\d+:\d{2}$/, 'Duration must be in format MM:SS'),
   category: z.enum(['TECHNICAL', 'GUIDE', 'TUTORIAL', 'WEBINAR', 'CASE_STUDY', 'PRODUCT_DEMO']),
-  tags: z.array(z.string()).min(1, 'At least one tag is required'),
-  publishedAt: z.string().datetime().optional(),
+  tags: z.array(z.string()).min(1),
 });
 
-const UpdateVideoSchema = CreateVideoSchema.partial();
+const VideoUpdateSchema = VideoCreateSchema.partial();
 
 // ============================================================
-// IN-MEMORY STORAGE (Mock Database)
+// Helper: Generate slug from title
 // ============================================================
 
-let videos: KnowledgeVideo[] = generateMockVideos(30);
-
-// ============================================================
-// AUTH MIDDLEWARE
-// ============================================================
-
-function verifyAuth(request: NextRequest): boolean {
-  const authHeader = request.headers.get('Authorization');
-  return !!(authHeader?.startsWith('Bearer ') && authHeader.substring(7).length > 0);
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .substring(0, 200) + '-' + Date.now().toString(36);
 }
 
 // ============================================================
-// GET - List videos
+// Helper: Extract YouTube video ID from URL
 // ============================================================
 
-export async function GET(request: NextRequest) {
-  try {
-    if (!verifyAuth(request)) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
-        { status: 401 }
-      );
-    }
+function extractYouTubeId(url: string): string {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+    /youtube\.com\/embed\/([^?&\s]+)/,
+  ];
 
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const perPage = parseInt(searchParams.get('per_page') || '20', 10);
-    const category = searchParams.get('category') as VideoCategory | null;
-    const search = searchParams.get('search') || '';
-
-    let filteredVideos = [...videos];
-
-    if (category) {
-      filteredVideos = filteredVideos.filter((v) => v.category === category);
-    }
-
-    if (search) {
-      filteredVideos = searchVideos(filteredVideos, search);
-    }
-
-    filteredVideos.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-
-    const total = filteredVideos.length;
-    const start = (page - 1) * perPage;
-    const paginatedVideos = filteredVideos.slice(start, start + perPage);
-
-    return NextResponse.json({
-      success: true,
-      data: paginatedVideos,
-      meta: { total, page, perPage, totalPages: Math.ceil(total / perPage) },
-    });
-  } catch (error) {
-    console.error('[API /admin/knowledge/videos GET] Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to fetch videos' } },
-      { status: 500 }
-    );
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
   }
+
+  return 'unknown';
 }
 
 // ============================================================
-// POST - Create video
+// GET /api/admin/knowledge/videos - List videos
 // ============================================================
 
-export async function POST(request: NextRequest) {
-  try {
-    if (!verifyAuth(request)) {
+export const GET = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const per_page = Math.min(parseInt(searchParams.get('per_page') || '20', 10), 100);
+      const category = searchParams.get('category');
+      const search = searchParams.get('search');
+
+      if (page < 1 || isNaN(page)) {
+        return NextResponse.json(
+          { success: false, error: { code: 'INVALID_PAGE', message: 'Page number must be >= 1' } },
+          { status: 400 }
+        );
+      }
+
+      // Build WHERE clause
+      const conditions: string[] = [];
+      const params: any[] = [];
+
+      // Note: Videos table doesn't have a category column, so we filter by tab instead
+      // Map Knowledge categories to video tabs
+      if (category) {
+        conditions.push(`tab = $${params.length + 1}`);
+        params.push('전체'); // Default to "전체" tab for now
+      }
+
+      if (search) {
+        conditions.push(`title ILIKE $${params.length + 1}`);
+        params.push(`%${search}%`);
+      }
+
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+      // Count total
+      const countQuery = `SELECT COUNT(*) as total FROM videos ${whereClause}`;
+      const countResult = await sql(countQuery, params);
+      const total = parseInt(countResult[0].total, 10);
+
+      // Get paginated items
+      const offset = (page - 1) * per_page;
+      const itemsQuery = `
+        SELECT *
+        FROM videos
+        ${whereClause}
+        ORDER BY published_at DESC NULLS LAST, created_at DESC
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+      `;
+      params.push(per_page, offset);
+
+      const items = await sql(itemsQuery, params);
+
+      // Transform to Knowledge Video format
+      const transformedItems = items.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description || '',
+        videoUrl: item.youtube_url,
+        thumbnailUrl: item.thumbnail_url,
+        duration: item.duration || '0:00',
+        category: 'TUTORIAL', // Default category since videos table doesn't have this
+        tags: [], // Videos table doesn't have tags
+        viewCount: item.view_count,
+        publishedAt: item.published_at,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+      }));
+
+      return NextResponse.json({
+        success: true,
+        data: transformedItems,
+        meta: {
+          page,
+          perPage: per_page,
+          total,
+          totalPages: Math.ceil(total / per_page),
+        },
+      });
+    } catch (error) {
+      console.error('[GET /api/admin/knowledge/videos] Error:', error);
       return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
-        { status: 401 }
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
 
-    const body = await request.json();
-    const validation = CreateVideoSchema.safeParse(body);
+// ============================================================
+// POST /api/admin/knowledge/videos - Create video
+// ============================================================
 
-    if (!validation.success) {
+export const POST = withAuth(
+  async (request: NextRequest, { user }) => {
+    try {
+      const body = await request.json();
+      const validationResult = VideoCreateSchema.safeParse(body);
+
+      if (!validationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid request data',
+              details: validationResult.error.errors.map((err) => ({
+                field: err.path.join('.'),
+                message: err.message,
+              })),
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      const validated = validationResult.data;
+      const slug = generateSlug(validated.title);
+      const youtubeVideoId = extractYouTubeId(validated.videoUrl);
+
+      // Insert new video
+      const newItem = await sql`
+        INSERT INTO videos (
+          title, slug, description, youtube_url, youtube_video_id, thumbnail_url,
+          duration, tab, author_id, status, published_at
+        ) VALUES (
+          ${validated.title}, ${slug}, ${validated.description}, ${validated.videoUrl},
+          ${youtubeVideoId}, ${validated.thumbnailUrl || `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`},
+          ${validated.duration}, '전체', ${user.userId}, 'PUBLISHED', NOW()
+        )
+        RETURNING *
+      `;
+
+      const created = newItem[0];
+
       return NextResponse.json(
         {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid input data',
-            details: validation.error.errors.map((err) => ({ field: err.path.join('.'), message: err.message })),
+          success: true,
+          data: {
+            id: created.id,
+            title: created.title,
+            description: created.description,
+            videoUrl: created.youtube_url,
+            thumbnailUrl: created.thumbnail_url,
+            duration: created.duration,
+            category: 'TUTORIAL',
+            tags: [],
+            viewCount: created.view_count,
+            publishedAt: created.published_at,
+            createdAt: created.created_at,
+            updatedAt: created.updated_at,
           },
         },
-        { status: 400 }
+        { status: 201 }
+      );
+    } catch (error) {
+      console.error('[POST /api/admin/knowledge/videos] Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
-
-    const input: CreateKnowledgeVideoInput = validation.data;
-    const now = new Date().toISOString();
-
-    const newVideo: KnowledgeVideo = {
-      id: `vid-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      ...input,
-      thumbnailUrl: input.thumbnailUrl || null,
-      viewCount: 0,
-      publishedAt: input.publishedAt || now,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    videos.push(newVideo);
-
-    return NextResponse.json({ success: true, data: newVideo }, { status: 201 });
-  } catch (error) {
-    console.error('[API /admin/knowledge/videos POST] Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to create video' } },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
 
 // ============================================================
-// PUT - Update video
+// PUT /api/admin/knowledge/videos - Update video
 // ============================================================
 
-export async function PUT(request: NextRequest) {
-  try {
-    if (!verifyAuth(request)) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
-        { status: 401 }
-      );
-    }
+export const PUT = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: { code: 'MISSING_ID', message: 'Video ID is required' } },
+          { status: 400 }
+        );
+      }
 
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: { code: 'VALIDATION_ERROR', message: 'ID parameter is required' } },
-        { status: 400 }
-      );
-    }
+      const body = await request.json();
+      const validationResult = VideoUpdateSchema.safeParse(body);
 
-    const index = videos.findIndex((v) => v.id === id);
-    if (index === -1) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NOT_FOUND', message: 'Video not found' } },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-    const validation = UpdateVideoSchema.safeParse(body);
-
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid input data',
-            details: validation.error.errors.map((err) => ({ field: err.path.join('.'), message: err.message })),
+      if (!validationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid request data',
+              details: validationResult.error.errors.map((err) => ({
+                field: err.path.join('.'),
+                message: err.message,
+              })),
+            },
           },
+          { status: 400 }
+        );
+      }
+
+      const validated = validationResult.data;
+
+      // Check if item exists
+      const existing = await sql('SELECT id FROM videos WHERE id = $1', [id]);
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { success: false, error: { code: 'NOT_FOUND', message: 'Video not found' } },
+          { status: 404 }
+        );
+      }
+
+      // Build UPDATE query dynamically
+      const updates: string[] = [];
+      const params: any[] = [];
+
+      if (validated.title !== undefined) {
+        updates.push(`title = $${params.length + 1}`);
+        params.push(validated.title);
+        const newSlug = generateSlug(validated.title);
+        updates.push(`slug = $${params.length + 1}`);
+        params.push(newSlug);
+      }
+      if (validated.description !== undefined) {
+        updates.push(`description = $${params.length + 1}`);
+        params.push(validated.description);
+      }
+      if (validated.videoUrl !== undefined) {
+        updates.push(`youtube_url = $${params.length + 1}`);
+        params.push(validated.videoUrl);
+        const newVideoId = extractYouTubeId(validated.videoUrl);
+        updates.push(`youtube_video_id = $${params.length + 1}`);
+        params.push(newVideoId);
+      }
+      if (validated.thumbnailUrl !== undefined) {
+        updates.push(`thumbnail_url = $${params.length + 1}`);
+        params.push(validated.thumbnailUrl);
+      }
+      if (validated.duration !== undefined) {
+        updates.push(`duration = $${params.length + 1}`);
+        params.push(validated.duration);
+      }
+
+      updates.push(`updated_at = NOW()`);
+
+      const updateQuery = `
+        UPDATE videos
+        SET ${updates.join(', ')}
+        WHERE id = $${params.length + 1}
+        RETURNING *
+      `;
+      params.push(id);
+
+      const updated = await sql(updateQuery, params);
+      const result = updated[0];
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: result.id,
+          title: result.title,
+          description: result.description,
+          videoUrl: result.youtube_url,
+          thumbnailUrl: result.thumbnail_url,
+          duration: result.duration,
+          category: 'TUTORIAL',
+          tags: [],
+          viewCount: result.view_count,
+          publishedAt: result.published_at,
+          createdAt: result.created_at,
+          updatedAt: result.updated_at,
         },
-        { status: 400 }
+      });
+    } catch (error) {
+      console.error('[PUT /api/admin/knowledge/videos] Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
-
-    videos[index] = { ...videos[index], ...validation.data, updatedAt: new Date().toISOString() };
-
-    return NextResponse.json({ success: true, data: videos[index] });
-  } catch (error) {
-    console.error('[API /admin/knowledge/videos PUT] Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to update video' } },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
 
 // ============================================================
-// DELETE - Delete video
+// DELETE /api/admin/knowledge/videos - Delete video
 // ============================================================
 
-export async function DELETE(request: NextRequest) {
-  try {
-    if (!verifyAuth(request)) {
+export const DELETE = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
+
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: { code: 'MISSING_ID', message: 'Video ID is required' } },
+          { status: 400 }
+        );
+      }
+
+      // Check if item exists
+      const existing = await sql('SELECT id FROM videos WHERE id = $1', [id]);
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { success: false, error: { code: 'NOT_FOUND', message: 'Video not found' } },
+          { status: 404 }
+        );
+      }
+
+      // Delete item
+      await sql('DELETE FROM videos WHERE id = $1', [id]);
+
+      return new NextResponse(null, { status: 204 });
+    } catch (error) {
+      console.error('[DELETE /api/admin/knowledge/videos] Error:', error);
       return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
-        { status: 401 }
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: { code: 'VALIDATION_ERROR', message: 'ID parameter is required' } },
-        { status: 400 }
-      );
-    }
-
-    const index = videos.findIndex((v) => v.id === id);
-    if (index === -1) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NOT_FOUND', message: 'Video not found' } },
-        { status: 404 }
-      );
-    }
-
-    videos.splice(index, 1);
-
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error('[API /admin/knowledge/videos DELETE] Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Failed to delete video' } },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
