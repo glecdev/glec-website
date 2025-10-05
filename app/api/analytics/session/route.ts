@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
-import UAParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 
 const sql = neon(process.env.DATABASE_URL!);
 
