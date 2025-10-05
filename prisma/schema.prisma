@@ -210,10 +210,12 @@ model Library {
   title         String
   slug          String        @unique
   description   String?       @db.Text
-  category      String        // 산업 리포트, 백서, 케이스 스터디, 기술 문서
+  category      String        // TECHNICAL, GUIDE, NEWS, CASE_STUDY, TUTORIAL, WHITEPAPER, REPORT, RESEARCH
+  fileType      String        @map("file_type") // PDF, DOCX, XLSX, PPTX
   thumbnailUrl  String?       @map("thumbnail_url")
-  fileUrl       String?       @map("file_url") // Gated content - null until requested
-  fileSize      String?       @map("file_size") // e.g., "2.5MB"
+  fileUrl       String        @map("file_url")
+  fileSize      String        @map("file_size") // e.g., "2.5 MB"
+  tags          String[]      @default([])
   pageCount     Int?          @map("page_count")
   isGated       Boolean       @default(true) @map("is_gated") // true = 열람 신청 필요
   downloadCount Int           @default(0) @map("download_count")
@@ -230,6 +232,7 @@ model Library {
   @@index([slug])
   @@index([status, publishedAt(sort: Desc)])
   @@index([category])
+  @@index([tags])
   @@map("libraries")
 }
 

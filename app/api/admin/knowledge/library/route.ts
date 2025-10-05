@@ -1,419 +1,394 @@
 /**
- * Admin API: Knowledge Library CRUD
- *
- * Purpose: Full CRUD operations for Knowledge Library items
- * Auth: JWT Bearer token required
- * Standards: GLEC-API-Specification.yaml, CLAUDE.md (NO HARDCODING)
+ * Admin Knowledge Library API - Database Implementation
  *
  * Endpoints:
- * - GET    /api/admin/knowledge/library (List with pagination/filtering)
- * - POST   /api/admin/knowledge/library (Create new item)
- * - PUT    /api/admin/knowledge/library?id=xxx (Update item)
- * - DELETE /api/admin/knowledge/library?id=xxx (Delete item)
+ * - GET /api/admin/knowledge/library - List library items (paginated)
+ * - POST /api/admin/knowledge/library - Create new library item
+ * - PUT /api/admin/knowledge/library?id={id} - Update library item
+ * - DELETE /api/admin/knowledge/library?id={id} - Delete library item
+ *
+ * Security: CONTENT_MANAGER 이상 권한 필요
+ * Database: Neon PostgreSQL
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-  KnowledgeLibraryItem,
-  CreateKnowledgeLibraryItemInput,
-  UpdateKnowledgeLibraryItemInput,
-  KnowledgeCategory,
-} from '@/lib/types/knowledge';
-import { generateMockLibraryItems, searchLibraryItems } from '@/lib/mock-knowledge-data';
+import { withAuth } from '@/lib/auth-middleware';
+import { neon } from '@neondatabase/serverless';
+
+const sql = neon(process.env.DATABASE_URL!);
 
 // ============================================================
-// VALIDATION SCHEMAS
+// Validation Schemas
 // ============================================================
 
-const CreateLibraryItemSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  category: z.enum([
-    'TECHNICAL',
-    'GUIDE',
-    'NEWS',
-    'CASE_STUDY',
-    'TUTORIAL',
-    'WHITEPAPER',
-    'REPORT',
-    'RESEARCH',
-  ]),
+const LibraryItemCreateSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().min(1),
+  category: z.enum(['TECHNICAL', 'GUIDE', 'NEWS', 'CASE_STUDY', 'TUTORIAL', 'WHITEPAPER', 'REPORT', 'RESEARCH']),
   fileType: z.enum(['PDF', 'DOCX', 'XLSX', 'PPTX']),
-  fileSize: z.string().regex(/^\d+(\.\d+)?\s?(MB|KB|GB)$/, 'Invalid file size format'),
-  fileUrl: z.string().url('Invalid file URL'),
-  thumbnailUrl: z.string().url('Invalid thumbnail URL').optional(),
-  tags: z.array(z.string()).min(1, 'At least one tag is required'),
-  publishedAt: z.string().datetime().optional(),
-});
-
-const UpdateLibraryItemSchema = z.object({
-  title: z.string().min(1).max(200).optional(),
-  description: z.string().min(10).optional(),
-  category: z
-    .enum([
-      'TECHNICAL',
-      'GUIDE',
-      'NEWS',
-      'CASE_STUDY',
-      'TUTORIAL',
-      'WHITEPAPER',
-      'REPORT',
-      'RESEARCH',
-    ])
-    .optional(),
-  fileType: z.enum(['PDF', 'DOCX', 'XLSX', 'PPTX']).optional(),
-  fileSize: z.string().regex(/^\d+(\.\d+)?\s?(MB|KB|GB)$/).optional(),
-  fileUrl: z.string().url().optional(),
+  fileSize: z.string().min(1),
+  fileUrl: z.string().url(),
   thumbnailUrl: z.string().url().optional(),
-  tags: z.array(z.string()).min(1).optional(),
-  publishedAt: z.string().datetime().optional(),
+  tags: z.array(z.string()).min(1),
 });
 
-// ============================================================
-// IN-MEMORY STORAGE (Mock Database)
-// ============================================================
-
-let libraryItems: KnowledgeLibraryItem[] = generateMockLibraryItems(25);
+const LibraryItemUpdateSchema = LibraryItemCreateSchema.partial();
 
 // ============================================================
-// AUTH MIDDLEWARE
+// Helper: Generate slug from title
 // ============================================================
 
-function verifyAuth(request: NextRequest): boolean {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return false;
-  }
-
-  // TODO: Verify JWT token (for now, just check presence)
-  const token = authHeader.substring(7);
-  return token.length > 0;
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .substring(0, 200) + '-' + Date.now().toString(36);
 }
 
 // ============================================================
-// GET - List library items with pagination/filtering
+// GET /api/admin/knowledge/library - List library items
 // ============================================================
 
-export async function GET(request: NextRequest) {
-  try {
-    // Auth check
-    if (!verifyAuth(request)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required',
-          },
-        },
-        { status: 401 }
-      );
-    }
+export const GET = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const per_page = Math.min(parseInt(searchParams.get('per_page') || '20', 10), 100);
+      const category = searchParams.get('category');
+      const fileType = searchParams.get('fileType');
+      const search = searchParams.get('search');
 
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const perPage = parseInt(searchParams.get('per_page') || '20', 10);
-    const category = searchParams.get('category') as KnowledgeCategory | null;
-    const search = searchParams.get('search') || '';
+      if (page < 1 || isNaN(page)) {
+        return NextResponse.json(
+          { success: false, error: { code: 'INVALID_PAGE', message: 'Page number must be >= 1' } },
+          { status: 400 }
+        );
+      }
 
-    let filteredItems = [...libraryItems];
+      // Build WHERE clause
+      const conditions: string[] = [];
+      const params: any[] = [];
 
-    // Filter by category
-    if (category) {
-      filteredItems = filteredItems.filter((item) => item.category === category);
-    }
+      if (category) {
+        conditions.push(`category = $${params.length + 1}`);
+        params.push(category);
+      }
 
-    // Search filter
-    if (search) {
-      filteredItems = searchLibraryItems(filteredItems, search);
-    }
+      if (fileType) {
+        conditions.push(`file_type = $${params.length + 1}`);
+        params.push(fileType);
+      }
 
-    // Sort by publishedAt DESC
-    filteredItems.sort(
-      (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    );
+      if (search) {
+        conditions.push(`title ILIKE $${params.length + 1}`);
+        params.push(`%${search}%`);
+      }
 
-    // Pagination
-    const total = filteredItems.length;
-    const start = (page - 1) * perPage;
-    const end = start + perPage;
-    const paginatedItems = filteredItems.slice(start, end);
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    return NextResponse.json({
-      success: true,
-      data: paginatedItems,
-      meta: {
-        total,
-        page,
-        perPage,
-        totalPages: Math.ceil(total / perPage),
-      },
-    });
-  } catch (error) {
-    console.error('[API /admin/knowledge/library GET] Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch library items',
-        },
-      },
-      { status: 500 }
-    );
-  }
-}
+      // Count total
+      const countQuery = `SELECT COUNT(*) as total FROM libraries ${whereClause}`;
+      const countResult = await sql(countQuery, params);
+      const total = parseInt(countResult[0].total, 10);
 
-// ============================================================
-// POST - Create new library item
-// ============================================================
+      // Get paginated items
+      const offset = (page - 1) * per_page;
+      const itemsQuery = `
+        SELECT *
+        FROM libraries
+        ${whereClause}
+        ORDER BY published_at DESC NULLS LAST, created_at DESC
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+      `;
+      params.push(per_page, offset);
 
-export async function POST(request: NextRequest) {
-  try {
-    // Auth check
-    if (!verifyAuth(request)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required',
-          },
-        },
-        { status: 401 }
-      );
-    }
+      const items = await sql(itemsQuery, params);
 
-    const body = await request.json();
+      // Transform to camelCase
+      const transformedItems = items.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        fileType: item.file_type,
+        fileSize: item.file_size,
+        fileUrl: item.file_url,
+        thumbnailUrl: item.thumbnail_url,
+        tags: item.tags || [],
+        downloadCount: item.download_count,
+        publishedAt: item.published_at,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+      }));
 
-    // Validation
-    const validation = CreateLibraryItemSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid input data',
-            details: validation.error.errors.map((err) => ({
-              field: err.path.join('.'),
-              message: err.message,
-            })),
-          },
-        },
-        { status: 400 }
-      );
-    }
-
-    const input: CreateKnowledgeLibraryItemInput = validation.data;
-    const now = new Date().toISOString();
-
-    // Create new item
-    const newItem: KnowledgeLibraryItem = {
-      id: `lib-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      title: input.title,
-      description: input.description,
-      category: input.category,
-      fileType: input.fileType,
-      fileSize: input.fileSize,
-      fileUrl: input.fileUrl,
-      thumbnailUrl: input.thumbnailUrl || null,
-      downloadCount: 0,
-      tags: input.tags,
-      publishedAt: input.publishedAt || now,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    libraryItems.push(newItem);
-
-    return NextResponse.json(
-      {
+      return NextResponse.json({
         success: true,
-        data: newItem,
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error('[API /admin/knowledge/library POST] Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create library item',
+        data: transformedItems,
+        meta: {
+          page,
+          perPage: per_page,
+          total,
+          totalPages: Math.ceil(total / per_page),
         },
-      },
-      { status: 500 }
-    );
-  }
-}
+      });
+    } catch (error) {
+      console.error('[GET /api/admin/knowledge/library] Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
+      );
+    }
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
 
 // ============================================================
-// PUT - Update library item
+// POST /api/admin/knowledge/library - Create library item
 // ============================================================
 
-export async function PUT(request: NextRequest) {
-  try {
-    // Auth check
-    if (!verifyAuth(request)) {
+export const POST = withAuth(
+  async (request: NextRequest, { user }) => {
+    try {
+      const body = await request.json();
+      const validationResult = LibraryItemCreateSchema.safeParse(body);
+
+      if (!validationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid request data',
+              details: validationResult.error.errors.map((err) => ({
+                field: err.path.join('.'),
+                message: err.message,
+              })),
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      const validated = validationResult.data;
+      const slug = generateSlug(validated.title);
+
+      // Insert new item
+      const newItem = await sql`
+        INSERT INTO libraries (
+          title, slug, description, category, file_type, file_size, file_url,
+          thumbnail_url, tags, author_id, status, published_at
+        ) VALUES (
+          ${validated.title}, ${slug}, ${validated.description}, ${validated.category},
+          ${validated.fileType}, ${validated.fileSize}, ${validated.fileUrl},
+          ${validated.thumbnailUrl || null}, ${validated.tags}, ${user.userId}, 'PUBLISHED', NOW()
+        )
+        RETURNING *
+      `;
+
+      const created = newItem[0];
+
       return NextResponse.json(
         {
-          success: false,
-          error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required',
+          success: true,
+          data: {
+            id: created.id,
+            title: created.title,
+            description: created.description,
+            category: created.category,
+            fileType: created.file_type,
+            fileSize: created.file_size,
+            fileUrl: created.file_url,
+            thumbnailUrl: created.thumbnail_url,
+            tags: created.tags,
+            downloadCount: created.download_count,
+            publishedAt: created.published_at,
+            createdAt: created.created_at,
+            updatedAt: created.updated_at,
           },
         },
-        { status: 401 }
+        { status: 201 }
       );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
+    } catch (error) {
+      console.error('[POST /api/admin/knowledge/library] Error:', error);
       return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'ID parameter is required',
-          },
-        },
-        { status: 400 }
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
-
-    const itemIndex = libraryItems.findIndex((item) => item.id === id);
-    if (itemIndex === -1) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'NOT_FOUND',
-            message: 'Library item not found',
-          },
-        },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-
-    // Validation
-    const validation = UpdateLibraryItemSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid input data',
-            details: validation.error.errors.map((err) => ({
-              field: err.path.join('.'),
-              message: err.message,
-            })),
-          },
-        },
-        { status: 400 }
-      );
-    }
-
-    const input: UpdateKnowledgeLibraryItemInput = validation.data;
-
-    // Update item
-    libraryItems[itemIndex] = {
-      ...libraryItems[itemIndex],
-      ...input,
-      updatedAt: new Date().toISOString(),
-    };
-
-    return NextResponse.json({
-      success: true,
-      data: libraryItems[itemIndex],
-    });
-  } catch (error) {
-    console.error('[API /admin/knowledge/library PUT] Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to update library item',
-        },
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
 
 // ============================================================
-// DELETE - Delete library item
+// PUT /api/admin/knowledge/library - Update library item
 // ============================================================
 
-export async function DELETE(request: NextRequest) {
-  try {
-    // Auth check
-    if (!verifyAuth(request)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required',
+export const PUT = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
+
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: { code: 'MISSING_ID', message: 'Library item ID is required' } },
+          { status: 400 }
+        );
+      }
+
+      const body = await request.json();
+      const validationResult = LibraryItemUpdateSchema.safeParse(body);
+
+      if (!validationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid request data',
+              details: validationResult.error.errors.map((err) => ({
+                field: err.path.join('.'),
+                message: err.message,
+              })),
+            },
           },
+          { status: 400 }
+        );
+      }
+
+      const validated = validationResult.data;
+
+      // Check if item exists
+      const existing = await sql('SELECT id FROM libraries WHERE id = $1', [id]);
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { success: false, error: { code: 'NOT_FOUND', message: 'Library item not found' } },
+          { status: 404 }
+        );
+      }
+
+      // Build UPDATE query dynamically
+      const updates: string[] = [];
+      const params: any[] = [];
+
+      if (validated.title !== undefined) {
+        updates.push(`title = $${params.length + 1}`);
+        params.push(validated.title);
+        const newSlug = generateSlug(validated.title);
+        updates.push(`slug = $${params.length + 1}`);
+        params.push(newSlug);
+      }
+      if (validated.description !== undefined) {
+        updates.push(`description = $${params.length + 1}`);
+        params.push(validated.description);
+      }
+      if (validated.category !== undefined) {
+        updates.push(`category = $${params.length + 1}`);
+        params.push(validated.category);
+      }
+      if (validated.fileType !== undefined) {
+        updates.push(`file_type = $${params.length + 1}`);
+        params.push(validated.fileType);
+      }
+      if (validated.fileSize !== undefined) {
+        updates.push(`file_size = $${params.length + 1}`);
+        params.push(validated.fileSize);
+      }
+      if (validated.fileUrl !== undefined) {
+        updates.push(`file_url = $${params.length + 1}`);
+        params.push(validated.fileUrl);
+      }
+      if (validated.thumbnailUrl !== undefined) {
+        updates.push(`thumbnail_url = $${params.length + 1}`);
+        params.push(validated.thumbnailUrl);
+      }
+      if (validated.tags !== undefined) {
+        updates.push(`tags = $${params.length + 1}`);
+        params.push(validated.tags);
+      }
+
+      updates.push(`updated_at = NOW()`);
+
+      const updateQuery = `
+        UPDATE libraries
+        SET ${updates.join(', ')}
+        WHERE id = $${params.length + 1}
+        RETURNING *
+      `;
+      params.push(id);
+
+      const updated = await sql(updateQuery, params);
+      const result = updated[0];
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: result.id,
+          title: result.title,
+          description: result.description,
+          category: result.category,
+          fileType: result.file_type,
+          fileSize: result.file_size,
+          fileUrl: result.file_url,
+          thumbnailUrl: result.thumbnail_url,
+          tags: result.tags,
+          downloadCount: result.download_count,
+          publishedAt: result.published_at,
+          createdAt: result.created_at,
+          updatedAt: result.updated_at,
         },
-        { status: 401 }
+      });
+    } catch (error) {
+      console.error('[PUT /api/admin/knowledge/library] Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+// ============================================================
+// DELETE /api/admin/knowledge/library - Delete library item
+// ============================================================
 
-    if (!id) {
+export const DELETE = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
+
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: { code: 'MISSING_ID', message: 'Library item ID is required' } },
+          { status: 400 }
+        );
+      }
+
+      // Check if item exists
+      const existing = await sql('SELECT id FROM libraries WHERE id = $1', [id]);
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { success: false, error: { code: 'NOT_FOUND', message: 'Library item not found' } },
+          { status: 404 }
+        );
+      }
+
+      // Delete item
+      await sql('DELETE FROM libraries WHERE id = $1', [id]);
+
+      return new NextResponse(null, { status: 204 });
+    } catch (error) {
+      console.error('[DELETE /api/admin/knowledge/library] Error:', error);
       return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'ID parameter is required',
-          },
-        },
-        { status: 400 }
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
       );
     }
-
-    const itemIndex = libraryItems.findIndex((item) => item.id === id);
-    if (itemIndex === -1) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'NOT_FOUND',
-            message: 'Library item not found',
-          },
-        },
-        { status: 404 }
-      );
-    }
-
-    // Remove item
-    libraryItems.splice(itemIndex, 1);
-
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error('[API /admin/knowledge/library DELETE] Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to delete library item',
-        },
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
