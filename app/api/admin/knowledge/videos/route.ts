@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
+import { randomUUID } from 'crypto';
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -185,16 +186,17 @@ export const POST = withAuth(
       }
 
       const validated = validationResult.data;
+      const id = randomUUID();
       const slug = generateSlug(validated.title);
       const youtubeVideoId = extractYouTubeId(validated.videoUrl);
 
-      // Insert new video
+      // Insert new video with explicit UUID
       const newItem = await sql`
         INSERT INTO videos (
-          title, slug, description, youtube_url, youtube_video_id, thumbnail_url,
+          id, title, slug, description, youtube_url, youtube_video_id, thumbnail_url,
           duration, tab, author_id, status, published_at
         ) VALUES (
-          ${validated.title}, ${slug}, ${validated.description}, ${validated.videoUrl},
+          ${id}, ${validated.title}, ${slug}, ${validated.description}, ${validated.videoUrl},
           ${youtubeVideoId}, ${validated.thumbnailUrl || `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`},
           ${validated.duration}, '전체', ${user.userId}, 'PUBLISHED', NOW()
         )

@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
+import { randomUUID } from 'crypto';
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -166,14 +167,15 @@ export const POST = withAuth(
       }
 
       const validated = validationResult.data;
+      const id = randomUUID();
       const slug = generateSlug(validated.title);
 
-      // Insert new blog post
+      // Insert new blog post with explicit UUID
       const newItem = await sql`
         INSERT INTO blogs (
-          title, slug, content, excerpt, thumbnail_url, tags, author_id, status, published_at
+          id, title, slug, content, excerpt, thumbnail_url, tags, author_id, status, published_at
         ) VALUES (
-          ${validated.title}, ${slug}, ${validated.content}, ${validated.excerpt},
+          ${id}, ${validated.title}, ${slug}, ${validated.content}, ${validated.excerpt},
           ${validated.thumbnailUrl || null}, ${validated.tags}, ${user.userId}, 'PUBLISHED', NOW()
         )
         RETURNING *

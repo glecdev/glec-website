@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
+import { randomUUID } from 'crypto';
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -89,12 +90,12 @@ export const GET = withAuth(
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-      // Count total
+      // Count total using sql.query()
       const countQuery = `SELECT COUNT(*) as total FROM libraries ${whereClause}`;
-      const countResult = await sql(countQuery, params);
-      const total = parseInt(countResult[0].total, 10);
+      const countResult = await sql.query(countQuery, params);
+      const total = parseInt(countResult.rows[0].total, 10);
 
-      // Get paginated items
+      // Get paginated items using sql.query()
       const offset = (page - 1) * per_page;
       const itemsQuery = `
         SELECT *
@@ -105,10 +106,10 @@ export const GET = withAuth(
       `;
       params.push(per_page, offset);
 
-      const items = await sql(itemsQuery, params);
+      const itemsResult = await sql.query(itemsQuery, params);
 
       // Transform to camelCase
-      const transformedItems = items.map((item: any) => ({
+      const transformedItems = itemsResult.rows.map((item: any) => ({
         id: item.id,
         title: item.title,
         description: item.description,
@@ -173,15 +174,16 @@ export const POST = withAuth(
       }
 
       const validated = validationResult.data;
+      const id = randomUUID();
       const slug = generateSlug(validated.title);
 
-      // Insert new item using tagged template
+      // Insert new item using tagged template with explicit UUID
       const newItem = await sql`
         INSERT INTO libraries (
-          title, slug, description, category, file_type, file_size, file_url,
+          id, title, slug, description, category, file_type, file_size, file_url,
           thumbnail_url, tags, author_id, status, published_at
         ) VALUES (
-          ${validated.title}, ${slug}, ${validated.description}, ${validated.category},
+          ${id}, ${validated.title}, ${slug}, ${validated.description}, ${validated.category},
           ${validated.fileType}, ${validated.fileSize}, ${validated.fileUrl},
           ${validated.thumbnailUrl || null}, ${validated.tags}, ${user.userId}, 'PUBLISHED', NOW()
         )
@@ -262,8 +264,8 @@ export const PUT = withAuth(
       const validated = validationResult.data;
 
       // Check if item exists
-      const existing = await sql('SELECT id FROM libraries WHERE id = $1', [id]);
-      if (existing.length === 0) {
+      const existingResult = await sql.query('SELECT id FROM libraries WHERE id = $1', [id]);
+      if (existingResult.rows.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Library item not found' } },
           { status: 404 }
@@ -320,8 +322,8 @@ export const PUT = withAuth(
       `;
       params.push(id);
 
-      const updated = await sql(updateQuery, params);
-      const result = updated[0];
+      const updatedResult = await sql.query(updateQuery, params);
+      const result = updatedResult.rows[0];
 
       return NextResponse.json({
         success: true,
@@ -370,8 +372,8 @@ export const DELETE = withAuth(
       }
 
       // Check if item exists
-      const existing = await sql('SELECT id FROM libraries WHERE id = $1', [id]);
-      if (existing.length === 0) {
+      const existingResult = await sql.query('SELECT id FROM libraries WHERE id = $1', [id]);
+      if (existingResult.rows.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Library item not found' } },
           { status: 404 }
@@ -379,7 +381,7 @@ export const DELETE = withAuth(
       }
 
       // Delete item
-      await sql('DELETE FROM libraries WHERE id = $1', [id]);
+      await sql.query('DELETE FROM libraries WHERE id = $1', [id]);
 
       return new NextResponse(null, { status: 204 });
     } catch (error) {
