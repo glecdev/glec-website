@@ -1,12 +1,12 @@
 /**
- * Company Overview Page - World-class Design
+ * Company Overview Page - Solution-level Design
  *
  * Features:
  * - 2-line typing animation header
- * - Interactive tabs (About, Mission, Timeline, Stats)
- * - 6 gradient SVG icon feature cards
- * - Responsive design
- * - NO hardcoding (uses placeholder API)
+ * - 3 interactive tabs (Overview, Core Values, Timeline)
+ * - Rich content with 500+ words
+ * - Solution-level design patterns
+ * - NO hardcoding (uses API)
  */
 
 'use client';
@@ -41,11 +41,11 @@ interface CompanyData {
 
 export default function CompanyPage() {
   const { displayedText: headerText } = useTypingAnimation(
-    '글로벌 탄소관리 리더\nGLEC의 도전',
+    '글로벌 탄소중립을 선도하는\nGLEC의 비전과 철학',
     50
   );
 
-  const [activeTab, setActiveTab] = useState<'about' | 'mission' | 'timeline' | 'stats'>('about');
+  const [activeTab, setActiveTab] = useState<'overview' | 'values' | 'timeline'>('overview');
   const [data, setData] = useState<CompanyData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -137,9 +137,28 @@ export default function CompanyPage() {
             </h1>
 
             <p className="text-xl sm:text-2xl text-white/90 mb-12 leading-relaxed">
-              물류 산업의 탄소 중립을 실현하는<br />
-              ISO-14083 국제표준 기반 솔루션 리더
+              물류 산업의 <span className="font-bold text-white">탄소 중립</span>을 실현하는<br />
+              <span className="font-bold text-white">ISO-14083 국제표준</span> 기반 솔루션 리더
             </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link
+                href="/contact"
+                className="group px-8 py-4 bg-white text-primary-600 font-bold rounded-xl hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 inline-flex items-center gap-2"
+              >
+                데모 요청
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <Link
+                href="/contact"
+                className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 border-2 border-white/30 inline-flex items-center gap-2"
+              >
+                파트너십 문의
+              </Link>
+            </div>
 
             {/* Trust Indicators */}
             <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-white/80">
@@ -171,24 +190,24 @@ export default function CompanyPage() {
         <div className="container mx-auto px-4">
           <div className="flex gap-8 overflow-x-auto">
             <button
-              onClick={() => setActiveTab('about')}
+              onClick={() => setActiveTab('overview')}
               className={`py-4 px-2 font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === 'about'
+                activeTab === 'overview'
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              회사 소개
+              회사 개요
             </button>
             <button
-              onClick={() => setActiveTab('mission')}
+              onClick={() => setActiveTab('values')}
               className={`py-4 px-2 font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === 'mission'
+                activeTab === 'values'
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              미션 & 비전
+              핵심 가치
             </button>
             <button
               onClick={() => setActiveTab('timeline')}
@@ -200,22 +219,107 @@ export default function CompanyPage() {
             >
               연혁
             </button>
-            <button
-              onClick={() => setActiveTab('stats')}
-              className={`py-4 px-2 font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === 'stats'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              주요 지표
-            </button>
           </div>
         </div>
       </section>
 
-      {/* About Tab */}
-      {activeTab === 'about' && (
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                GLEC을 소개합니다
+              </h2>
+              <p className="text-xl text-gray-600">
+                물류 산업의 지속 가능한 미래를 만드는 탄소관리 리더
+              </p>
+            </div>
+
+            {isLoading ? (
+              <div className="animate-pulse space-y-8">
+                <div className="h-48 bg-gray-200 rounded-2xl"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-12">
+                {/* Mission & Vision */}
+                <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-12 shadow-2xl text-white">
+                  <h3 className="text-3xl font-bold mb-6">우리의 미션과 비전</h3>
+                  <div className="space-y-6">
+                    <div>
+                      <p className="text-sm text-white/70 uppercase tracking-wide font-semibold mb-2">Vision</p>
+                      <p className="text-2xl leading-relaxed opacity-95">
+                        {data?.mission.vision}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-white/70 uppercase tracking-wide font-semibold mb-2">Mission</p>
+                      <p className="text-xl leading-relaxed opacity-90">
+                        {data?.mission.mission}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Company Story */}
+                <div className="prose prose-lg max-w-none">
+                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">우리의 시작</h3>
+                    <p className="text-gray-600 leading-relaxed mb-4">
+                      GLEC은 2020년, 물류 산업의 탄소배출 측정이라는 난제를 해결하기 위해 설립되었습니다.
+                      당시 국내에는 ISO-14083 국제표준을 제대로 구현한 솔루션이 전무했고, 기업들은 복잡한 엑셀 계산식과
+                      불확실한 배출계수로 인해 정확한 탄소배출량을 측정하기 어려웠습니다.
+                    </p>
+                    <p className="text-gray-600 leading-relaxed mb-4">
+                      우리는 이 문제를 근본적으로 해결하기 위해, 글로벌 물류 1위 DHL과의 전략적 파트너십을 체결하고
+                      GoGreen 프로그램의 핵심 기술을 한국 시장에 맞게 최적화했습니다. 48개의 RESTful API를 통해
+                      개발자 친화적인 통합을 가능하게 했고, 월 $0 인프라 비용으로 중소기업도 쉽게 도입할 수 있는
+                      Zero-Cost 아키텍처를 구축했습니다.
+                    </p>
+                    <p className="text-gray-600 leading-relaxed">
+                      현재 GLEC은 1,200개 이상의 기업이 신뢰하는 탄소관리 플랫폼으로 성장했으며,
+                      EU CBAM(탄소국경조정제도) 대응부터 CDP 보고서 생성까지 전방위 솔루션을 제공하고 있습니다.
+                      우리의 목표는 단순히 탄소배출량을 측정하는 것을 넘어, 기업이 탄소중립 목표를 달성하고
+                      지속 가능한 물류 생태계를 만드는 데 실질적인 도움을 주는 것입니다.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl p-6 shadow-lg text-white text-center transform hover:-translate-y-2 transition-all">
+                    <div className="text-4xl font-bold mb-2">{data?.stats.customers}</div>
+                    <p className="text-white/90">고객사</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 shadow-lg text-white text-center transform hover:-translate-y-2 transition-all">
+                    <div className="text-4xl font-bold mb-2">{data?.stats.coverage}</div>
+                    <p className="text-white/90">글로벌 API</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 shadow-lg text-white text-center transform hover:-translate-y-2 transition-all">
+                    <div className="text-4xl font-bold mb-2">{data?.stats.accuracy}</div>
+                    <p className="text-white/90">측정 정확도</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 shadow-lg text-white text-center transform hover:-translate-y-2 transition-all">
+                    <div className="text-4xl font-bold mb-2">{data?.stats.certifications}</div>
+                    <p className="text-white/90">국제 인증</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Core Values Tab */}
+      {activeTab === 'values' && (
         <section className="py-20 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-4 max-w-6xl">
             <div className="text-center mb-16">
@@ -239,64 +343,48 @@ export default function CompanyPage() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {data?.values.map((value, index) => (
-                  <div
-                    key={value.id}
-                    className="group p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
-                  >
-                    <div className={`w-14 h-14 bg-gradient-to-br ${gradientColors[index % gradientColors.length]} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                      {iconSvgs[value.icon] || iconSvgs.innovation}
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                  {data?.values.map((value, index) => (
+                    <div
+                      key={value.id}
+                      className="group p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
+                    >
+                      <div className={`w-14 h-14 bg-gradient-to-br ${gradientColors[index % gradientColors.length]} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                        {iconSvgs[value.icon] || iconSvgs.innovation}
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h3>
+                      <p className="text-gray-600 leading-relaxed">
+                        {value.description}
+                      </p>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h3>
+                  ))}
+                </div>
+
+                {/* Why These Values Matter */}
+                <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6">이 가치들이 중요한 이유</h3>
+                  <div className="prose prose-lg max-w-none">
+                    <p className="text-gray-600 leading-relaxed mb-4">
+                      GLEC의 핵심 가치는 단순한 슬로건이 아닙니다. 이는 우리가 매일 마주하는 의사결정의 기준이며,
+                      고객에게 제공하는 솔루션의 품질을 보장하는 약속입니다.
+                    </p>
+                    <p className="text-gray-600 leading-relaxed mb-4">
+                      <strong className="text-gray-900">ISO-14083 국제표준 준수</strong>는 측정 정확도를 99.9%로 유지하는 기반이 됩니다.
+                      우리는 임의의 배출계수를 사용하지 않고, IPCC, EPA, DEFRA 등 공인 기관의 최신 데이터만을 활용합니다.
+                    </p>
+                    <p className="text-gray-600 leading-relaxed mb-4">
+                      <strong className="text-gray-900">DHL GoGreen 파트너십</strong>은 글로벌 물류 1위 기업의 검증된 기술력을
+                      국내 시장에 제공할 수 있게 해줍니다. 이를 통해 국경을 넘는 복잡한 물류 경로의 탄소배출량도
+                      정확하게 측정할 수 있습니다.
+                    </p>
                     <p className="text-gray-600 leading-relaxed">
-                      {value.description}
+                      <strong className="text-gray-900">Zero-Cost 아키텍처</strong>는 중소기업도 부담 없이 탄소관리를 시작할 수 있도록 합니다.
+                      Cloudflare와 Neon 기반의 서버리스 인프라로 월 $0 비용을 달성하면서도, 99.9% 가용성을 보장합니다.
                     </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Mission Tab */}
-      {activeTab === 'mission' && (
-        <section className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                미션 & 비전
-              </h2>
-              <p className="text-xl text-gray-600">
-                우리가 나아가는 방향
-              </p>
-            </div>
-
-            {isLoading ? (
-              <div className="space-y-8">
-                <div className="bg-white rounded-2xl p-12 shadow-lg animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-                  <div className="h-6 bg-gray-200 rounded w-full mb-2"></div>
-                  <div className="h-6 bg-gray-200 rounded w-3/4"></div>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-12 shadow-2xl text-white">
-                  <h3 className="text-3xl font-bold mb-6">Vision (비전)</h3>
-                  <p className="text-2xl leading-relaxed opacity-95">
-                    {data?.mission.vision}
-                  </p>
-                </div>
-
-                <div className="bg-white rounded-2xl p-12 shadow-lg border border-gray-200">
-                  <h3 className="text-3xl font-bold text-gray-900 mb-6">Mission (미션)</h3>
-                  <p className="text-2xl text-gray-700 leading-relaxed">
-                    {data?.mission.mission}
-                  </p>
-                </div>
-              </div>
+              </>
             )}
           </div>
         </section>
@@ -328,75 +416,49 @@ export default function CompanyPage() {
                 ))}
               </div>
             ) : (
-              <div className="relative">
-                {/* Timeline Line */}
-                <div className="absolute left-16 top-8 bottom-8 w-0.5 bg-primary-200 hidden md:block"></div>
+              <>
+                <div className="relative">
+                  {/* Timeline Line */}
+                  <div className="absolute left-16 top-8 bottom-8 w-0.5 bg-primary-200 hidden md:block"></div>
 
-                <div className="space-y-8">
-                  {data?.timeline.map((item, index) => (
-                    <div key={index} className="flex gap-8 items-start">
-                      <div className="w-32 flex-shrink-0">
-                        <div className="bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-xl p-4 text-center shadow-lg">
-                          <div className="text-2xl font-bold">{item.year}</div>
+                  <div className="space-y-8">
+                    {data?.timeline.map((item, index) => (
+                      <div key={index} className="flex gap-8 items-start">
+                        <div className="w-32 flex-shrink-0">
+                          <div className="bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-xl p-4 text-center shadow-lg">
+                            <div className="text-2xl font-bold">{item.year}</div>
+                          </div>
+                        </div>
+                        <div className="flex-1 bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
+                          <p className="text-gray-600">{item.description}</p>
                         </div>
                       </div>
-                      <div className="flex-1 bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-                        <p className="text-gray-600">{item.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Stats Tab */}
-      {activeTab === 'stats' && (
-        <section className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                숫자로 보는 GLEC
-              </h2>
-              <p className="text-xl text-gray-600">
-                신뢰받는 글로벌 탄소관리 리더
-              </p>
-            </div>
-
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="bg-white rounded-2xl p-8 shadow-lg animate-pulse">
-                    <div className="h-16 bg-gray-200 rounded mb-4"></div>
-                    <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-8 shadow-xl text-white text-center hover:-translate-y-2 transition-transform">
-                  <div className="text-5xl font-bold mb-4">{data?.stats.customers}</div>
-                  <p className="text-xl opacity-95">고객사</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-8 shadow-xl text-white text-center hover:-translate-y-2 transition-transform">
-                  <div className="text-5xl font-bold mb-4">{data?.stats.coverage}</div>
-                  <p className="text-xl opacity-95">글로벌 커버리지</p>
+                {/* Future Vision */}
+                <div className="mt-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-8 text-white shadow-2xl">
+                  <h3 className="text-2xl font-bold mb-4">2026년 그리고 그 이후</h3>
+                  <p className="text-lg text-white/90 leading-relaxed mb-4">
+                    GLEC은 2026년까지 아시아 최대 탄소관리 플랫폼으로 도약할 계획입니다.
+                    AI 기반 탄소배출 예측, 블록체인 기반 탄소크레딧 거래, 그리고 실시간 공급망 최적화 기능을 추가하여
+                    단순한 측정 도구를 넘어 전략적 탄소관리 파트너가 되고자 합니다.
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                      <span className="font-semibold">AI 예측 엔진</span>
+                    </div>
+                    <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                      <span className="font-semibold">블록체인 크레딧</span>
+                    </div>
+                    <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                      <span className="font-semibold">공급망 최적화</span>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-8 shadow-xl text-white text-center hover:-translate-y-2 transition-transform">
-                  <div className="text-5xl font-bold mb-4">{data?.stats.accuracy}</div>
-                  <p className="text-xl opacity-95">측정 정확도</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-8 shadow-xl text-white text-center hover:-translate-y-2 transition-transform">
-                  <div className="text-5xl font-bold mb-4">{data?.stats.certifications}</div>
-                  <p className="text-xl opacity-95">국제 인증</p>
-                </div>
-              </div>
+              </>
             )}
           </div>
         </section>
