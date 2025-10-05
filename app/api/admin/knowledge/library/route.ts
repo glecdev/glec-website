@@ -175,7 +175,7 @@ export const POST = withAuth(
       const validated = validationResult.data;
       const slug = generateSlug(validated.title);
 
-      // Insert new item
+      // Insert new item using tagged template
       const newItem = await sql`
         INSERT INTO libraries (
           title, slug, description, category, file_type, file_size, file_url,
