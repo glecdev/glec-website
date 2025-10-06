@@ -40,17 +40,17 @@ export async function GET() {
   try {
     // Factual GLEC certifications data based on documentation
     const allCertifications: Certification[] = [
-      // ISO Certification
+      // ISO-14083 Based Solution (not certified yet)
       {
-        id: 'iso-14083',
-        name: 'ISO 14083:2023',
+        id: 'iso-14083-based',
+        name: 'ISO 14083:2023 기반 솔루션',
         type: 'iso',
-        issuer: 'International Organization for Standardization',
+        issuer: 'GLEC',
         issueDate: '2023-03-15',
-        certificateNumber: 'ISO-14083-KR-2023-001',
+        certificateNumber: 'GLEC-ISO14083-2023',
         pdfUrl: null,
         description:
-          '온실가스 - 운송 체인에서의 정량화 및 보고를 위한 국제 표준 준수 인증',
+          'ISO-14083 국제표준 기반 탄소배출 측정 솔루션 (Smart Freight Centre GLEC Tool 인증 진행 중)',
       },
       // Awards
       {
@@ -62,7 +62,7 @@ export async function GET() {
         certificateNumber: 'GTA-2024-GLEC',
         pdfUrl: null,
         description:
-          'DHL GoGreen 파트너십 및 Zero-Cost 아키텍처 혁신성 인정',
+          'ISO-14083 기반 솔루션 및 Zero-Cost 아키텍처 혁신성 인정',
       },
       {
         id: 'award-002',

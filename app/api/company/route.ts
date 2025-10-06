@@ -64,14 +64,14 @@ export async function GET() {
       values: [
         {
           id: '1',
-          title: 'ISO-14083 국제표준 준수',
-          description: '국제 탄소 회계 표준 ISO-14083을 완벽하게 준수하는 유일한 국내 솔루션',
+          title: 'ISO-14083 국제표준 기반',
+          description: '국제 탄소 회계 표준 ISO-14083 기반 솔루션 (Smart Freight Centre GLEC Tool 인증 진행 중)',
           icon: 'transparency', // Shield icon representing certification
         },
         {
           id: '2',
-          title: 'DHL GoGreen 파트너십',
-          description: '글로벌 물류 1위 DHL과의 전략적 파트너십으로 검증된 기술력',
+          title: 'Smart Freight Centre 인증 진행',
+          description: 'Smart Freight Centre GLEC Tool 인증을 통해 글로벌 표준에 부합하는 솔루션 제공',
           icon: 'collaboration', // Globe icon representing global partnership
         },
         {
@@ -102,7 +102,7 @@ export async function GET() {
       mission: {
         vision: '탄소중립 실현을 위한 글로벌 탄소관리 플랫폼 선도 기업',
         mission:
-          'ISO-14083 국제표준 기반의 정확한 물류 탄소배출 측정 솔루션을 제공하여, 기업의 탄소중립 목표 달성을 지원합니다.',
+          'ISO-14083 국제표준 기반의 정확한 물류 탄소배출 측정 솔루션을 제공하여, Smart Freight Centre GLEC Tool 인증을 통해 기업의 탄소중립 목표 달성을 지원합니다.',
       },
       timeline: [
         {
@@ -112,8 +112,8 @@ export async function GET() {
         },
         {
           year: '2021',
-          title: 'DHL GoGreen 파트너십',
-          description: '글로벌 물류 리더 DHL과 전략적 파트너십 체결',
+          title: 'Smart Freight Centre 인증 시작',
+          description: 'Smart Freight Centre GLEC Tool 인증 진행 시작',
         },
         {
           year: '2022',

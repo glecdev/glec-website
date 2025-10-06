@@ -46,7 +46,7 @@ export async function GET() {
         name: '김탄소',
         title: 'CEO & Founder',
         department: 'leadership',
-        bio: 'ISO-14083 국제표준 전문가. DHL GoGreen 파트너십을 주도하여 GLEC을 탄소관리 플랫폼 선도 기업으로 성장시킴.',
+        bio: 'ISO-14083 국제표준 전문가. Smart Freight Centre GLEC Tool 인증을 주도하여 GLEC을 탄소관리 플랫폼 선도 기업으로 성장시킴.',
         photoUrl: null,
         linkedinUrl: null,
         email: 'ceo@glec.io',
