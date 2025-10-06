@@ -56,11 +56,13 @@ export function HeroSection() {
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-5xl mx-auto space-y-8">
           {/* Typing Animation Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight whitespace-pre-line">
-            {displayedText}
-            {isComplete && (
-              <span className="inline-block w-1 h-12 ml-2 bg-primary-500 animate-pulse" />
-            )}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight whitespace-pre-line min-h-[12rem] sm:min-h-[14rem] lg:min-h-[18rem] flex items-center justify-center">
+            <span className="block">
+              {displayedText}
+              {isComplete && (
+                <span className="inline-block w-1 h-12 ml-2 bg-primary-500 animate-pulse" />
+              )}
+            </span>
           </h1>
 
           {/* Subheadline */}
