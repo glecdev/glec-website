@@ -38,17 +38,6 @@ export async function GET() {
   try {
     // Factual GLEC partners data based on documentation
     const allPartners: Partner[] = [
-      // Strategic Partner
-      {
-        id: 'dhl-001',
-        name: 'DHL GoGreen',
-        type: 'strategic',
-        description:
-          'DHL과의 전략적 파트너십을 통해 글로벌 물류 탄소배출 측정 솔루션 제공',
-        logoUrl: null,
-        websiteUrl:
-          'https://www.dhl.com/global-en/home/our-divisions/global-forwarding/gogreen.html',
-      },
       // Technology Partners
       {
         id: 'cloudflare-001',
