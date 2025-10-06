@@ -61,3 +61,7 @@ deploy-temp/
 nul
 
 .vercel
+
+# Vercel environment variables
+VERCEL-ENV-VALUES.txt
+.env.production

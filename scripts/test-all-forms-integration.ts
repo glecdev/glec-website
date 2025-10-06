@@ -107,20 +107,23 @@ async function testDemoRequest() {
   console.log('=' .repeat(60));
 
   try {
-    console.log('  📝 POST /api/demo-request');
+    console.log('  📝 POST /api/demo-requests');
     const demoData = {
-      name: `Demo Test ${Date.now()}`,
+      companyName: `Demo Test ${Date.now()}`,
+      contactName: 'Demo Tester',
       email: `demo${Date.now()}@example.com`,
       phone: '010-9876-5432',
-      company: 'Demo Company',
-      job_title: 'CTO',
-      industry: 'LOGISTICS',
-      message: 'E2E test demo request',
-      privacy_consent: true,
-      marketing_consent: true,
+      companySize: '51-200',
+      productInterests: ['DTG_SERIES5', 'CARBON_API'],
+      useCase: 'E2E test demo request for logistics carbon emissions tracking',
+      currentSolution: 'Manual Excel tracking',
+      monthlyShipments: '1000-10000',
+      preferredDate: '2025-02-01',
+      preferredTime: '14:00',
+      additionalMessage: 'Integration test',
     };
 
-    const response = await fetch(`${BASE_URL}/api/demo-request`, {
+    const response = await fetch(`${BASE_URL}/api/demo-requests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(demoData),
@@ -230,16 +233,11 @@ async function testPartnershipApplication() {
   try {
     console.log('  📝 POST /api/partnership');
     const partnershipData = {
-      company_name: `Partner Test ${Date.now()}`,
-      contact_name: 'Partnership Manager',
+      companyName: `Partner Test ${Date.now()}`,
+      contactName: 'Partnership Manager',
       email: `partner${Date.now()}@example.com`,
-      phone: '010-7777-8888',
-      business_type: 'TECHNOLOGY',
-      website: 'https://example.com',
-      employee_count: '50-200',
-      partnership_type: 'DISTRIBUTION',
-      message: 'E2E test partnership application',
-      privacy_consent: true,
+      partnershipType: 'tech',
+      proposal: 'E2E test partnership application - We would like to collaborate on carbon tracking solutions for the logistics industry.',
     };
 
     const response = await fetch(`${BASE_URL}/api/partnership`, {
