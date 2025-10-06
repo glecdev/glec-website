@@ -97,7 +97,7 @@ export default function CertificationsPage() {
             <p className="text-xl sm:text-2xl text-white/90 mb-12 leading-relaxed">
               국제 표준 기반의 신뢰할 수 있는 탄소배출 측정 솔루션.
               <br />
-              ISO-14083 인증, DHL GoGreen 파트너십으로 검증된 기술력.
+              ISO-14083 기반 솔루션, Smart Freight Centre GLEC Tool 인증 진행 중.
             </p>
 
             {/* CTA Buttons */}
@@ -147,7 +147,7 @@ export default function CertificationsPage() {
                     clipRule="evenodd"
                   />
                 </svg>
-                ISO 14083:2023 인증
+                ISO 14083:2023 기반
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20">

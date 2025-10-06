@@ -65,23 +65,6 @@ export default function PartnersPage() {
 
   // Enhanced partner data with rich content
   const enhancedPartners: Record<string, PartnerCardData> = {
-    'dhl-001': {
-      id: 'dhl-001',
-      name: 'DHL GoGreen',
-      type: 'strategic',
-      description: 'DHL과의 전략적 파트너십을 통해 글로벌 물류 탄소배출 측정 솔루션 제공',
-      logoUrl: null,
-      websiteUrl: 'https://www.dhl.com/global-en/home/our-divisions/global-forwarding/gogreen.html',
-      partnershipYear: '2020',
-      status: 'Active Strategic Partner',
-      highlights: [
-        'ISO-14083 국제표준 공동 연구',
-        '글로벌 물류 네트워크 연동',
-        '실시간 탄소배출 측정 API 제공',
-        '200+ 국가 배송 루트 최적화'
-      ],
-      expandedDescription: 'DHL GoGreen은 글로벌 물류 산업의 탄소 중립을 선도하는 DHL의 환경 프로그램입니다. GLEC은 DHL GoGreen과의 전략적 파트너십을 통해 ISO-14083 국제표준 기반의 정확한 탄소배출 측정 솔루션을 개발하고 있습니다. 이 파트너십은 글로벌 물류 네트워크 전체의 탄소 발자국을 추적하고 최적화하는 혁신적인 솔루션을 제공합니다. DHL의 200개 이상 국가에 걸친 배송 루트 데이터와 GLEC의 AI 기반 탄소 측정 엔진을 결합하여, 실시간으로 탄소배출량을 계산하고 가장 친환경적인 배송 경로를 추천합니다. 또한 Smart Freight Centre와 협력하여 글로벌 표준을 준수하고, 기업들이 Scope 3 배출량을 정확하게 보고할 수 있도록 지원합니다.'
-    },
     'cloudflare-001': {
       id: 'cloudflare-001',
       name: 'Cloudflare',
@@ -218,7 +201,7 @@ export default function PartnersPage() {
                     clipRule="evenodd"
                   />
                 </svg>
-                DHL GoGreen 전략적 파트너
+                Cloudflare Technology 파트너
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
@@ -530,9 +513,9 @@ export default function PartnersPage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">ISO-14083 인증 지원</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">ISO-14083 기반 솔루션</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  국제표준 ISO-14083 기반 솔루션 개발 및 인증 지원으로, 글로벌 시장에서 신뢰받는 파트너로 성장합니다.
+                  국제표준 ISO-14083 기반 솔루션 개발로, Smart Freight Centre GLEC Tool 인증 진행 중이며 글로벌 시장에서 신뢰받는 파트너로 성장합니다.
                 </p>
               </div>
 
