@@ -1,0 +1,263 @@
+/**
+ * Admin Partnerships API - Database Implementation
+ *
+ * Endpoints:
+ * - GET /api/admin/partnerships - List partnerships (paginated)
+ * - PUT /api/admin/partnerships?id={id} - Update partnership status
+ * - DELETE /api/admin/partnerships?id={id} - Delete partnership
+ *
+ * Security: CONTENT_MANAGER 이상 권한 필요
+ * Database: Neon PostgreSQL
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { withAuth } from '@/lib/auth-middleware';
+import { neon } from '@neondatabase/serverless';
+
+const sql = neon(process.env.DATABASE_URL!);
+
+// ============================================================
+// Validation Schemas
+// ============================================================
+
+const PartnershipUpdateSchema = z.object({
+  status: z.enum(['NEW', 'REVIEWING', 'APPROVED', 'REJECTED']).optional(),
+  notes: z.string().optional(),
+});
+
+// ============================================================
+// GET /api/admin/partnerships - List partnerships
+// ============================================================
+
+export const GET = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const per_page = Math.min(parseInt(searchParams.get('per_page') || '20', 10), 100);
+      const status = searchParams.get('status');
+      const partnershipType = searchParams.get('partnershipType');
+      const search = searchParams.get('search');
+
+      if (page < 1 || isNaN(page)) {
+        return NextResponse.json(
+          { success: false, error: { code: 'INVALID_PAGE', message: 'Page number must be >= 1' } },
+          { status: 400 }
+        );
+      }
+
+      // Build WHERE clause
+      const conditions: string[] = [];
+      const params: any[] = [];
+
+      if (status) {
+        conditions.push(`status = $${params.length + 1}`);
+        params.push(status);
+      }
+
+      if (partnershipType) {
+        conditions.push(`partnership_type = $${params.length + 1}`);
+        params.push(partnershipType);
+      }
+
+      if (search) {
+        conditions.push(`(company_name ILIKE $${params.length + 1} OR contact_name ILIKE $${params.length + 1} OR email ILIKE $${params.length + 1})`);
+        params.push(`%${search}%`);
+      }
+
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+      // Count total
+      const countQuery = `SELECT COUNT(*) as total FROM partnerships ${whereClause}`;
+      const countResult = await sql.query(countQuery, params);
+      const total = parseInt(countResult[0].total, 10);
+
+      // Get paginated items
+      const offset = (page - 1) * per_page;
+      const itemsQuery = `
+        SELECT *
+        FROM partnerships
+        ${whereClause}
+        ORDER BY created_at DESC
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+      `;
+      params.push(per_page, offset);
+
+      const items = await sql.query(itemsQuery, params);
+
+      // Transform to camelCase
+      const transformedItems = items.map((item: any) => ({
+        id: item.id,
+        companyName: item.company_name,
+        contactName: item.contact_name,
+        email: item.email,
+        partnershipType: item.partnership_type,
+        proposal: item.proposal,
+        status: item.status,
+        notes: item.notes,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+      }));
+
+      return NextResponse.json({
+        success: true,
+        data: transformedItems,
+        meta: {
+          page,
+          perPage: per_page,
+          total,
+          totalPages: Math.ceil(total / per_page),
+        },
+      });
+    } catch (error) {
+      console.error('[GET /api/admin/partnerships] Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
+      );
+    }
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
+
+// ============================================================
+// PUT /api/admin/partnerships - Update partnership status
+// ============================================================
+
+export const PUT = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
+
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: { code: 'MISSING_ID', message: 'Partnership ID is required' } },
+          { status: 400 }
+        );
+      }
+
+      const body = await request.json();
+      const validationResult = PartnershipUpdateSchema.safeParse(body);
+
+      if (!validationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid request data',
+              details: validationResult.error.errors.map((err) => ({
+                field: err.path.join('.'),
+                message: err.message,
+              })),
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      const validated = validationResult.data;
+
+      // Check if item exists
+      const existing = await sql.query('SELECT id FROM partnerships WHERE id = $1', [id]);
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { success: false, error: { code: 'NOT_FOUND', message: 'Partnership not found' } },
+          { status: 404 }
+        );
+      }
+
+      // Build UPDATE query dynamically
+      const updates: string[] = [];
+      const params: any[] = [];
+
+      if (validated.status !== undefined) {
+        updates.push(`status = $${params.length + 1}`);
+        params.push(validated.status);
+      }
+      if (validated.notes !== undefined) {
+        updates.push(`notes = $${params.length + 1}`);
+        params.push(validated.notes);
+      }
+
+      updates.push(`updated_at = NOW()`);
+
+      const updateQuery = `
+        UPDATE partnerships
+        SET ${updates.join(', ')}
+        WHERE id = $${params.length + 1}
+        RETURNING *
+      `;
+      params.push(id);
+
+      const updated = await sql.query(updateQuery, params);
+      const result = updated[0];
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: result.id,
+          companyName: result.company_name,
+          contactName: result.contact_name,
+          email: result.email,
+          partnershipType: result.partnership_type,
+          proposal: result.proposal,
+          status: result.status,
+          notes: result.notes,
+          createdAt: result.created_at,
+          updatedAt: result.updated_at,
+        },
+      });
+    } catch (error) {
+      console.error('[PUT /api/admin/partnerships] Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
+      );
+    }
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
+
+// ============================================================
+// DELETE /api/admin/partnerships - Delete partnership
+// ============================================================
+
+export const DELETE = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
+
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: { code: 'MISSING_ID', message: 'Partnership ID is required' } },
+          { status: 400 }
+        );
+      }
+
+      // Check if item exists
+      const existing = await sql.query('SELECT id FROM partnerships WHERE id = $1', [id]);
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { success: false, error: { code: 'NOT_FOUND', message: 'Partnership not found' } },
+          { status: 404 }
+        );
+      }
+
+      // Delete item
+      await sql.query('DELETE FROM partnerships WHERE id = $1', [id]);
+
+      return new NextResponse(null, { status: 204 });
+    } catch (error) {
+      console.error('[DELETE /api/admin/partnerships] Error:', error);
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred' } },
+        { status: 500 }
+      );
+    }
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
