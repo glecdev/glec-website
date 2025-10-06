@@ -21,22 +21,22 @@ import type {
  */
 export const mockNotices: Omit<Notice, 'id' | 'createdAt' | 'updatedAt'>[] = [
   {
-    title: 'DHL GoGreen 파트너십 체결',
-    slug: 'dhl-gogreen-partnership-2025',
+    title: 'Smart Freight Centre GLEC Tool 인증 진행',
+    slug: 'sfc-glec-tool-certification-2025',
     content: `
-      <p>GLEC이 글로벌 물류 리더 DHL과 탄소배출 측정 기술 파트너십을 맺었습니다.</p>
-      <h2>파트너십 주요 내용</h2>
+      <p>GLEC이 Smart Freight Centre GLEC Tool 인증 절차를 진행하고 있습니다.</p>
+      <h2>인증 주요 내용</h2>
       <ul>
-        <li>DHL GoGreen 프로그램에 GLEC DTG 시리즈 공급</li>
-        <li>ISO-14083 표준 기반 탄소배출량 측정</li>
-        <li>연간 158만 톤 CO₂ 감축 목표</li>
+        <li>ISO-14083 국제표준 기반 솔루션</li>
+        <li>Smart Freight Centre 글로벌 인증 프로세스</li>
+        <li>연간 158만 톤 CO₂ 측정 역량</li>
       </ul>
-      <p>이번 파트너십을 통해 GLEC은 국제 물류 탄소배출 표준화에 기여할 예정입니다.</p>
+      <p>이번 인증을 통해 GLEC은 국제 물류 탄소배출 표준화에 기여할 예정입니다.</p>
     `,
-    excerpt: '글로벌 물류 리더 DHL과 탄소배출 측정 기술 파트너십을 맺고, 국제 물류 탄소배출 표준화에 나섭니다.',
+    excerpt: 'Smart Freight Centre GLEC Tool 인증을 통해 ISO-14083 기반 솔루션의 글로벌 신뢰성을 확보합니다.',
     status: 'PUBLISHED' as ContentStatus,
     category: 'PRESS' as NoticeCategory,
-    thumbnailUrl: '/images/news/dhl-partnership.svg',
+    thumbnailUrl: '/images/news/sfc-certification.svg',
     viewCount: 1250,
     publishedAt: new Date('2025-09-15T09:00:00Z'),
     authorId: 'mock-admin-id',
@@ -64,19 +64,19 @@ export const mockNotices: Omit<Notice, 'id' | 'createdAt' | 'updatedAt'>[] = [
     authorId: 'mock-admin-id',
   },
   {
-    title: 'ISO-14083 국제표준 인증 획득',
-    slug: 'iso-14083-certification-2025',
+    title: 'ISO-14083 기반 솔루션 개발 완료',
+    slug: 'iso-14083-based-solution-2025',
     content: `
-      <p>GLEC의 탄소배출 측정 방법론이 ISO-14083 국제표준 인증을 획득했습니다.</p>
-      <h2>ISO-14083 인증의 의미</h2>
+      <p>GLEC의 탄소배출 측정 방법론이 ISO-14083 국제표준을 기반으로 개발되었습니다.</p>
+      <h2>ISO-14083 기반 솔루션의 특징</h2>
       <ul>
-        <li>국제적으로 인정받는 탄소배출 측정 표준</li>
-        <li>글로벌 물류 기업과의 협업 기반 마련</li>
-        <li>ESG 보고서 작성 시 공인된 데이터 제공</li>
+        <li>국제적으로 인정받는 ISO-14083 표준 준수</li>
+        <li>Smart Freight Centre GLEC Tool 인증 진행 중</li>
+        <li>ESG 보고서 작성 시 신뢰성 있는 데이터 제공</li>
       </ul>
       <p>GLEC은 앞으로도 국제 표준을 준수하며 글로벌 신뢰성을 확보해 나가겠습니다.</p>
     `,
-    excerpt: 'GLEC의 탄소배출 측정 방법론이 ISO-14083 국제표준 인증을 획득하며, 글로벌 신뢰성을 확보했습니다.',
+    excerpt: 'GLEC의 탄소배출 측정 솔루션이 ISO-14083 국제표준 기반으로 개발되어, 글로벌 신뢰성을 갖추었습니다.',
     status: 'PUBLISHED' as ContentStatus,
     category: 'GENERAL' as NoticeCategory,
     thumbnailUrl: '/images/news/iso-certification.svg',
@@ -91,17 +91,17 @@ export const mockNotices: Omit<Notice, 'id' | 'createdAt' | 'updatedAt'>[] = [
  */
 export const mockPress: Omit<Press, 'id' | 'createdAt' | 'updatedAt'>[] = [
   {
-    title: 'GLEC, DHL과 글로벌 물류 탄소중립 파트너십 체결',
-    slug: 'glec-dhl-global-partnership',
+    title: 'GLEC, Smart Freight Centre 글로벌 인증 진행',
+    slug: 'glec-sfc-global-certification',
     content: `
-      <p>[서울, 2025년 9월 15일] GLEC이 세계 최대 물류 기업 DHL과 탄소중립 물류를 위한 전략적 파트너십을 체결했다고 발표했다.</p>
-      <p>이번 파트너십을 통해 GLEC의 DTG 시리즈와 Carbon API가 DHL GoGreen 프로그램에 통합되어, 전 세계 DHL 물류 차량의 탄소배출량을 실시간으로 측정하고 관리하게 된다.</p>
+      <p>[서울, 2025년 9월 15일] GLEC이 Smart Freight Centre GLEC Tool 글로벌 인증을 진행 중이라고 발표했다.</p>
+      <p>이번 인증을 통해 GLEC의 DTG 시리즈와 Carbon API가 ISO-14083 국제표준 기반으로 검증되어, 전 세계 물류 차량의 탄소배출량을 정확하게 측정하고 관리하게 된다.</p>
     `,
-    excerpt: 'GLEC이 DHL과 탄소중립 물류 파트너십을 체결하며 글로벌 시장 진출을 본격화합니다.',
+    excerpt: 'GLEC이 Smart Freight Centre 인증을 통해 ISO-14083 기반 솔루션의 글로벌 신뢰성을 확보합니다.',
     status: 'PUBLISHED' as ContentStatus,
-    thumbnailUrl: '/images/news/dhl-partnership.svg',
+    thumbnailUrl: '/images/news/sfc-certification.svg',
     mediaOutlet: '매일경제',
-    externalUrl: 'https://example.com/news/glec-dhl-partnership',
+    externalUrl: 'https://example.com/news/glec-sfc-certification',
     viewCount: 3200,
     publishedAt: new Date('2025-09-15T09:00:00Z'),
     authorId: 'mock-admin-id',

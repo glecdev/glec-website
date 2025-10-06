@@ -37,27 +37,44 @@ export async function GET(request: NextRequest) {
       params.push(`%${search}%`);
     }
 
-    const whereClause = `WHERE ${conditions.join(' AND ')}`;
-
     // Count total
-    const countQuery = `SELECT COUNT(*) as total FROM blogs ${whereClause}`;
-    const countResult = await sql.query(countQuery, params);
-    const total = parseInt(countResult[0].total, 10);
-
-    // Get paginated items
     const offset = (page - 1) * per_page;
-    const itemsQuery = `
-      SELECT
-        id, title, content, excerpt, thumbnail_url, tags,
-        view_count, published_at, created_at, updated_at
-      FROM blogs
-      ${whereClause}
-      ORDER BY published_at DESC NULLS LAST, created_at DESC
-      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
-    `;
-    params.push(per_page, offset);
 
-    const items = await sql.query(itemsQuery, params);
+    // Build dynamic query using tagged template
+    let countResult;
+    let items;
+
+    if (search) {
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM blogs
+        WHERE status = 'PUBLISHED' AND title ILIKE ${`%${search}%`}
+      `;
+      items = await sql`
+        SELECT
+          id, title, content, excerpt, thumbnail_url, tags,
+          view_count, published_at, created_at, updated_at
+        FROM blogs
+        WHERE status = 'PUBLISHED' AND title ILIKE ${`%${search}%`}
+        ORDER BY published_at DESC NULLS LAST, created_at DESC
+        LIMIT ${per_page} OFFSET ${offset}
+      `;
+    } else {
+      countResult = await sql`
+        SELECT COUNT(*) as total FROM blogs
+        WHERE status = 'PUBLISHED'
+      `;
+      items = await sql`
+        SELECT
+          id, title, content, excerpt, thumbnail_url, tags,
+          view_count, published_at, created_at, updated_at
+        FROM blogs
+        WHERE status = 'PUBLISHED'
+        ORDER BY published_at DESC NULLS LAST, created_at DESC
+        LIMIT ${per_page} OFFSET ${offset}
+      `;
+    }
+
+    const total = parseInt(countResult[0].total, 10);
 
     // Transform to camelCase
     const transformedItems = items.map((item: any) => ({
