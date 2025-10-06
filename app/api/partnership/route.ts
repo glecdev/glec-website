@@ -7,11 +7,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { neon } from '@neondatabase/serverless';
 
 // Initialize Resend only if API key is available (prevents build-time errors)
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
+
+// Initialize Neon SQL
+const sql = neon(process.env.DATABASE_URL!);
 
 interface PartnershipFormData {
   companyName: string;
@@ -133,6 +137,23 @@ export async function POST(request: NextRequest) {
       proposal: sanitizeInput(body.proposal),
     };
 
+    // Save to database first
+    const now = new Date();
+    const dbResult = await resend ? sql`
+      INSERT INTO partnerships (
+        company_name, contact_name, email, partnership_type, proposal,
+        status, created_at, updated_at
+      )
+      VALUES (
+        ${sanitizedData.companyName}, ${sanitizedData.contactName}, ${sanitizedData.email},
+        ${sanitizedData.partnershipType}, ${sanitizedData.proposal},
+        'NEW', ${now}, ${now}
+      )
+      RETURNING id, company_name, contact_name, email, status, created_at
+    ` : null;
+
+    const createdPartnership = dbResult ? dbResult[0] : null;
+
     // Send email via Resend
     const emailResult = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'noreply@glec.io',
@@ -217,7 +238,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        id: emailResult.data?.id,
+        id: createdPartnership?.id || emailResult.data?.id,
         message: '파트너십 신청이 성공적으로 접수되었습니다',
       },
     });

@@ -191,9 +191,11 @@ export default function VideosPage() {
 
                   <div className="p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded ${CATEGORY_COLORS[video.category]}`}>
-                        {CATEGORIES[video.category].label}
-                      </span>
+                      {video.category && CATEGORIES[video.category as keyof typeof CATEGORIES] && (
+                        <span className={`px-2 py-1 text-xs font-semibold rounded ${CATEGORY_COLORS[video.category as keyof typeof CATEGORY_COLORS]}`}>
+                          {CATEGORIES[video.category as keyof typeof CATEGORIES].label}
+                        </span>
+                      )}
                       <span className="text-xs text-gray-500">{video.viewCount.toLocaleString()} 조회</span>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-500 transition-colors">

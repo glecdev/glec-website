@@ -196,13 +196,17 @@ export default function BlogPage() {
                       <p className="text-gray-600 mb-4 line-clamp-2">{post.excerpt}</p>
                       <div className="flex items-center gap-4 text-sm text-gray-500">
                         {post.authorAvatar ? (
-                          <img src={post.authorAvatar} alt={post.author} className="w-8 h-8 rounded-full" />
-                        ) : (
+                          <img src={post.authorAvatar} alt={post.author || 'Author'} className="w-8 h-8 rounded-full" />
+                        ) : post.author ? (
                           <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
                             {post.author.charAt(0).toUpperCase()}
                           </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
+                            G
+                          </div>
                         )}
-                        <span className="font-medium">{post.author}</span>
+                        <span className="font-medium">{post.author || 'GLEC'}</span>
                         <span>•</span>
                         <time>{formatDate(post.publishedAt)}</time>
                       </div>

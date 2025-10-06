@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
       youtubeVideoId: item.youtube_video_id,
       thumbnailUrl: item.thumbnail_url,
       duration: item.duration || '0:00',
-      tab: item.tab,
+      category: item.tab, // Map 'tab' field to 'category' for frontend compatibility
       viewCount: item.view_count,
       publishedAt: item.published_at,
       createdAt: item.created_at,

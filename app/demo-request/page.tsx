@@ -204,15 +204,20 @@ export default function DemoRequestPage() {
       }
 
       // Track conversion
-      await trackConversion(
-        'demo_request',
-        {
-          company: formData.companyName,
-          products: formData.productInterests,
-          useCase: formData.useCase,
-        },
-        1000000 // 1M KRW estimated value
-      );
+      try {
+        await trackConversion(
+          'demo_request',
+          {
+            company: formData.companyName,
+            products: formData.productInterests,
+            useCase: formData.useCase,
+          },
+          1000000 // 1M KRW estimated value
+        );
+      } catch (trackError) {
+        // Track conversion errors are non-blocking
+        console.warn('Failed to track conversion:', trackError);
+      }
 
       // Clear localStorage
       localStorage.removeItem(STORAGE_KEY);
@@ -310,6 +315,7 @@ export default function DemoRequestPage() {
                   </label>
                   <input
                     type="text"
+                    name="companyName"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                       errors.companyName ? 'border-error-500' : 'border-gray-300'
                     }`}
@@ -328,6 +334,7 @@ export default function DemoRequestPage() {
                   </label>
                   <input
                     type="text"
+                    name="contactName"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                       errors.contactName ? 'border-error-500' : 'border-gray-300'
                     }`}
@@ -346,6 +353,7 @@ export default function DemoRequestPage() {
                   </label>
                   <input
                     type="email"
+                    name="email"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                       errors.email ? 'border-error-500' : 'border-gray-300'
                     }`}
@@ -364,6 +372,7 @@ export default function DemoRequestPage() {
                   </label>
                   <input
                     type="tel"
+                    name="phone"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                       errors.phone ? 'border-error-500' : 'border-gray-300'
                     }`}
@@ -384,6 +393,7 @@ export default function DemoRequestPage() {
                     회사 규모 <span className="text-error-500">*</span>
                   </label>
                   <select
+                    name="companySize"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                       errors.companySize ? 'border-error-500' : 'border-gray-300'
                     }`}
@@ -437,6 +447,7 @@ export default function DemoRequestPage() {
                       >
                         <input
                           type="checkbox"
+                          name="productInterests"
                           className="w-5 h-5 text-primary-500 rounded focus:ring-2 focus:ring-primary-500"
                           checked={formData.productInterests?.includes(product)}
                           onChange={(e) =>
@@ -461,6 +472,7 @@ export default function DemoRequestPage() {
                     사용 목적 <span className="text-error-500">*</span>
                   </label>
                   <textarea
+                    name="useCase"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none ${
                       errors.useCase ? 'border-error-500' : 'border-gray-300'
                     }`}
@@ -480,6 +492,7 @@ export default function DemoRequestPage() {
                   </label>
                   <input
                     type="text"
+                    name="currentSolution"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     value={formData.currentSolution || ''}
                     onChange={(e) =>
@@ -494,6 +507,7 @@ export default function DemoRequestPage() {
                     월간 배송량 <span className="text-error-500">*</span>
                   </label>
                   <select
+                    name="monthlyShipments"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                       errors.monthlyShipments ? 'border-error-500' : 'border-gray-300'
                     }`}
@@ -545,6 +559,7 @@ export default function DemoRequestPage() {
                   </label>
                   <input
                     type="date"
+                    name="preferredDate"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                       errors.preferredDate ? 'border-error-500' : 'border-gray-300'
                     }`}
@@ -564,6 +579,7 @@ export default function DemoRequestPage() {
                     희망 시간 <span className="text-error-500">*</span>
                   </label>
                   <select
+                    name="preferredTime"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                       errors.preferredTime ? 'border-error-500' : 'border-gray-300'
                     }`}
@@ -589,6 +605,7 @@ export default function DemoRequestPage() {
                     추가 메시지 (선택)
                   </label>
                   <textarea
+                    name="additionalMessage"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
                     rows={4}
                     value={formData.additionalMessage || ''}

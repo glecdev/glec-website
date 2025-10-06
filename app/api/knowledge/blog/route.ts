@@ -51,11 +51,13 @@ export async function GET(request: NextRequest) {
       `;
       items = await sql`
         SELECT
-          id, title, content, excerpt, thumbnail_url, tags,
-          view_count, published_at, created_at, updated_at
-        FROM blogs
-        WHERE status = 'PUBLISHED' AND title ILIKE ${`%${search}%`}
-        ORDER BY published_at DESC NULLS LAST, created_at DESC
+          b.id, b.title, b.slug, b.content, b.excerpt, b.thumbnail_url, b.tags,
+          b.view_count, b.reading_time, b.published_at, b.created_at, b.updated_at,
+          u.name as author_name, u.profile_image_url as author_avatar
+        FROM blogs b
+        LEFT JOIN users u ON b.author_id = u.id
+        WHERE b.status = 'PUBLISHED' AND b.title ILIKE ${`%${search}%`}
+        ORDER BY b.published_at DESC NULLS LAST, b.created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
     } else {
@@ -65,11 +67,13 @@ export async function GET(request: NextRequest) {
       `;
       items = await sql`
         SELECT
-          id, title, content, excerpt, thumbnail_url, tags,
-          view_count, published_at, created_at, updated_at
-        FROM blogs
-        WHERE status = 'PUBLISHED'
-        ORDER BY published_at DESC NULLS LAST, created_at DESC
+          b.id, b.title, b.slug, b.content, b.excerpt, b.thumbnail_url, b.tags,
+          b.view_count, b.reading_time, b.published_at, b.created_at, b.updated_at,
+          u.name as author_name, u.profile_image_url as author_avatar
+        FROM blogs b
+        LEFT JOIN users u ON b.author_id = u.id
+        WHERE b.status = 'PUBLISHED'
+        ORDER BY b.published_at DESC NULLS LAST, b.created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
     }
@@ -80,10 +84,14 @@ export async function GET(request: NextRequest) {
     const transformedItems = items.map((item: any) => ({
       id: item.id,
       title: item.title,
+      slug: item.slug,
       content: item.content,
       excerpt: item.excerpt,
       thumbnailUrl: item.thumbnail_url,
       tags: item.tags || [],
+      author: item.author_name || 'GLEC', // Default to 'GLEC' if author not found
+      authorAvatar: item.author_avatar || null,
+      readTime: item.reading_time ? `${item.reading_time}분` : '5분', // Format as Korean "X분"
       viewCount: item.view_count,
       publishedAt: item.published_at,
       createdAt: item.created_at,
