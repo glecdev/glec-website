@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         SELECT
           b.id, b.title, b.slug, b.content, b.excerpt, b.thumbnail_url, b.tags,
           b.view_count, b.reading_time, b.published_at, b.created_at, b.updated_at,
-          u.name as author_name, u.profile_image_url as author_avatar
+          u.name as author_name
         FROM blogs b
         LEFT JOIN users u ON b.author_id = u.id
         WHERE b.status = 'PUBLISHED' AND b.title ILIKE ${`%${search}%`}
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
         SELECT
           b.id, b.title, b.slug, b.content, b.excerpt, b.thumbnail_url, b.tags,
           b.view_count, b.reading_time, b.published_at, b.created_at, b.updated_at,
-          u.name as author_name, u.profile_image_url as author_avatar
+          u.name as author_name
         FROM blogs b
         LEFT JOIN users u ON b.author_id = u.id
         WHERE b.status = 'PUBLISHED'
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       thumbnailUrl: item.thumbnail_url,
       tags: item.tags || [],
       author: item.author_name || 'GLEC', // Default to 'GLEC' if author not found
-      authorAvatar: item.author_avatar || null,
+      authorAvatar: null, // Users table doesn't have profile_image_url column
       readTime: item.reading_time ? `${item.reading_time}분` : '5분', // Format as Korean "X분"
       viewCount: item.view_count,
       publishedAt: item.published_at,
