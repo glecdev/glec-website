@@ -164,11 +164,9 @@ export default function VideosPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {videos.map((video) => (
-                <a
+                <Link
                   key={video.id}
-                  href={video.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={`/knowledge/videos/${video.id}`}
                   className="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="relative aspect-video bg-gray-900 overflow-hidden">
@@ -206,7 +204,7 @@ export default function VideosPage() {
                       {new Date(video.publishedAt).toLocaleDateString('ko-KR')}
                     </time>
                   </div>
-                </a>
+                </Link>
               ))}
             </div>
           )}

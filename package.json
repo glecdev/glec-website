@@ -30,6 +30,7 @@
     "@aws-sdk/s3-request-presigner": "^3.901.0",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/client": "^5.22.0",
+    "@tabler/icons-react": "^3.35.0",
     "@tiptap/extension-image": "^3.6.2",
     "@tiptap/extension-link": "^3.6.2",
     "@tiptap/extension-placeholder": "^3.6.2",
