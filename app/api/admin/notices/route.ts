@@ -1,5 +1,5 @@
 /**
- * Admin Notices API - Complete CRUD (Static Export Compatible)
+ * Admin Notices API - Complete CRUD (Neon PostgreSQL)
  *
  * Based on: GLEC-API-Specification.yaml (lines 1255-1511)
  * Requirements:
@@ -24,8 +24,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withAuth } from '@/lib/auth-middleware';
-import { getMockNoticesWithIds, addMockNotice, updateMockNotice, deleteMockNotice } from '@/lib/mock-data';
-import type { Notice, NoticeCategory, ContentStatus } from '@prisma/client';
+import { neon } from '@neondatabase/serverless';
+import type { NoticeCategory, ContentStatus } from '@prisma/client';
+
+// Database connection
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+const sql = neon(DATABASE_URL);
 
 // ============================================================
 // Validation Schemas
@@ -45,10 +54,15 @@ const NoticeCreateSchema = z.object({
   status: z.enum(['DRAFT', 'PUBLISHED'], {
     errorMap: () => ({ message: 'Status must be either DRAFT or PUBLISHED' }),
   }),
-  thumbnail_url: z.string().url('Invalid URL format').optional(),
+  thumbnail_url: z.string().url('Invalid URL format').optional().nullable(),
 });
 
 type NoticeCreateInput = z.infer<typeof NoticeCreateSchema>;
+
+/**
+ * Notice Update Schema (same as create but all fields optional except ID)
+ */
+const NoticeUpdateSchema = NoticeCreateSchema.partial();
 
 // ============================================================
 // Helper Functions
@@ -72,36 +86,28 @@ function generateSlug(title: string): string {
 }
 
 /**
- * Check if slug is unique (mock implementation)
- * TODO: Replace with Prisma query when DB connected
- */
-function isSlugUnique(slug: string, existingNotices: Notice[]): boolean {
-  return !existingNotices.some((n) => n.slug === slug);
-}
-
-/**
  * Generate unique slug with numeric suffix if needed
  * Example: "dhl-gogreen" → "dhl-gogreen-2" (if "dhl-gogreen" exists)
- *
- * Based on: GLEC-API-Specification.yaml (line 1327 - 중복 시 숫자 추가)
  */
-function generateUniqueSlug(title: string, existingNotices: Notice[]): string {
+async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
   let slug = generateSlug(title);
   let counter = 2;
 
-  while (!isSlugUnique(slug, existingNotices)) {
+  while (true) {
+    const existing = await sql`
+      SELECT id FROM notices
+      WHERE slug = ${slug}
+        ${excludeId ? sql`AND id != ${excludeId}` : sql``}
+      LIMIT 1
+    `;
+
+    if (existing.length === 0) {
+      return slug;
+    }
+
     slug = `${generateSlug(title)}-${counter}`;
     counter++;
   }
-
-  return slug;
-}
-
-/**
- * Generate mock UUID (deterministic for testing)
- */
-function generateMockUUID(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
 }
 
 /**
@@ -147,10 +153,17 @@ export const GET = withAuth(
 
       // If ID is provided, return single notice (Query Parameter Pattern)
       if (id) {
-        const allNotices = getMockNoticesWithIds();
-        const notice = allNotices.find((n) => n.id === id);
+        const notices = await sql`
+          SELECT
+            id, title, slug, content, excerpt, status, category,
+            thumbnail_url, view_count, published_at, author_id,
+            created_at, updated_at, deleted_at
+          FROM notices
+          WHERE id = ${id}
+          LIMIT 1
+        `;
 
-        if (!notice) {
+        if (notices.length === 0) {
           return NextResponse.json(
             {
               success: false,
@@ -163,10 +176,27 @@ export const GET = withAuth(
           );
         }
 
+        const notice = notices[0];
+
         return NextResponse.json(
           {
             success: true,
-            data: notice,
+            data: {
+              id: notice.id,
+              title: notice.title,
+              slug: notice.slug,
+              content: notice.content,
+              excerpt: notice.excerpt,
+              status: notice.status,
+              category: notice.category,
+              thumbnailUrl: notice.thumbnail_url,
+              viewCount: notice.view_count,
+              publishedAt: notice.published_at,
+              authorId: notice.author_id,
+              createdAt: notice.created_at,
+              updatedAt: notice.updated_at,
+              deletedAt: notice.deleted_at,
+            },
           },
           {
             headers: {
@@ -197,44 +227,207 @@ export const GET = withAuth(
         );
       }
 
-      // TODO: Replace with Prisma when DB connected
-      // const notices = await prisma.notice.findMany({ where: { ... } });
-      let allNotices = getMockNoticesWithIds();
+      // Build SQL query with filters
+      let countQuery;
+      let dataQuery;
 
-      // Filter by status (admin can see all statuses)
-      if (status) {
-        allNotices = allNotices.filter((n) => n.status === status);
+      if (status && category && search) {
+        // All filters
+        const searchPattern = `%${search}%`;
+        countQuery = sql`
+          SELECT COUNT(*) as count
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND status = ${status}
+            AND category = ${category}
+            AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+        `;
+        dataQuery = sql`
+          SELECT
+            id, title, slug, content, excerpt, status, category,
+            thumbnail_url, view_count, published_at, author_id,
+            created_at, updated_at, deleted_at
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND status = ${status}
+            AND category = ${category}
+            AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+          ORDER BY published_at DESC NULLS LAST, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${(page - 1) * per_page}
+        `;
+      } else if (status && category) {
+        countQuery = sql`
+          SELECT COUNT(*) as count
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND status = ${status}
+            AND category = ${category}
+        `;
+        dataQuery = sql`
+          SELECT
+            id, title, slug, content, excerpt, status, category,
+            thumbnail_url, view_count, published_at, author_id,
+            created_at, updated_at, deleted_at
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND status = ${status}
+            AND category = ${category}
+          ORDER BY published_at DESC NULLS LAST, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${(page - 1) * per_page}
+        `;
+      } else if (status && search) {
+        const searchPattern = `%${search}%`;
+        countQuery = sql`
+          SELECT COUNT(*) as count
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND status = ${status}
+            AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+        `;
+        dataQuery = sql`
+          SELECT
+            id, title, slug, content, excerpt, status, category,
+            thumbnail_url, view_count, published_at, author_id,
+            created_at, updated_at, deleted_at
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND status = ${status}
+            AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+          ORDER BY published_at DESC NULLS LAST, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${(page - 1) * per_page}
+        `;
+      } else if (category && search) {
+        const searchPattern = `%${search}%`;
+        countQuery = sql`
+          SELECT COUNT(*) as count
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND category = ${category}
+            AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+        `;
+        dataQuery = sql`
+          SELECT
+            id, title, slug, content, excerpt, status, category,
+            thumbnail_url, view_count, published_at, author_id,
+            created_at, updated_at, deleted_at
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND category = ${category}
+            AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+          ORDER BY published_at DESC NULLS LAST, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${(page - 1) * per_page}
+        `;
+      } else if (status) {
+        countQuery = sql`
+          SELECT COUNT(*) as count
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND status = ${status}
+        `;
+        dataQuery = sql`
+          SELECT
+            id, title, slug, content, excerpt, status, category,
+            thumbnail_url, view_count, published_at, author_id,
+            created_at, updated_at, deleted_at
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND status = ${status}
+          ORDER BY published_at DESC NULLS LAST, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${(page - 1) * per_page}
+        `;
+      } else if (category) {
+        countQuery = sql`
+          SELECT COUNT(*) as count
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND category = ${category}
+        `;
+        dataQuery = sql`
+          SELECT
+            id, title, slug, content, excerpt, status, category,
+            thumbnail_url, view_count, published_at, author_id,
+            created_at, updated_at, deleted_at
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND category = ${category}
+          ORDER BY published_at DESC NULLS LAST, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${(page - 1) * per_page}
+        `;
+      } else if (search) {
+        const searchPattern = `%${search}%`;
+        countQuery = sql`
+          SELECT COUNT(*) as count
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+        `;
+        dataQuery = sql`
+          SELECT
+            id, title, slug, content, excerpt, status, category,
+            thumbnail_url, view_count, published_at, author_id,
+            created_at, updated_at, deleted_at
+          FROM notices
+          WHERE deleted_at IS NULL
+            AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+          ORDER BY published_at DESC NULLS LAST, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${(page - 1) * per_page}
+        `;
+      } else {
+        // No filters
+        countQuery = sql`
+          SELECT COUNT(*) as count
+          FROM notices
+          WHERE deleted_at IS NULL
+        `;
+        dataQuery = sql`
+          SELECT
+            id, title, slug, content, excerpt, status, category,
+            thumbnail_url, view_count, published_at, author_id,
+            created_at, updated_at, deleted_at
+          FROM notices
+          WHERE deleted_at IS NULL
+          ORDER BY published_at DESC NULLS LAST, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${(page - 1) * per_page}
+        `;
       }
 
-      // Filter by category
-      if (category) {
-        allNotices = allNotices.filter((n) => n.category === category);
-      }
-
-      // Search by title
-      if (search) {
-        const searchLower = search.toLowerCase();
-        allNotices = allNotices.filter((n) => n.title.toLowerCase().includes(searchLower));
-      }
-
-      // Sort by publishedAt desc (or createdAt if no publishedAt)
-      allNotices.sort((a, b) => {
-        const dateA = a.publishedAt || a.createdAt;
-        const dateB = b.publishedAt || b.createdAt;
-        return dateB.getTime() - dateA.getTime();
-      });
-
-      // Pagination
-      const total = allNotices.length;
+      // Execute queries
+      const countResult = await countQuery;
+      const total = Number(countResult[0]?.count || 0);
       const total_pages = Math.ceil(total / per_page);
-      const start = (page - 1) * per_page;
-      const end = start + per_page;
-      const paginatedNotices = allNotices.slice(start, end);
+
+      const notices = await dataQuery;
+
+      // Transform to camelCase
+      const transformedNotices = notices.map((notice: any) => ({
+        id: notice.id,
+        title: notice.title,
+        slug: notice.slug,
+        content: notice.content,
+        excerpt: notice.excerpt,
+        status: notice.status,
+        category: notice.category,
+        thumbnailUrl: notice.thumbnail_url,
+        viewCount: notice.view_count,
+        publishedAt: notice.published_at,
+        authorId: notice.author_id,
+        createdAt: notice.created_at,
+        updatedAt: notice.updated_at,
+        deletedAt: notice.deleted_at,
+      }));
 
       return NextResponse.json(
         {
           success: true,
-          data: paginatedNotices,
+          data: transformedNotices,
           meta: {
             page,
             per_page,
@@ -298,17 +491,16 @@ export const POST = withAuth(
       // Parse request body
       const body = await request.json();
 
-      // Validate with Zod
-      const validationResult = NoticeCreateSchema.safeParse(body);
-
-      if (!validationResult.success) {
+      // Validate input
+      const validation = NoticeCreateSchema.safeParse(body);
+      if (!validation.success) {
         return NextResponse.json(
           {
             success: false,
             error: {
               code: 'VALIDATION_ERROR',
-              message: 'Invalid request data',
-              details: validationResult.error.errors.map((err) => ({
+              message: 'Invalid input data',
+              details: validation.error.errors.map((err) => ({
                 field: err.path.join('.'),
                 message: err.message,
               })),
@@ -318,78 +510,69 @@ export const POST = withAuth(
         );
       }
 
-      const validated = validationResult.data;
-
-      // TODO: Replace with Prisma when DB connected
-      // Get existing notices to check slug uniqueness
-      const existingNotices = getMockNoticesWithIds();
+      const input = validation.data;
 
       // Generate unique slug
-      const slug = generateUniqueSlug(validated.title, existingNotices);
+      const slug = await generateUniqueSlug(input.title);
 
       // Generate excerpt if not provided
-      const excerpt = validated.excerpt || generateExcerpt(validated.content);
+      const excerpt = input.excerpt || generateExcerpt(input.content);
 
-      // Create notice object
-      const now = new Date();
-      const newNotice: Notice = {
-        id: generateMockUUID(),
-        title: validated.title,
-        slug,
-        content: validated.content,
-        excerpt,
-        status: validated.status as ContentStatus,
-        category: validated.category as NoticeCategory,
-        thumbnailUrl: validated.thumbnail_url || null,
-        viewCount: 0,
-        publishedAt: validated.status === 'PUBLISHED' ? now : null,
-        authorId: user.userId, // From JWT token
-        createdAt: now,
-        updatedAt: now,
-      };
+      // Determine publishedAt
+      const publishedAt = input.status === 'PUBLISHED' ? new Date() : null;
 
-      // TODO: Replace with Prisma when DB connected
-      // const createdNotice = await prisma.notice.create({ data: newNotice });
+      // Insert into database
+      const result = await sql`
+        INSERT INTO notices (
+          title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
+          created_at, updated_at
+        )
+        VALUES (
+          ${input.title},
+          ${slug},
+          ${input.content},
+          ${excerpt},
+          ${input.status},
+          ${input.category},
+          ${input.thumbnail_url || null},
+          0,
+          ${publishedAt},
+          ${user.id},
+          NOW(),
+          NOW()
+        )
+        RETURNING
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
+          created_at, updated_at
+      `;
 
-      // MVP: Add to in-memory store (will persist until server restart)
-      addMockNotice(newNotice);
-
-      console.log('[POST /api/admin/notices] Created notice (MOCK - in-memory):', {
-        id: newNotice.id,
-        title: newNotice.title,
-        slug: newNotice.slug,
-        status: newNotice.status,
-        authorId: newNotice.authorId,
-      });
+      const notice = result[0];
 
       return NextResponse.json(
         {
           success: true,
-          data: newNotice,
-        },
-        {
-          status: 201,
-          headers: {
-            'Cache-Control': 'no-store, must-revalidate',
+          data: {
+            id: notice.id,
+            title: notice.title,
+            slug: notice.slug,
+            content: notice.content,
+            excerpt: notice.excerpt,
+            status: notice.status,
+            category: notice.category,
+            thumbnailUrl: notice.thumbnail_url,
+            viewCount: notice.view_count,
+            publishedAt: notice.published_at,
+            authorId: notice.author_id,
+            createdAt: notice.created_at,
+            updatedAt: notice.updated_at,
           },
-        }
+        },
+        { status: 201 }
       );
     } catch (error) {
       console.error('[POST /api/admin/notices] Error:', error);
-
-      if (error instanceof SyntaxError) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: 'INVALID_JSON',
-              message: 'Invalid JSON in request body',
-            },
-          },
-          { status: 400 }
-        );
-      }
-
       return NextResponse.json(
         {
           success: false,
@@ -406,51 +589,34 @@ export const POST = withAuth(
 );
 
 // ============================================================
-// PUT /api/admin/notices?id=xxx - Update notice by ID
+// PUT /api/admin/notices?id=xxx - Update existing notice
 // ============================================================
-
-/**
- * Notice Update Schema
- * Based on: GLEC-API-Specification.yaml (lines 1450-1470)
- */
-const NoticeUpdateSchema = z.object({
-  title: z.string().min(1).max(200).optional(),
-  content: z.string().min(1).optional(),
-  excerpt: z.string().max(300).optional(),
-  category: z.enum(['GENERAL', 'PRODUCT', 'EVENT', 'PRESS']).optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
-  thumbnail_url: z.string().url('Invalid URL format').optional().nullable(),
-});
 
 /**
  * PUT /api/admin/notices?id=xxx
  *
- * Based on: GLEC-API-Specification.yaml (lines 1424-1483)
+ * Based on: GLEC-API-Specification.yaml (lines 1388-1454)
  * Requirements: FR-ADMIN-005 (공지사항 수정)
  *
  * Query Parameters:
- * - id: Notice UUID (required)
+ * - id: string (UUID) - required
  *
  * Request Body (all fields optional):
  * {
- *   title?: string,
- *   content?: string,
- *   excerpt?: string,
+ *   title?: string (1-200 chars),
+ *   content?: string (HTML),
+ *   excerpt?: string (max 300 chars),
  *   category?: "GENERAL" | "PRODUCT" | "EVENT" | "PRESS",
- *   status?: "DRAFT" | "PUBLISHED" | "ARCHIVED",
- *   thumbnail_url?: string | null
+ *   status?: "DRAFT" | "PUBLISHED",
+ *   thumbnail_url?: string (URL)
  * }
- *
- * Auto-updates:
- * - publishedAt: set to now if status changes from DRAFT → PUBLISHED
- * - updatedAt: always set to now
  *
  * Response: { success: true, data: Notice }
  */
 export const PUT = withAuth(
-  async (request: NextRequest, { user }) => {
+  async (request: NextRequest) => {
     try {
-      const { searchParams } = request.nextUrl;
+      const searchParams = request.nextUrl.searchParams;
       const id = searchParams.get('id');
 
       if (!id) {
@@ -459,44 +625,22 @@ export const PUT = withAuth(
             success: false,
             error: {
               code: 'MISSING_ID',
-              message: 'Notice ID is required in query parameter (?id=xxx)',
+              message: 'Notice ID is required',
             },
           },
           { status: 400 }
         );
       }
 
-      // Parse request body
-      const body = await request.json();
+      // Check if notice exists
+      const existing = await sql`
+        SELECT id, slug, status
+        FROM notices
+        WHERE id = ${id} AND deleted_at IS NULL
+        LIMIT 1
+      `;
 
-      // Validate with Zod
-      const validationResult = NoticeUpdateSchema.safeParse(body);
-
-      if (!validationResult.success) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: 'VALIDATION_ERROR',
-              message: 'Invalid request data',
-              details: validationResult.error.errors.map((err) => ({
-                field: err.path.join('.'),
-                message: err.message,
-              })),
-            },
-          },
-          { status: 400 }
-        );
-      }
-
-      const validated = validationResult.data;
-
-      // TODO: Replace with Prisma when DB connected
-      // const existingNotice = await prisma.notice.findUnique({ where: { id } });
-      const allNotices = getMockNoticesWithIds();
-      const existingNotice = allNotices.find((n) => n.id === id);
-
-      if (!existingNotice) {
+      if (existing.length === 0) {
         return NextResponse.json(
           {
             success: false,
@@ -509,84 +653,137 @@ export const PUT = withAuth(
         );
       }
 
-      // Prepare update data
-      const now = new Date();
-      const updatedNotice: Notice = {
-        ...existingNotice,
-        ...validated,
-        updatedAt: now,
-      };
+      // Parse request body
+      const body = await request.json();
 
-      // Auto-update publishedAt if status changes to PUBLISHED
-      if (validated.status === 'PUBLISHED' && existingNotice.status !== 'PUBLISHED') {
-        updatedNotice.publishedAt = now;
-      }
-
-      // Handle thumbnail_url null explicitly
-      if ('thumbnail_url' in validated) {
-        updatedNotice.thumbnailUrl = validated.thumbnail_url ?? null;
-      }
-
-      // TODO: Replace with Prisma when DB connected
-      // const updated = await prisma.notice.update({ where: { id }, data: updatedNotice });
-
-      // MVP: Update in-memory store
-      const result = updateMockNotice(id, {
-        ...validated,
-        updatedAt: now,
-        publishedAt: updatedNotice.publishedAt,
-        thumbnailUrl: updatedNotice.thumbnailUrl,
-      });
-
-      // If not found in in-memory store, it might be a static mock notice
-      // In that case, we can't update it (DB would handle this)
-      if (!result) {
+      // Validate input
+      const validation = NoticeUpdateSchema.safeParse(body);
+      if (!validation.success) {
         return NextResponse.json(
           {
             success: false,
             error: {
-              code: 'UPDATE_FAILED',
-              message: 'Cannot update static mock notices. Only dynamically created notices can be updated.',
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid input data',
+              details: validation.error.errors.map((err) => ({
+                field: err.path.join('.'),
+                message: err.message,
+              })),
             },
           },
           { status: 400 }
         );
       }
 
-      console.log('[PUT /api/admin/notices] Updated notice (MOCK - in-memory):', {
-        id: result.id,
-        title: result.title,
-        status: result.status,
-        publishedAt: result.publishedAt,
-      });
+      const input = validation.data;
+
+      // Generate new slug if title changed
+      let slug = existing[0].slug;
+      if (input.title) {
+        slug = await generateUniqueSlug(input.title, id);
+      }
+
+      // Update publishedAt if status changed from DRAFT to PUBLISHED
+      let publishedAt = null;
+      if (input.status === 'PUBLISHED' && existing[0].status === 'DRAFT') {
+        publishedAt = new Date();
+      }
+
+      // Build update query dynamically
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (input.title !== undefined) {
+        updates.push(`title = $${values.length + 1}`);
+        values.push(input.title);
+      }
+      if (input.title !== undefined) {
+        updates.push(`slug = $${values.length + 1}`);
+        values.push(slug);
+      }
+      if (input.content !== undefined) {
+        updates.push(`content = $${values.length + 1}`);
+        values.push(input.content);
+      }
+      if (input.excerpt !== undefined) {
+        updates.push(`excerpt = $${values.length + 1}`);
+        values.push(input.excerpt);
+      }
+      if (input.category !== undefined) {
+        updates.push(`category = $${values.length + 1}`);
+        values.push(input.category);
+      }
+      if (input.status !== undefined) {
+        updates.push(`status = $${values.length + 1}`);
+        values.push(input.status);
+      }
+      if (input.thumbnail_url !== undefined) {
+        updates.push(`thumbnail_url = $${values.length + 1}`);
+        values.push(input.thumbnail_url);
+      }
+      if (publishedAt) {
+        updates.push(`published_at = $${values.length + 1}`);
+        values.push(publishedAt);
+      }
+
+      if (updates.length === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'NO_UPDATES',
+              message: 'No fields to update',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      // Update notice
+      const result = await sql`
+        UPDATE notices
+        SET
+          title = COALESCE(${input.title}, title),
+          slug = ${slug},
+          content = COALESCE(${input.content}, content),
+          excerpt = COALESCE(${input.excerpt}, excerpt),
+          category = COALESCE(${input.category}, category),
+          status = COALESCE(${input.status}, status),
+          thumbnail_url = COALESCE(${input.thumbnail_url}, thumbnail_url),
+          published_at = COALESCE(${publishedAt}, published_at),
+          updated_at = NOW()
+        WHERE id = ${id}
+        RETURNING
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
+          created_at, updated_at
+      `;
+
+      const notice = result[0];
 
       return NextResponse.json(
         {
           success: true,
-          data: result,
-        },
-        {
-          headers: {
-            'Cache-Control': 'no-store, must-revalidate',
+          data: {
+            id: notice.id,
+            title: notice.title,
+            slug: notice.slug,
+            content: notice.content,
+            excerpt: notice.excerpt,
+            status: notice.status,
+            category: notice.category,
+            thumbnailUrl: notice.thumbnail_url,
+            viewCount: notice.view_count,
+            publishedAt: notice.published_at,
+            authorId: notice.author_id,
+            createdAt: notice.created_at,
+            updatedAt: notice.updated_at,
           },
-        }
+        },
+        { status: 200 }
       );
     } catch (error) {
       console.error('[PUT /api/admin/notices] Error:', error);
-
-      if (error instanceof SyntaxError) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: 'INVALID_JSON',
-              message: 'Invalid JSON in request body',
-            },
-          },
-          { status: 400 }
-        );
-      }
-
       return NextResponse.json(
         {
           success: false,
@@ -609,20 +806,18 @@ export const PUT = withAuth(
 /**
  * DELETE /api/admin/notices?id=xxx
  *
- * Based on: GLEC-API-Specification.yaml (lines 1485-1511)
- * Requirements: FR-ADMIN-006 (공지사항 삭제)
+ * Based on: GLEC-API-Specification.yaml (lines 1456-1511)
+ * Requirements: FR-ADMIN-006 (공지사항 삭제 - Soft Delete)
  *
  * Query Parameters:
- * - id: Notice UUID (required)
+ * - id: string (UUID) - required
  *
- * Soft Delete: Sets deleted_at timestamp instead of actually deleting
- *
- * Response: 204 No Content
+ * Response: { success: true }
  */
 export const DELETE = withAuth(
-  async (request: NextRequest, { user }) => {
+  async (request: NextRequest) => {
     try {
-      const { searchParams } = request.nextUrl;
+      const searchParams = request.nextUrl.searchParams;
       const id = searchParams.get('id');
 
       if (!id) {
@@ -631,19 +826,22 @@ export const DELETE = withAuth(
             success: false,
             error: {
               code: 'MISSING_ID',
-              message: 'Notice ID is required in query parameter (?id=xxx)',
+              message: 'Notice ID is required',
             },
           },
           { status: 400 }
         );
       }
 
-      // TODO: Replace with Prisma when DB connected
-      // const existingNotice = await prisma.notice.findUnique({ where: { id } });
-      const allNotices = getMockNoticesWithIds();
-      const existingNotice = allNotices.find((n) => n.id === id);
+      // Check if notice exists
+      const existing = await sql`
+        SELECT id
+        FROM notices
+        WHERE id = ${id} AND deleted_at IS NULL
+        LIMIT 1
+      `;
 
-      if (!existingNotice) {
+      if (existing.length === 0) {
         return NextResponse.json(
           {
             success: false,
@@ -656,43 +854,20 @@ export const DELETE = withAuth(
         );
       }
 
-      // TODO: Replace with Prisma when DB connected
-      // Soft Delete: Update deleted_at instead of actual deletion
-      // await prisma.notice.update({
-      //   where: { id },
-      //   data: { deleted_at: new Date() }
-      // });
+      // Soft delete (set deleted_at timestamp)
+      await sql`
+        UPDATE notices
+        SET deleted_at = NOW(), updated_at = NOW()
+        WHERE id = ${id}
+      `;
 
-      // MVP: Soft delete in-memory store
-      const deleted = deleteMockNotice(id);
-
-      // If not found in in-memory store, it might be a static mock notice
-      if (!deleted) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: 'DELETE_FAILED',
-              message: 'Cannot delete static mock notices. Only dynamically created notices can be deleted.',
-            },
-          },
-          { status: 400 }
-        );
-      }
-
-      console.log('[DELETE /api/admin/notices] Soft deleted notice (MOCK - in-memory):', {
-        id: existingNotice.id,
-        title: existingNotice.title,
-        deleted_at: new Date(),
-      });
-
-      // Return 204 No Content (as per API spec)
-      return new NextResponse(null, {
-        status: 204,
-        headers: {
-          'Cache-Control': 'no-store, must-revalidate',
+      return NextResponse.json(
+        {
+          success: true,
+          message: '공지사항이 삭제되었습니다',
         },
-      });
+        { status: 200 }
+      );
     } catch (error) {
       console.error('[DELETE /api/admin/notices] Error:', error);
       return NextResponse.json(
