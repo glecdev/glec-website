@@ -1,12 +1,10 @@
 /**
- * Dashboard Analytics API Endpoint
+ * Dashboard Analytics API Endpoint - Neon PostgreSQL Implementation
  *
  * Purpose: Provide comprehensive analytics data for admin dashboard
  * Based on: GLEC-API-Specification.yaml
  * Data Sources:
- *   - getMockNoticesWithIds() from @/lib/mock-data
- *   - getMockPressWithIds() from @/lib/mock-data
- *   - PopupStore.getAll() from @/app/api/_shared/popup-store
+ *   - Neon PostgreSQL (notices, press, popups, blogs, videos, library)
  *
  * Response Structure:
  * {
@@ -22,9 +20,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getMockNoticesWithIds, getMockPressWithIds } from '@/lib/mock-data';
-import { PopupStore } from '@/app/api/_shared/popup-store';
-import type { Notice, Press } from '@prisma/client';
+import { neon } from '@neondatabase/serverless';
+
+// Database connection
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+const sql = neon(DATABASE_URL);
 
 interface StatWithGrowth {
   current: number;
@@ -95,142 +100,8 @@ function calculateGrowthRate(current: number, previous: number): number {
 }
 
 /**
- * Generate mock previous period data (simulate -20% to +30% growth)
- */
-function generatePreviousPeriodValue(current: number): number {
-  // Random growth between -20% and +30%
-  const growthFactor = 0.8 + Math.random() * 0.5;
-  return Math.round(current / growthFactor);
-}
-
-/**
- * Generate daily trend data for specified number of days
- */
-function generateDailyTrends(notices: Notice[], press: Press[], days: number): DailyTrendData[] {
-  const trends: DailyTrendData[] = [];
-  const now = new Date();
-
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
-
-    // Simulate daily counts (random distribution)
-    const dailyNotices = Math.floor(Math.random() * 5) + 1;
-    const dailyPress = Math.floor(Math.random() * 3) + 1;
-    const dailyViews = Math.floor(Math.random() * 500) + 100;
-
-    trends.push({
-      date: dateStr,
-      notices: dailyNotices,
-      press: dailyPress,
-      views: dailyViews,
-    });
-  }
-
-  return trends;
-}
-
-/**
- * Filter content by date range
- */
-function filterByDateRange<T extends { createdAt: Date }>(items: T[], days: number): T[] {
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - days);
-  return items.filter((item) => item.createdAt >= cutoffDate);
-}
-
-/**
- * Count notices by category
- */
-function countNoticesByCategory(notices: Notice[]): DistributionItem[] {
-  const categories: Record<string, { count: number; color: string }> = {
-    GENERAL: { count: 0, color: '#6B7280' },
-    PRODUCT: { count: 0, color: '#0600f7' },
-    EVENT: { count: 0, color: '#10b981' },
-    PRESS: { count: 0, color: '#8b5cf6' },
-  };
-
-  notices.forEach((notice) => {
-    if (categories[notice.category]) {
-      categories[notice.category].count++;
-    }
-  });
-
-  return Object.entries(categories).map(([name, data]) => ({
-    name,
-    value: data.count,
-    color: data.color,
-  }));
-}
-
-/**
- * Count content by status
- */
-function countContentByStatus(notices: Notice[], press: Press[]): DistributionItem[] {
-  const statuses: Record<string, { count: number; color: string }> = {
-    PUBLISHED: { count: 0, color: '#10b981' },
-    DRAFT: { count: 0, color: '#f59e0b' },
-    ARCHIVED: { count: 0, color: '#6B7280' },
-  };
-
-  [...notices, ...press].forEach((item) => {
-    if (statuses[item.status]) {
-      statuses[item.status].count++;
-    }
-  });
-
-  return Object.entries(statuses).map(([name, data]) => ({
-    name,
-    value: data.count,
-    color: data.color,
-  }));
-}
-
-/**
- * Count popups by display type
- */
-function countPopupsByType(popups: any[]): DistributionItem[] {
-  const types: Record<string, { count: number; color: string }> = {
-    modal: { count: 0, color: '#0600f7' },
-    banner: { count: 0, color: '#10b981' },
-    corner: { count: 0, color: '#f59e0b' },
-  };
-
-  popups.forEach((popup) => {
-    if (types[popup.displayType]) {
-      types[popup.displayType].count++;
-    }
-  });
-
-  return Object.entries(types).map(([name, data]) => ({
-    name,
-    value: data.count,
-    color: data.color,
-  }));
-}
-
-/**
- * Get top 5 notices by view count
- */
-function getTopNotices(notices: Notice[]): TopContentItem[] {
-  return notices
-    .filter((n) => n.status === 'PUBLISHED')
-    .sort((a, b) => b.viewCount - a.viewCount)
-    .slice(0, 5)
-    .map((notice, index) => ({
-      id: notice.id,
-      title: notice.title,
-      category: notice.category,
-      viewCount: notice.viewCount,
-      publishedAt: notice.publishedAt?.toISOString() || notice.createdAt.toISOString(),
-      rank: index + 1,
-    }));
-}
-
-/**
  * GET /api/admin/analytics/dashboard
- * Returns comprehensive dashboard analytics
+ * Returns comprehensive dashboard analytics from real database
  *
  * Query Parameters:
  *   - range: '7d' | '30d' | '90d' (default: '30d')
@@ -258,81 +129,323 @@ export async function GET(request: NextRequest) {
 
     const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
 
-    // Fetch data from all sources
-    const allNotices = getMockNoticesWithIds();
-    const allPress = getMockPressWithIds();
-    const popups = PopupStore.getAll();
+    // Calculate date ranges
+    const currentStartDate = new Date();
+    currentStartDate.setDate(currentStartDate.getDate() - days);
 
-    // Filter by date range
-    const notices = filterByDateRange(allNotices, days);
-    const press = filterByDateRange(allPress, days);
+    const previousStartDate = new Date(currentStartDate);
+    previousStartDate.setDate(previousStartDate.getDate() - days);
 
-    // Calculate current stats (filtered by date range)
-    const totalContent = notices.length + press.length;
-    const totalNotices = notices.length;
-    const totalPress = press.length;
-    const totalViews = notices.reduce((sum, n) => sum + n.viewCount, 0);
-    const publishedContent = [...notices, ...press].filter((c) => c.status === 'PUBLISHED').length;
+    // ============================================================
+    // 1. Fetch Current Period Stats
+    // ============================================================
 
-    // Generate previous period values (simulate historical data)
-    const previousTotalContent = generatePreviousPeriodValue(totalContent);
-    const previousTotalNotices = generatePreviousPeriodValue(totalNotices);
-    const previousTotalPress = generatePreviousPeriodValue(totalPress);
-    const previousTotalViews = generatePreviousPeriodValue(totalViews);
-    const previousPublishedContent = generatePreviousPeriodValue(publishedContent);
+    // Notices count (current period)
+    const noticesCountResult = await sql`
+      SELECT COUNT(*) as count
+      FROM notices
+      WHERE created_at >= ${currentStartDate.toISOString()}
+        AND deleted_at IS NULL
+    `;
+    const totalNoticesCurrent = Number(noticesCountResult[0]?.count || 0);
 
-    // Calculate popup analytics
-    const activePopups = popups.filter((p) => p.isActive).length;
-    const inactivePopups = popups.length - activePopups;
-    const activationRate = popups.length > 0 ? Math.round((activePopups / popups.length) * 100 * 10) / 10 : 0;
+    // Press count (current period)
+    const pressCountResult = await sql`
+      SELECT COUNT(*) as count
+      FROM press
+      WHERE created_at >= ${currentStartDate.toISOString()}
+        AND deleted_at IS NULL
+    `;
+    const totalPressCurrent = Number(pressCountResult[0]?.count || 0);
 
-    // Build response
+    // Total content (current)
+    const totalContentCurrent = totalNoticesCurrent + totalPressCurrent;
+
+    // Total views (current period)
+    const viewsResult = await sql`
+      SELECT
+        COALESCE(SUM(view_count), 0) as total_views
+      FROM (
+        SELECT view_count FROM notices WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
+        UNION ALL
+        SELECT view_count FROM press WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
+      ) as all_content
+    `;
+    const totalViewsCurrent = Number(viewsResult[0]?.total_views || 0);
+
+    // Published content count (current)
+    const publishedResult = await sql`
+      SELECT COUNT(*) as count
+      FROM (
+        SELECT id FROM notices WHERE created_at >= ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
+        UNION ALL
+        SELECT id FROM press WHERE created_at >= ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
+      ) as published_content
+    `;
+    const publishedContentCurrent = Number(publishedResult[0]?.count || 0);
+
+    // ============================================================
+    // 2. Fetch Previous Period Stats (for growth calculation)
+    // ============================================================
+
+    // Notices count (previous period)
+    const noticesPrevResult = await sql`
+      SELECT COUNT(*) as count
+      FROM notices
+      WHERE created_at >= ${previousStartDate.toISOString()}
+        AND created_at < ${currentStartDate.toISOString()}
+        AND deleted_at IS NULL
+    `;
+    const totalNoticesPrevious = Number(noticesPrevResult[0]?.count || 0);
+
+    // Press count (previous period)
+    const pressPrevResult = await sql`
+      SELECT COUNT(*) as count
+      FROM press
+      WHERE created_at >= ${previousStartDate.toISOString()}
+        AND created_at < ${currentStartDate.toISOString()}
+        AND deleted_at IS NULL
+    `;
+    const totalPressPrevious = Number(pressPrevResult[0]?.count || 0);
+
+    // Total content (previous)
+    const totalContentPrevious = totalNoticesPrevious + totalPressPrevious;
+
+    // Total views (previous period)
+    const viewsPrevResult = await sql`
+      SELECT
+        COALESCE(SUM(view_count), 0) as total_views
+      FROM (
+        SELECT view_count FROM notices WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND deleted_at IS NULL
+        UNION ALL
+        SELECT view_count FROM press WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND deleted_at IS NULL
+      ) as all_content
+    `;
+    const totalViewsPrevious = Number(viewsPrevResult[0]?.total_views || 0);
+
+    // Published content count (previous)
+    const publishedPrevResult = await sql`
+      SELECT COUNT(*) as count
+      FROM (
+        SELECT id FROM notices WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
+        UNION ALL
+        SELECT id FROM press WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
+      ) as published_content
+    `;
+    const publishedContentPrevious = Number(publishedPrevResult[0]?.count || 0);
+
+    // ============================================================
+    // 3. Popup Analytics
+    // ============================================================
+
+    const popupsResult = await sql`
+      SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN is_active = true THEN 1 ELSE 0 END) as active
+      FROM popups
+      WHERE deleted_at IS NULL
+    `;
+    const totalPopups = Number(popupsResult[0]?.total || 0);
+    const activePopups = Number(popupsResult[0]?.active || 0);
+    const inactivePopups = totalPopups - activePopups;
+    const activationRate = totalPopups > 0 ? Math.round((activePopups / totalPopups) * 100 * 10) / 10 : 0;
+
+    // ============================================================
+    // 4. Distribution Analysis
+    // ============================================================
+
+    // Notices by category
+    const noticesByCategoryResult = await sql`
+      SELECT
+        category,
+        COUNT(*) as count
+      FROM notices
+      WHERE created_at >= ${currentStartDate.toISOString()}
+        AND deleted_at IS NULL
+      GROUP BY category
+    `;
+
+    const categoryColors: Record<string, string> = {
+      GENERAL: '#6B7280',
+      PRODUCT: '#0600f7',
+      EVENT: '#10b981',
+      PRESS: '#8b5cf6',
+    };
+
+    const noticesByCategory = noticesByCategoryResult.map((row: any) => ({
+      name: row.category,
+      value: Number(row.count),
+      color: categoryColors[row.category] || '#6B7280',
+    }));
+
+    // Content by status
+    const contentByStatusResult = await sql`
+      SELECT
+        status,
+        COUNT(*) as count
+      FROM (
+        SELECT status FROM notices WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
+        UNION ALL
+        SELECT status FROM press WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
+      ) as all_content
+      GROUP BY status
+    `;
+
+    const statusColors: Record<string, string> = {
+      PUBLISHED: '#10b981',
+      DRAFT: '#f59e0b',
+      ARCHIVED: '#6B7280',
+    };
+
+    const contentByStatus = contentByStatusResult.map((row: any) => ({
+      name: row.status,
+      value: Number(row.count),
+      color: statusColors[row.status] || '#6B7280',
+    }));
+
+    // Popups by display type
+    const popupsByTypeResult = await sql`
+      SELECT
+        display_type,
+        COUNT(*) as count
+      FROM popups
+      WHERE deleted_at IS NULL
+      GROUP BY display_type
+    `;
+
+    const typeColors: Record<string, string> = {
+      modal: '#0600f7',
+      banner: '#10b981',
+      corner: '#f59e0b',
+    };
+
+    const popupsByType = popupsByTypeResult.map((row: any) => ({
+      name: row.display_type,
+      value: Number(row.count),
+      color: typeColors[row.display_type] || '#6B7280',
+    }));
+
+    // ============================================================
+    // 5. Daily Trends (last N days)
+    // ============================================================
+
+    const dailyTrendsResult = await sql`
+      WITH date_series AS (
+        SELECT generate_series(
+          ${currentStartDate.toISOString()}::date,
+          CURRENT_DATE,
+          '1 day'::interval
+        )::date AS date
+      )
+      SELECT
+        ds.date::text,
+        COALESCE(n.notice_count, 0) as notices,
+        COALESCE(p.press_count, 0) as press,
+        COALESCE(n.notice_views, 0) + COALESCE(p.press_views, 0) as views
+      FROM date_series ds
+      LEFT JOIN (
+        SELECT
+          created_at::date as date,
+          COUNT(*) as notice_count,
+          SUM(view_count) as notice_views
+        FROM notices
+        WHERE created_at >= ${currentStartDate.toISOString()}
+          AND deleted_at IS NULL
+        GROUP BY created_at::date
+      ) n ON ds.date = n.date
+      LEFT JOIN (
+        SELECT
+          created_at::date as date,
+          COUNT(*) as press_count,
+          SUM(view_count) as press_views
+        FROM press
+        WHERE created_at >= ${currentStartDate.toISOString()}
+          AND deleted_at IS NULL
+        GROUP BY created_at::date
+      ) p ON ds.date = p.date
+      ORDER BY ds.date ASC
+    `;
+
+    const dailyData = dailyTrendsResult.map((row: any) => ({
+      date: row.date,
+      notices: Number(row.notices),
+      press: Number(row.press),
+      views: Number(row.views),
+    }));
+
+    // ============================================================
+    // 6. Top 5 Notices by View Count
+    // ============================================================
+
+    const topNoticesResult = await sql`
+      SELECT
+        id, title, category, view_count, published_at
+      FROM notices
+      WHERE status = 'PUBLISHED'
+        AND deleted_at IS NULL
+      ORDER BY view_count DESC
+      LIMIT 5
+    `;
+
+    const topNotices = topNoticesResult.map((row: any, index: number) => ({
+      id: row.id,
+      title: row.title,
+      category: row.category,
+      viewCount: Number(row.view_count),
+      publishedAt: row.published_at || row.created_at,
+      rank: index + 1,
+    }));
+
+    // ============================================================
+    // 7. Build Response
+    // ============================================================
+
     const response: DashboardAnalyticsResponse = {
       success: true,
       data: {
         stats: {
           totalContent: {
-            current: totalContent,
-            previous: previousTotalContent,
-            growthRate: calculateGrowthRate(totalContent, previousTotalContent),
+            current: totalContentCurrent,
+            previous: totalContentPrevious,
+            growthRate: calculateGrowthRate(totalContentCurrent, totalContentPrevious),
           },
           totalNotices: {
-            current: totalNotices,
-            previous: previousTotalNotices,
-            growthRate: calculateGrowthRate(totalNotices, previousTotalNotices),
+            current: totalNoticesCurrent,
+            previous: totalNoticesPrevious,
+            growthRate: calculateGrowthRate(totalNoticesCurrent, totalNoticesPrevious),
           },
           totalPress: {
-            current: totalPress,
-            previous: previousTotalPress,
-            growthRate: calculateGrowthRate(totalPress, previousTotalPress),
+            current: totalPressCurrent,
+            previous: totalPressPrevious,
+            growthRate: calculateGrowthRate(totalPressCurrent, totalPressPrevious),
           },
           totalViews: {
-            current: totalViews,
-            previous: previousTotalViews,
-            growthRate: calculateGrowthRate(totalViews, previousTotalViews),
+            current: totalViewsCurrent,
+            previous: totalViewsPrevious,
+            growthRate: calculateGrowthRate(totalViewsCurrent, totalViewsPrevious),
           },
           publishedContent: {
-            current: publishedContent,
-            previous: previousPublishedContent,
-            growthRate: calculateGrowthRate(publishedContent, previousPublishedContent),
+            current: publishedContentCurrent,
+            previous: publishedContentPrevious,
+            growthRate: calculateGrowthRate(publishedContentCurrent, publishedContentPrevious),
           },
         },
         popupAnalytics: {
-          total: popups.length,
+          total: totalPopups,
           active: activePopups,
           inactive: inactivePopups,
           activationRate,
         },
         distribution: {
-          noticesByCategory: countNoticesByCategory(notices),
-          contentByStatus: countContentByStatus(notices, press),
-          popupsByType: countPopupsByType(popups),
+          noticesByCategory,
+          contentByStatus,
+          popupsByType,
         },
         trends: {
-          dailyData: generateDailyTrends(notices, press, days),
+          dailyData,
         },
         topContent: {
-          notices: getTopNotices(notices),
+          notices: topNotices,
         },
       },
     };
