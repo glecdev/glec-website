@@ -52,7 +52,7 @@ const navigation: NavItem[] = [
     ),
   },
   {
-    name: '공지사항',
+    name: '지식센터 공지사항',
     href: '/admin/notices',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
@@ -62,7 +62,7 @@ const navigation: NavItem[] = [
     roles: ['SUPER_ADMIN', 'CONTENT_MANAGER'],
   },
   {
-    name: '보도자료',
+    name: '지식센터 보도자료',
     href: '/admin/press',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
