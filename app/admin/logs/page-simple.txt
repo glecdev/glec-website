@@ -1,0 +1,13 @@
+완성된 Logs page UI는 다음과 같이 구성됩니다:
+
+1. Header: "감사 로그" 제목
+2. Filters: Action dropdown, Resource dropdown  
+3. Table: 타임스탬프, 사용자, 액션, 리소스, IP주소, 상세 버튼
+4. Pagination: 이전/다음 버튼
+
+핵심 기능:
+- 10초마다 자동 새로고침
+- 변경사항 펼쳐보기/숨기기 토글
+- 액션별 색상 배지 (LOGIN=blue, CREATE=green, UPDATE=yellow, DELETE=red)
+
+간단한 작동 가능한 UI를 빠르게 완성하고 sidebar에 추가한 후 테스트하겠습니다.

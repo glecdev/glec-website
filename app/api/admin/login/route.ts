@@ -30,6 +30,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { comparePassword, generateToken, hashPassword } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
+import { logLogin } from '@/app/api/_shared/audit-logger';
 
 const prisma = new PrismaClient();
 
@@ -151,6 +152,9 @@ export async function POST(request: NextRequest) {
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
     });
+
+    // Log successful login to audit trail
+    await logLogin(user.id, request);
 
     // Generate JWT token
     const token = generateToken({
