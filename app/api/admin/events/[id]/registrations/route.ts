@@ -33,10 +33,7 @@ export const GET = withAuth(
       const search = searchParams.get('search');
 
       // First, get event details
-      const eventResult = await sql(
-        'SELECT * FROM events WHERE id = $1',
-        [eventId]
-      );
+      const eventResult = await sql`SELECT * FROM events WHERE id = ${eventId}`;
 
       if (eventResult.length === 0) {
         return NextResponse.json(
@@ -76,7 +73,7 @@ export const GET = withAuth(
         ORDER BY created_at DESC
       `;
 
-      const registrations = await sql(registrationsQuery, params);
+      const registrations = await sql.query(registrationsQuery, params);
 
       // Transform snake_case to camelCase
       const transformedRegistrations = registrations.map((reg: any) => ({

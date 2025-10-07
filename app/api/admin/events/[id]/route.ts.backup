@@ -51,7 +51,10 @@ export const GET = withAuth(
     try {
       const eventId = params.id;
 
-      const result = await sql`SELECT * FROM events WHERE id = ${eventId}`;
+      const result = await sql(
+        'SELECT * FROM events WHERE id = $1',
+        [eventId]
+      );
 
       if (result.length === 0) {
         return NextResponse.json(
@@ -149,7 +152,10 @@ export const PATCH = withAuth(
       const validated = validationResult.data;
 
       // Check if event exists
-      const existingEvent = await sql`SELECT * FROM events WHERE id = ${eventId}`;
+      const existingEvent = await sql(
+        'SELECT * FROM events WHERE id = $1',
+        [eventId]
+      );
 
       if (existingEvent.length === 0) {
         return NextResponse.json(
@@ -166,7 +172,10 @@ export const PATCH = withAuth(
 
       // Check slug uniqueness if slug is being changed
       if (validated.slug && validated.slug !== existingEvent[0].slug) {
-        const slugExists = await sql`SELECT id FROM events WHERE slug = ${validated.slug} AND id != ${eventId}`;
+        const slugExists = await sql(
+          'SELECT id FROM events WHERE slug = $1 AND id != $2',
+          [validated.slug, eventId]
+        );
 
         if (slugExists.length > 0) {
           return NextResponse.json(
@@ -267,7 +276,7 @@ export const PATCH = withAuth(
         RETURNING *
       `;
 
-      const result = await sql.query(updateQuery, params);
+      const result = await sql(updateQuery, params);
       const event = result[0];
 
       // Transform to camelCase
@@ -348,7 +357,10 @@ export const DELETE = withAuth(
       const eventId = params.id;
 
       // Check if event exists
-      const existingEvent = await sql`SELECT id FROM events WHERE id = ${eventId}`;
+      const existingEvent = await sql(
+        'SELECT id FROM events WHERE id = $1',
+        [eventId]
+      );
 
       if (existingEvent.length === 0) {
         return NextResponse.json(
@@ -364,7 +376,7 @@ export const DELETE = withAuth(
       }
 
       // Delete event (CASCADE will delete all registrations)
-      await sql`DELETE FROM events WHERE id = ${eventId}`;
+      await sql('DELETE FROM events WHERE id = $1', [eventId]);
 
       console.log('[DELETE /api/admin/events/[id]] Deleted event:', {
         id: eventId,

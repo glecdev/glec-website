@@ -66,10 +66,7 @@ export const PATCH = withAuth(
       const validated = validationResult.data;
 
       // Check if registration exists and belongs to this event
-      const existingReg = await sql(
-        'SELECT * FROM event_registrations WHERE id = $1 AND event_id = $2',
-        [registrationId, eventId]
-      );
+      const existingReg = await sql`SELECT * FROM event_registrations WHERE id = ${registrationId} AND event_id = ${eventId}`;
 
       if (existingReg.length === 0) {
         return NextResponse.json(
@@ -92,7 +89,7 @@ export const PATCH = withAuth(
         RETURNING *
       `;
 
-      const result = await sql(updateQuery, [
+      const result = await sql.query(updateQuery, [
         validated.status,
         validated.admin_notes || existingReg[0].admin_notes,
         new Date(),
