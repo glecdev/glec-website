@@ -290,7 +290,7 @@ export const POST = withAuth(
           ${validated.thumbnail_url || null},
           ${validated.max_participants || null},
           ${publishedAt},
-          ${user.userId},
+          ${user.id},
           ${now},
           ${now}
         )

@@ -23,9 +23,9 @@ const sql = neon(process.env.DATABASE_URL!);
 const PopupCreateSchema = z.object({
   title: z.string().min(1, '제목은 필수입니다').max(255, '제목은 최대 255자입니다'),
   content: z.string().optional().nullable(),
-  imageUrl: z.string().url('유효한 URL이 아닙니다').optional().nullable(),
-  linkUrl: z.string().url('유효한 URL이 아닙니다').optional().nullable(),
-  displayType: z.enum(['modal', 'banner', 'corner']).default('modal'),
+  imageUrl: z.string().url('유효한 URL이 아닙니다').or(z.literal('')).optional().nullable(),
+  linkUrl: z.string().url('유효한 URL이 아닙니다').or(z.literal('')).optional().nullable(),
+  displayType: z.enum(['MODAL', 'BANNER', 'CORNER']).default('MODAL'),
   isActive: z.boolean().default(false),
   startDate: z.string().datetime().optional().nullable(),
   endDate: z.string().datetime().optional().nullable(),
