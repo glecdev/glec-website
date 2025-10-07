@@ -13,6 +13,12 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
+  // Disable webpack cache to prevent stale module errors
+  webpack: (config, { isServer }) => {
+    config.cache = false;
+    return config;
+  },
+
   // Security headers for production
   async headers() {
     return [
