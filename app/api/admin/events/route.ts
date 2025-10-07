@@ -67,43 +67,76 @@ export const GET = withAuth(
         );
       }
 
-      // Build WHERE clause
-      const conditions: string[] = [];
-      const params: any[] = [];
-
-      if (status) {
-        conditions.push(`status = $${params.length + 1}`);
-        params.push(status);
-      }
-
-      if (search) {
-        conditions.push(`title ILIKE $${params.length + 1}`);
-        params.push(`%${search}%`);
-      }
-
-      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-
-      // Count total
-      const countQuery = `SELECT COUNT(*) as total FROM events ${whereClause}`;
-      const countResult = await sql(countQuery, params);
-      const total = parseInt(countResult[0].total, 10);
-
-      // Get paginated events with registration count
+      // Build dynamic WHERE clause with Neon Tagged Template Literals
+      let countResult;
+      let events;
       const offset = (page - 1) * per_page;
-      const eventsQuery = `
-        SELECT
-          e.*,
-          COUNT(er.id)::int as registration_count
-        FROM events e
-        LEFT JOIN event_registrations er ON e.id = er.event_id
-        ${whereClause}
-        GROUP BY e.id
-        ORDER BY e.start_date ASC
-        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
-      `;
-      params.push(per_page, offset);
 
-      const events = await sql(eventsQuery, params);
+      if (status && search) {
+        const searchPattern = `%${search}%`;
+        countResult = await sql`
+          SELECT COUNT(*) as total FROM events
+          WHERE status = ${status} AND title ILIKE ${searchPattern}
+        `;
+        events = await sql`
+          SELECT
+            e.*,
+            COUNT(er.id)::int as registration_count
+          FROM events e
+          LEFT JOIN event_registrations er ON e.id = er.event_id
+          WHERE e.status = ${status} AND e.title ILIKE ${searchPattern}
+          GROUP BY e.id
+          ORDER BY e.start_date ASC
+          LIMIT ${per_page} OFFSET ${offset}
+        `;
+      } else if (status) {
+        countResult = await sql`
+          SELECT COUNT(*) as total FROM events WHERE status = ${status}
+        `;
+        events = await sql`
+          SELECT
+            e.*,
+            COUNT(er.id)::int as registration_count
+          FROM events e
+          LEFT JOIN event_registrations er ON e.id = er.event_id
+          WHERE e.status = ${status}
+          GROUP BY e.id
+          ORDER BY e.start_date ASC
+          LIMIT ${per_page} OFFSET ${offset}
+        `;
+      } else if (search) {
+        const searchPattern = `%${search}%`;
+        countResult = await sql`
+          SELECT COUNT(*) as total FROM events WHERE title ILIKE ${searchPattern}
+        `;
+        events = await sql`
+          SELECT
+            e.*,
+            COUNT(er.id)::int as registration_count
+          FROM events e
+          LEFT JOIN event_registrations er ON e.id = er.event_id
+          WHERE e.title ILIKE ${searchPattern}
+          GROUP BY e.id
+          ORDER BY e.start_date ASC
+          LIMIT ${per_page} OFFSET ${offset}
+        `;
+      } else {
+        countResult = await sql`
+          SELECT COUNT(*) as total FROM events
+        `;
+        events = await sql`
+          SELECT
+            e.*,
+            COUNT(er.id)::int as registration_count
+          FROM events e
+          LEFT JOIN event_registrations er ON e.id = er.event_id
+          GROUP BY e.id
+          ORDER BY e.start_date ASC
+          LIMIT ${per_page} OFFSET ${offset}
+        `;
+      }
+
+      const total = parseInt(countResult[0].total, 10);
 
       // Transform snake_case to camelCase
       const transformedEvents = events.map((event: any) => ({
@@ -193,11 +226,10 @@ export const POST = withAuth(
 
       const validated = validationResult.data;
 
-      // Check slug uniqueness
-      const existingEvent = await sql(
-        'SELECT id FROM events WHERE slug = $1',
-        [validated.slug]
-      );
+      // Check slug uniqueness (Neon Tagged Template Literals)
+      const existingEvent = await sql`
+        SELECT id FROM events WHERE slug = ${validated.slug}
+      `;
 
       if (existingEvent.length > 0) {
         return NextResponse.json(
@@ -228,34 +260,34 @@ export const POST = withAuth(
         );
       }
 
-      // Insert event
+      // Insert event (Neon Tagged Template Literals)
       const now = new Date();
-      const insertQuery = `
+      const publishedAt = validated.status === 'PUBLISHED' ? now : null;
+
+      const result = await sql`
         INSERT INTO events (
           title, slug, description, status, start_date, end_date,
           location, location_details, thumbnail_url, max_participants,
           published_at, author_id, created_at, updated_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        VALUES (
+          ${validated.title},
+          ${validated.slug},
+          ${validated.description},
+          ${validated.status},
+          ${validated.start_date},
+          ${validated.end_date},
+          ${validated.location},
+          ${validated.location_details || null},
+          ${validated.thumbnail_url || null},
+          ${validated.max_participants || null},
+          ${publishedAt},
+          ${user.userId},
+          ${now},
+          ${now}
+        )
         RETURNING *
       `;
-
-      const result = await sql(insertQuery, [
-        validated.title,
-        validated.slug,
-        validated.description,
-        validated.status,
-        validated.start_date,
-        validated.end_date,
-        validated.location,
-        validated.location_details || null,
-        validated.thumbnail_url || null,
-        validated.max_participants || null,
-        validated.status === 'PUBLISHED' ? now : null,
-        user.userId,
-        now,
-        now,
-      ]);
 
       const event = result[0];
 
