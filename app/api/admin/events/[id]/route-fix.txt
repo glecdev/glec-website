@@ -1,0 +1,2 @@
+// Soft delete event (set deleted_at timestamp)
+await sql`UPDATE events SET deleted_at = NOW(), updated_at = NOW() WHERE id = ${eventId}`;

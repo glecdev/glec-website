@@ -76,7 +76,7 @@ export const GET = withAuth(
         const searchPattern = `%${search}%`;
         countResult = await sql`
           SELECT COUNT(*) as total FROM events
-          WHERE status = ${status} AND title ILIKE ${searchPattern}
+          WHERE deleted_at IS NULL AND status = ${status} AND title ILIKE ${searchPattern}
         `;
         events = await sql`
           SELECT
@@ -84,14 +84,14 @@ export const GET = withAuth(
             COUNT(er.id)::int as registration_count
           FROM events e
           LEFT JOIN event_registrations er ON e.id = er.event_id
-          WHERE e.status = ${status} AND e.title ILIKE ${searchPattern}
+          WHERE e.deleted_at IS NULL AND e.status = ${status} AND e.title ILIKE ${searchPattern}
           GROUP BY e.id
           ORDER BY e.start_date ASC
           LIMIT ${per_page} OFFSET ${offset}
         `;
       } else if (status) {
         countResult = await sql`
-          SELECT COUNT(*) as total FROM events WHERE status = ${status}
+          SELECT COUNT(*) as total FROM events WHERE deleted_at IS NULL AND status = ${status}
         `;
         events = await sql`
           SELECT
@@ -99,7 +99,7 @@ export const GET = withAuth(
             COUNT(er.id)::int as registration_count
           FROM events e
           LEFT JOIN event_registrations er ON e.id = er.event_id
-          WHERE e.status = ${status}
+          WHERE e.deleted_at IS NULL AND e.status = ${status}
           GROUP BY e.id
           ORDER BY e.start_date ASC
           LIMIT ${per_page} OFFSET ${offset}
@@ -107,7 +107,7 @@ export const GET = withAuth(
       } else if (search) {
         const searchPattern = `%${search}%`;
         countResult = await sql`
-          SELECT COUNT(*) as total FROM events WHERE title ILIKE ${searchPattern}
+          SELECT COUNT(*) as total FROM events WHERE deleted_at IS NULL AND title ILIKE ${searchPattern}
         `;
         events = await sql`
           SELECT
@@ -115,14 +115,14 @@ export const GET = withAuth(
             COUNT(er.id)::int as registration_count
           FROM events e
           LEFT JOIN event_registrations er ON e.id = er.event_id
-          WHERE e.title ILIKE ${searchPattern}
+          WHERE e.deleted_at IS NULL AND e.title ILIKE ${searchPattern}
           GROUP BY e.id
           ORDER BY e.start_date ASC
           LIMIT ${per_page} OFFSET ${offset}
         `;
       } else {
         countResult = await sql`
-          SELECT COUNT(*) as total FROM events
+          SELECT COUNT(*) as total FROM events WHERE deleted_at IS NULL
         `;
         events = await sql`
           SELECT
@@ -130,6 +130,7 @@ export const GET = withAuth(
             COUNT(er.id)::int as registration_count
           FROM events e
           LEFT JOIN event_registrations er ON e.id = er.event_id
+          WHERE e.deleted_at IS NULL
           GROUP BY e.id
           ORDER BY e.start_date ASC
           LIMIT ${per_page} OFFSET ${offset}

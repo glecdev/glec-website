@@ -347,8 +347,8 @@ export const DELETE = withAuth(
     try {
       const eventId = params.id;
 
-      // Check if event exists
-      const existingEvent = await sql`SELECT id FROM events WHERE id = ${eventId}`;
+      // Check if event exists and is not already deleted
+      const existingEvent = await sql`SELECT id FROM events WHERE id = ${eventId} AND deleted_at IS NULL`;
 
       if (existingEvent.length === 0) {
         return NextResponse.json(
@@ -363,20 +363,26 @@ export const DELETE = withAuth(
         );
       }
 
-      // Delete event (CASCADE will delete all registrations)
-      await sql`DELETE FROM events WHERE id = ${eventId}`;
+      // Soft delete event (set deleted_at timestamp)
+      await sql`UPDATE events SET deleted_at = NOW(), updated_at = NOW() WHERE id = ${eventId}`;
 
-      console.log('[DELETE /api/admin/events/[id]] Deleted event:', {
+      console.log('[DELETE /api/admin/events/[id]] Soft deleted event:', {
         id: eventId,
       });
 
-      // Return 204 No Content
-      return new NextResponse(null, {
-        status: 204,
-        headers: {
-          'Cache-Control': 'no-store, must-revalidate',
+      // Return 200 OK with success message
+      return NextResponse.json(
+        {
+          success: true,
+          message: '이벤트가 삭제되었습니다',
         },
-      });
+        {
+          status: 200,
+          headers: {
+            'Cache-Control': 'no-store, must-revalidate',
+          },
+        }
+      );
     } catch (error) {
       console.error('[DELETE /api/admin/events/[id]] Error:', error);
       return NextResponse.json(

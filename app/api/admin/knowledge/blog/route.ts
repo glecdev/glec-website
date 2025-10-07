@@ -68,7 +68,7 @@ export const GET = withAuth(
       }
 
       // Build WHERE clause
-      const conditions: string[] = [];
+      const conditions: string[] = ['deleted_at IS NULL']; // Exclude soft-deleted items
       const params: any[] = [];
 
       // Note: Blogs table doesn't have a category field in schema, filtering by tags instead
@@ -82,7 +82,7 @@ export const GET = withAuth(
         params.push(`%${search}%`);
       }
 
-      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+      const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
       // Count total using sql.query()
       const countQuery = `SELECT COUNT(*) as total FROM blogs ${whereClause}`;
@@ -348,8 +348,8 @@ export const DELETE = withAuth(
         );
       }
 
-      // Check if item exists
-      const existing = await sql.query('SELECT id FROM blogs WHERE id = $1', [id]);
+      // Check if item exists and is not already deleted
+      const existing = await sql.query('SELECT id FROM blogs WHERE id = $1 AND deleted_at IS NULL', [id]);
       if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Blog post not found' } },
@@ -357,10 +357,13 @@ export const DELETE = withAuth(
         );
       }
 
-      // Delete item
-      await sql.query('DELETE FROM blogs WHERE id = $1', [id]);
+      // Soft delete item (set deleted_at timestamp)
+      await sql.query('UPDATE blogs SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1', [id]);
 
-      return new NextResponse(null, { status: 204 });
+      return NextResponse.json(
+        { success: true, message: 'Blog post deleted successfully' },
+        { status: 200 }
+      );
     } catch (error) {
       console.error('[DELETE /api/admin/knowledge/blog] Error:', error);
       return NextResponse.json(
