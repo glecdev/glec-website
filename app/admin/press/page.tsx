@@ -105,6 +105,12 @@ export default function AdminPressPage() {
       const result: ApiResponse = await response.json();
 
       if (!response.ok || !result.success) {
+        // Check for authentication errors
+        if (result.error?.code === 'INVALID_TOKEN' || result.error?.code === 'UNAUTHORIZED') {
+          localStorage.removeItem('admin_token');
+          router.push('/admin/login?expired=true');
+          return;
+        }
         throw new Error(result.error?.message || 'Failed to fetch press releases');
       }
 
@@ -112,7 +118,16 @@ export default function AdminPressPage() {
       setMeta(result.meta);
     } catch (err) {
       console.error('[Press List] Fetch error:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
+
+      // Check if error message contains token-related keywords
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      if (errorMessage.toLowerCase().includes('token') || errorMessage.toLowerCase().includes('unauthorized')) {
+        localStorage.removeItem('admin_token');
+        router.push('/admin/login?expired=true');
+        return;
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
