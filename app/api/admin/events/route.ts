@@ -180,6 +180,13 @@ export const GET = withAuth(
       );
     } catch (error) {
       console.error('[GET /api/admin/events] Error:', error);
+      console.error('[GET /api/admin/events] Error Details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
+        code: (error as any)?.code,
+        detail: (error as any)?.detail,
+      });
       return NextResponse.json(
         {
           success: false,
@@ -332,6 +339,13 @@ export const POST = withAuth(
       );
     } catch (error) {
       console.error('[POST /api/admin/events] Error:', error);
+      console.error('[POST /api/admin/events] Error Details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
+        code: (error as any)?.code,
+        detail: (error as any)?.detail,
+      });
 
       if (error instanceof SyntaxError) {
         return NextResponse.json(
