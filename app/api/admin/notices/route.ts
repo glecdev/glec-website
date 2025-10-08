@@ -25,6 +25,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
+import crypto from 'crypto';
 import type { NoticeCategory, ContentStatus } from '@prisma/client';
 
 // Database connection
@@ -521,14 +522,18 @@ export const POST = withAuth(
       // Determine publishedAt
       const publishedAt = input.status === 'PUBLISHED' ? new Date() : null;
 
+      // Generate UUID
+      const newId = crypto.randomUUID();
+
       // Insert into database
       const result = await sql`
         INSERT INTO notices (
-          title, slug, content, excerpt, status, category,
+          id, title, slug, content, excerpt, status, category,
           thumbnail_url, view_count, published_at, author_id,
           created_at, updated_at
         )
         VALUES (
+          ${newId},
           ${input.title},
           ${slug},
           ${input.content},
@@ -538,7 +543,7 @@ export const POST = withAuth(
           ${input.thumbnail_url || null},
           0,
           ${publishedAt},
-          ${user.id},
+          ${user.userId},
           NOW(),
           NOW()
         )
