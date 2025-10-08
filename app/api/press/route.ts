@@ -103,50 +103,7 @@ export async function GET(request: NextRequest) {
     let countQuery;
     let dataQuery;
 
-    if (false) // Disabled: Press always category=PRESS {
-      // Both filters
-      const searchPattern = `%${search}%`;
-      countQuery = sql`
-        SELECT COUNT(*) as count
-        FROM notices
-        WHERE status = 'PUBLISHED' AND category = 'PRESS'
-          AND category = ${category}
-          AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
-      `;
-      dataQuery = sql`
-        SELECT
-          id, title, slug, content, excerpt, status, category,
-          thumbnail_url, view_count, published_at, author_id,
-          created_at, updated_at
-        FROM notices
-        WHERE status = 'PUBLISHED' AND category = 'PRESS'
-          AND category = ${category}
-          AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
-        ORDER BY published_at DESC, created_at DESC
-        LIMIT ${per_page}
-        OFFSET ${(page - 1) * per_page}
-      `;
-    } else if (false) { // Disabled
-      // Category only
-      countQuery = sql`
-        SELECT COUNT(*) as count
-        FROM notices
-        WHERE status = 'PUBLISHED' AND category = 'PRESS'
-          AND category = ${category}
-      `;
-      dataQuery = sql`
-        SELECT
-          id, title, slug, content, excerpt, status, category,
-          thumbnail_url, view_count, published_at, author_id,
-          created_at, updated_at
-        FROM notices
-        WHERE status = 'PUBLISHED' AND category = 'PRESS'
-          AND category = ${category}
-        ORDER BY published_at DESC, created_at DESC
-        LIMIT ${per_page}
-        OFFSET ${(page - 1) * per_page}
-      `;
-    } else if (search) {
+    if (search) {
       // Search only
       const searchPattern = `%${search}%`;
       countQuery = sql`
