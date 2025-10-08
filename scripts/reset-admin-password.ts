@@ -1,60 +1,44 @@
-/**
- * Reset Admin Password Script
- *
- * Purpose: Reset admin user password to admin123
- * Usage: npx tsx scripts/reset-admin-password.ts
- */
-
-import { config } from 'dotenv';
-import { resolve } from 'path';
-
-// Load environment variables from .env.local
-config({ path: resolve(process.cwd(), '.env.local') });
-
-import { PrismaClient } from '@prisma/client';
+import { neon } from '@neondatabase/serverless';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
-
-async function main() {
-  const email = 'admin@glec.io';
-  const newPassword = 'admin123';
-
-  try {
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user) {
-      console.error(`❌ User not found: ${email}`);
-      return;
-    }
-
-    // Hash new password
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-
-    // Update password
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash },
-    });
-
-    console.log('✅ Password reset successfully!');
-    console.log(`   Email: ${email}`);
-    console.log(`   New Password: ${newPassword}`);
-    console.log(`   User ID: ${user.id}`);
-    console.log('\n⚠️  Please change the password after login!');
-  } catch (error) {
-    console.error('❌ Error resetting password:', error);
-    throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  console.error('DATABASE_URL required');
+  process.exit(1);
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
+const sql = neon(DATABASE_URL);
+
+async function resetPassword() {
+  const email = 'admin@glec.io';
+  const newPassword = 'admin123!';
+  
+  console.log('🔐 Hashing new password...');
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  
+  console.log('📝 Updating admin user password...');
+  const result = await sql`
+    UPDATE users
+    SET password_hash = ${passwordHash}
+    WHERE email = ${email}
+    RETURNING id, email, name, role
+  `;
+  
+  if (result.length === 0) {
+    console.error('❌ Admin user not found');
+    process.exit(1);
+  }
+  
+  console.log('✅ Password reset successfully:');
+  console.log(result[0]);
+  console.log(`\nLogin credentials:`);
+  console.log(`Email: ${email}`);
+  console.log(`Password: ${newPassword}`);
+}
+
+resetPassword()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('Error:', err);
     process.exit(1);
   });

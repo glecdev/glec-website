@@ -85,36 +85,65 @@ export const GET = withAuth(
         );
       }
 
-      // Build WHERE clause
-      const conditions: any[] = [sql`deleted_at IS NULL`];
+      // Count total and fetch popups based on is_active filter
+      let countResult;
+      let popups;
+      const offset = (page - 1) * per_page;
 
       if (is_active === 'true') {
-        conditions.push(sql`is_active = true`);
+        countResult = await sql`
+          SELECT COUNT(*) as total
+          FROM popups
+          WHERE deleted_at IS NULL AND is_active = true
+        `;
+        popups = await sql`
+          SELECT
+            id, title, content, image_url, link_url, display_type,
+            is_active, start_date, end_date, z_index, show_once_per_day,
+            position, size, background_color, deleted_at, created_at, updated_at
+          FROM popups
+          WHERE deleted_at IS NULL AND is_active = true
+          ORDER BY z_index DESC, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${offset}
+        `;
       } else if (is_active === 'false') {
-        conditions.push(sql`is_active = false`);
+        countResult = await sql`
+          SELECT COUNT(*) as total
+          FROM popups
+          WHERE deleted_at IS NULL AND is_active = false
+        `;
+        popups = await sql`
+          SELECT
+            id, title, content, image_url, link_url, display_type,
+            is_active, start_date, end_date, z_index, show_once_per_day,
+            position, size, background_color, deleted_at, created_at, updated_at
+          FROM popups
+          WHERE deleted_at IS NULL AND is_active = false
+          ORDER BY z_index DESC, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${offset}
+        `;
+      } else {
+        countResult = await sql`
+          SELECT COUNT(*) as total
+          FROM popups
+          WHERE deleted_at IS NULL
+        `;
+        popups = await sql`
+          SELECT
+            id, title, content, image_url, link_url, display_type,
+            is_active, start_date, end_date, z_index, show_once_per_day,
+            position, size, background_color, deleted_at, created_at, updated_at
+          FROM popups
+          WHERE deleted_at IS NULL
+          ORDER BY z_index DESC, created_at DESC
+          LIMIT ${per_page}
+          OFFSET ${offset}
+        `;
       }
 
-      // Count total
-      const countResult = await sql`
-        SELECT COUNT(*) as total
-        FROM popups
-        WHERE ${sql.join(conditions, sql` AND `)}
-      `;
       const total = parseInt(countResult[0]?.total || '0', 10);
-
-      // Fetch popups (ordered by z_index DESC, then created_at DESC)
-      const offset = (page - 1) * per_page;
-      const popups = await sql`
-        SELECT
-          id, title, content, image_url, link_url, display_type,
-          is_active, start_date, end_date, z_index, show_once_per_day,
-          position, size, background_color, deleted_at, created_at, updated_at
-        FROM popups
-        WHERE ${sql.join(conditions, sql` AND `)}
-        ORDER BY z_index DESC, created_at DESC
-        LIMIT ${per_page}
-        OFFSET ${offset}
-      `;
 
       const transformedPopups = popups.map(transformPopupToResponse);
 

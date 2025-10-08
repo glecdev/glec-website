@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
     // Press count (current period)
     const pressCountResult = await sql`
       SELECT COUNT(*) as count
-      FROM press
+      FROM presses 
       WHERE created_at >= ${currentStartDate.toISOString()}
         AND deleted_at IS NULL
     `;
@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
       FROM (
         SELECT view_count FROM notices WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
         UNION ALL
-        SELECT view_count FROM press WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
+        SELECT view_count FROM presses WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
       ) as all_content
     `;
     const totalViewsCurrent = Number(viewsResult[0]?.total_views || 0);
@@ -179,7 +179,7 @@ export async function GET(request: NextRequest) {
       FROM (
         SELECT id FROM notices WHERE created_at >= ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
         UNION ALL
-        SELECT id FROM press WHERE created_at >= ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
+        SELECT id FROM presses WHERE created_at >= ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
       ) as published_content
     `;
     const publishedContentCurrent = Number(publishedResult[0]?.count || 0);
@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
     // Press count (previous period)
     const pressPrevResult = await sql`
       SELECT COUNT(*) as count
-      FROM press
+      FROM presses 
       WHERE created_at >= ${previousStartDate.toISOString()}
         AND created_at < ${currentStartDate.toISOString()}
         AND deleted_at IS NULL
@@ -218,7 +218,7 @@ export async function GET(request: NextRequest) {
       FROM (
         SELECT view_count FROM notices WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND deleted_at IS NULL
         UNION ALL
-        SELECT view_count FROM press WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND deleted_at IS NULL
+        SELECT view_count FROM presses WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND deleted_at IS NULL
       ) as all_content
     `;
     const totalViewsPrevious = Number(viewsPrevResult[0]?.total_views || 0);
@@ -229,7 +229,7 @@ export async function GET(request: NextRequest) {
       FROM (
         SELECT id FROM notices WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
         UNION ALL
-        SELECT id FROM press WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
+        SELECT id FROM presses WHERE created_at >= ${previousStartDate.toISOString()} AND created_at < ${currentStartDate.toISOString()} AND status = 'PUBLISHED' AND deleted_at IS NULL
       ) as published_content
     `;
     const publishedContentPrevious = Number(publishedPrevResult[0]?.count || 0);
@@ -286,7 +286,7 @@ export async function GET(request: NextRequest) {
       FROM (
         SELECT status FROM notices WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
         UNION ALL
-        SELECT status FROM press WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
+        SELECT status FROM presses WHERE created_at >= ${currentStartDate.toISOString()} AND deleted_at IS NULL
       ) as all_content
       GROUP BY status
     `;
@@ -358,7 +358,7 @@ export async function GET(request: NextRequest) {
           created_at::date as date,
           COUNT(*) as press_count,
           SUM(view_count) as press_views
-        FROM press
+        FROM presses 
         WHERE created_at >= ${currentStartDate.toISOString()}
           AND deleted_at IS NULL
         GROUP BY created_at::date
@@ -470,3 +470,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

@@ -1,71 +1,68 @@
 /**
- * Create Admin User Script
- *
- * Purpose: Create an admin user in the database for testing
- * Usage: npx tsx scripts/create-admin-user.ts
+ * Admin User Seed Script
  */
 
-import { config } from 'dotenv';
-import { resolve } from 'path';
-
-// Load environment variables from .env.local
-config({ path: resolve(process.cwd(), '.env.local') });
-
-import { PrismaClient } from '@prisma/client';
+import { neon } from '@neondatabase/serverless';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const DATABASE_URL = process.env.DATABASE_URL;
 
-async function main() {
+if (!DATABASE_URL) {
+  console.error('❌ DATABASE_URL environment variable is required');
+  process.exit(1);
+}
+
+const sql = neon(DATABASE_URL);
+
+async function createAdminUser() {
   const email = 'admin@glec.io';
-  const password = 'admin123';
+  const password = 'admin123!';
   const name = 'Admin User';
+  const role = 'SUPER_ADMIN';
 
   try {
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    console.log('🔍 Checking if admin user exists...');
 
-    if (existingUser) {
-      console.log(`✅ User already exists: ${email}`);
-      console.log(`   ID: ${existingUser.id}`);
-      console.log(`   Name: ${existingUser.name}`);
-      console.log(`   Role: ${existingUser.role}`);
+    const existing = await sql`
+      SELECT id, email, name, role, created_at
+      FROM users
+      WHERE email = ${email}
+    `;
+
+    if (existing.length > 0) {
+      console.log('✅ Admin user already exists:');
+      console.log(existing[0]);
       return;
     }
 
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
+    console.log('🔐 Hashing password...');
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        passwordHash,
-        role: 'SUPER_ADMIN',
-        isActive: true,
-      },
-    });
+    console.log('📝 Inserting admin user...');
+    const result = await sql`
+      INSERT INTO users (email, password_hash, name, role)
+      VALUES (${email}, ${hashedPassword}, ${name}, ${role})
+      RETURNING id, email, name, role, created_at
+    `;
 
-    console.log('✅ Admin user created successfully!');
+    console.log('✅ Admin user created successfully:');
+    console.log(result[0]);
+    console.log('\n📋 Login credentials:');
     console.log(`   Email: ${email}`);
     console.log(`   Password: ${password}`);
-    console.log(`   Name: ${name}`);
-    console.log(`   Role: ${user.role}`);
-    console.log(`   ID: ${user.id}`);
-    console.log('\n⚠️  Please change the password after first login!');
+
   } catch (error) {
-    console.error('❌ Error creating admin user:', error);
-    throw error;
-  } finally {
-    await prisma.$disconnect();
+    console.error('❌ Failed to create admin user:', error);
+    process.exit(1);
   }
 }
 
-main()
+createAdminUser()
+  .then(() => {
+    console.log('\n🎉 Script completed');
+    process.exit(0);
+  })
   .catch((error) => {
-    console.error(error);
+    console.error('❌ Script failed:', error);
     process.exit(1);
   });
