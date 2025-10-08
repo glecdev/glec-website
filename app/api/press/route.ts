@@ -1,4 +1,4 @@
-﻿/**
+/**
  * GET /api/press
  *
  * Based on: GLEC-API-Specification.yaml (GET /api/press)
