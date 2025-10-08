@@ -3,19 +3,19 @@
  *
  * Based on: GLEC-API-Specification.yaml (GET /api/press, GET /api/press/{slug})
  * Security: CLAUDE.md - No hardcoding, dynamic data only
- * Purpose: Fetch published press for website
+ * Purpose: Fetch published press releases from notices table (category=PRESS)
  *
  * Query Parameters:
  * - page: number (default: 1)
  * - per_page: number (default: 10, max: 50)
- * - media_outlet: PressCategory (optional)
+ * - (No category filter - always PRESS)
  * - search: string (optional)
  * - slug: string (optional) - If provided, returns single notice
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
-import type { Press } from '@prisma/client';
+import type { Notice as Press } from '@prisma/client';
 
 // Database connection
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     // If slug is provided, return single notice
     if (slug) {
-      return await getPressBySlug(slug);
+      return await getNoticeBySlug(slug);
     }
 
     // Otherwise, return paginated list
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       parseInt(searchParams.get('per_page') || '10', 10),
       50 // Max per_page from API Spec
     );
-    const media_outlet = searchParams.get('media_outlet');
+    // Press always has category=PRESS
     const search = searchParams.get('search');
 
     // Validation: page must be >= 1
@@ -103,45 +103,45 @@ export async function GET(request: NextRequest) {
     let countQuery;
     let dataQuery;
 
-    if (media_outlet && search) {
+    if (false) // Disabled: Press always category=PRESS {
       // Both filters
       const searchPattern = `%${search}%`;
       countQuery = sql`
         SELECT COUNT(*) as count
-        FROM press
-        WHERE status = 'PUBLISHED'
-          AND media_outlet = ${media_outlet}
+        FROM notices
+        WHERE status = 'PUBLISHED' AND category = 'PRESS'
+          AND category = ${category}
           AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
       `;
       dataQuery = sql`
         SELECT
-          id, title, slug, content, excerpt, status,
-          thumbnail_url, media_outlet, external_url, view_count, published_at, author_id,
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
           created_at, updated_at
-        FROM press
-        WHERE status = 'PUBLISHED'
-          AND media_outlet = ${media_outlet}
+        FROM notices
+        WHERE status = 'PUBLISHED' AND category = 'PRESS'
+          AND category = ${category}
           AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page}
         OFFSET ${(page - 1) * per_page}
       `;
-    } else if (media_outlet) {
+    } else if (false) { // Disabled
       // Category only
       countQuery = sql`
         SELECT COUNT(*) as count
-        FROM press
-        WHERE status = 'PUBLISHED'
-          AND media_outlet = ${media_outlet}
+        FROM notices
+        WHERE status = 'PUBLISHED' AND category = 'PRESS'
+          AND category = ${category}
       `;
       dataQuery = sql`
         SELECT
-          id, title, slug, content, excerpt, status,
-          thumbnail_url, media_outlet, external_url, view_count, published_at, author_id,
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
           created_at, updated_at
-        FROM press
-        WHERE status = 'PUBLISHED'
-          AND media_outlet = ${media_outlet}
+        FROM notices
+        WHERE status = 'PUBLISHED' AND category = 'PRESS'
+          AND category = ${category}
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page}
         OFFSET ${(page - 1) * per_page}
@@ -151,17 +151,17 @@ export async function GET(request: NextRequest) {
       const searchPattern = `%${search}%`;
       countQuery = sql`
         SELECT COUNT(*) as count
-        FROM press
-        WHERE status = 'PUBLISHED'
+        FROM notices
+        WHERE status = 'PUBLISHED' AND category = 'PRESS'
           AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
       `;
       dataQuery = sql`
         SELECT
-          id, title, slug, content, excerpt, status,
-          thumbnail_url, media_outlet, external_url, view_count, published_at, author_id,
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
           created_at, updated_at
-        FROM press
-        WHERE status = 'PUBLISHED'
+        FROM notices
+        WHERE status = 'PUBLISHED' AND category = 'PRESS'
           AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page}
@@ -171,16 +171,16 @@ export async function GET(request: NextRequest) {
       // No filters
       countQuery = sql`
         SELECT COUNT(*) as count
-        FROM press
-        WHERE status = 'PUBLISHED'
+        FROM notices
+        WHERE status = 'PUBLISHED' AND category = 'PRESS'
       `;
       dataQuery = sql`
         SELECT
-          id, title, slug, content, excerpt, status,
-          thumbnail_url, media_outlet, external_url, view_count, published_at, author_id,
+          id, title, slug, content, excerpt, status, category,
+          thumbnail_url, view_count, published_at, author_id,
           created_at, updated_at
-        FROM press
-        WHERE status = 'PUBLISHED'
+        FROM notices
+        WHERE status = 'PUBLISHED' AND category = 'PRESS'
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page}
         OFFSET ${(page - 1) * per_page}
@@ -192,19 +192,18 @@ export async function GET(request: NextRequest) {
     const total = Number(countResult[0]?.count || 0);
     const total_pages = Math.ceil(total / per_page);
 
-    const press = await dataQuery;
+    const pressItems = await dataQuery;
 
-    // Transform to match Press type (snake_case to camelCase for consistency)
-    const paginatedPress = press.map((notice: any) => ({
+    // Transform to match Notice type (snake_case to camelCase for consistency)
+    const paginatedPress = pressItems.map((notice: any) => ({
       id: notice.id,
       title: notice.title,
       slug: notice.slug,
       content: notice.content,
       excerpt: notice.excerpt,
       status: notice.status,
+      category: notice.category,
       thumbnailUrl: notice.thumbnail_url,
-      mediaOutlet: notice.media_outlet,
-      externalUrl: notice.external_url,
       viewCount: notice.view_count,
       publishedAt: notice.published_at,
       authorId: notice.author_id,
@@ -248,10 +247,10 @@ export async function GET(request: NextRequest) {
 /**
  * Helper function: Get single notice by slug
  */
-async function getPressBySlug(slug: string) {
+async function getNoticeBySlug(slug: string) {
   try {
     // Query database for notice by slug
-    const press = await sql`
+    const pressItems = await sql`
       SELECT
         id,
         title,
@@ -259,41 +258,41 @@ async function getPressBySlug(slug: string) {
         content,
         excerpt,
         status,
-        media_outlet,
+        category,
         thumbnail_url,
         view_count,
         published_at,
         author_id,
         created_at,
         updated_at
-      FROM press
+      FROM notices
       WHERE slug = ${slug}
         AND status = 'PUBLISHED'
       LIMIT 1
     `;
 
-    if (press.length === 0) {
+    if (pressItems.length === 0) {
       const errorResponse: ErrorResponse = {
         success: false,
         error: {
           code: 'NOT_FOUND',
-          message: '요청한 공지사항을 찾을 수 없습니다',
+          message: '요청한 press를 찾을 수 없습니다',
         },
       };
       return NextResponse.json(errorResponse, { status: 404 });
     }
 
-    const notice = press[0];
+    const notice = pressItems[0];
 
     // Increment view count
     await sql`
-      UPDATE press
+      UPDATE notices
       SET view_count = view_count + 1,
           updated_at = NOW()
       WHERE id = ${notice.id}
     `;
 
-    // Transform to match Press type
+    // Transform to match Notice type
     const noticeData = {
       id: notice.id,
       title: notice.title,
@@ -301,7 +300,7 @@ async function getPressBySlug(slug: string) {
       content: notice.content,
       excerpt: notice.excerpt,
       status: notice.status,
-      media_outlet: notice.media_outlet,
+      category: notice.category,
       thumbnailUrl: notice.thumbnail_url,
       viewCount: notice.view_count + 1, // Reflect incremented view count
       publishedAt: notice.published_at,
