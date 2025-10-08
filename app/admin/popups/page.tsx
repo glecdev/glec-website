@@ -1,7 +1,8 @@
 /**
- * Admin Popups Management Page
+ * Admin Popups Management Page - Modal-Based CRUD
  *
  * Purpose: 팝업 관리 (생성, 수정, 삭제, 순서 변경)
+ * Pattern: Knowledge Library (정상 작동 패턴 적용)
  * Features: Drag & Drop 레이어 순서 변경
  */
 
@@ -9,7 +10,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 interface Popup {
   id: string;
@@ -49,6 +49,28 @@ export default function AdminPopupsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
+  // Modal states (지식센터 패턴 적용)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPopup, setEditingPopup] = useState<Popup | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Form states (지식센터 패턴 적용)
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    imageUrl: '',
+    linkUrl: '',
+    linkText: '',
+    isActive: true,
+    displayType: 'modal' as Popup['displayType'],
+    position: 'center',
+    width: 600,
+    height: 400,
+    showOnce: false,
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  });
+
   useEffect(() => {
     fetchPopups();
   }, []);
@@ -73,6 +95,113 @@ export default function AdminPopupsPage() {
       console.error('[Popups] Fetch error:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  /**
+   * Open create modal (지식센터 패턴)
+   */
+  const openCreateModal = () => {
+    setEditingPopup(null);
+    setFormData({
+      title: '',
+      content: '',
+      imageUrl: '',
+      linkUrl: '',
+      linkText: '',
+      isActive: true,
+      displayType: 'modal',
+      position: 'center',
+      width: 600,
+      height: 400,
+      showOnce: false,
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    });
+    setIsModalOpen(true);
+  };
+
+  /**
+   * Open edit modal (지식센터 패턴)
+   */
+  const openEditModal = (popup: Popup) => {
+    setEditingPopup(popup);
+    setFormData({
+      title: popup.title,
+      content: popup.content,
+      imageUrl: popup.imageUrl || '',
+      linkUrl: popup.linkUrl || '',
+      linkText: popup.linkText || '',
+      isActive: popup.isActive,
+      displayType: popup.displayType,
+      position: popup.position,
+      width: popup.width,
+      height: popup.height,
+      showOnce: popup.showOnce,
+      startDate: popup.startDate.split('T')[0],
+      endDate: popup.endDate.split('T')[0],
+    });
+    setIsModalOpen(true);
+  };
+
+  /**
+   * Handle form submit (지식센터 패턴)
+   */
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.title || !formData.content) {
+      alert('제목과 내용은 필수 항목입니다.');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const token = localStorage.getItem('admin_token');
+      const payload = {
+        ...formData,
+        imageUrl: formData.imageUrl || null,
+        linkUrl: formData.linkUrl || null,
+        linkText: formData.linkText || null,
+      };
+
+      let response;
+      if (editingPopup) {
+        // Update
+        response = await fetch(`/api/admin/popups?id=${editingPopup.id}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ...payload, id: editingPopup.id }),
+        });
+      } else {
+        // Create
+        response = await fetch('/api/admin/popups', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error?.message || 'Failed to save popup');
+      }
+
+      alert(editingPopup ? '팝업이 수정되었습니다.' : '팝업이 추가되었습니다.');
+      setIsModalOpen(false);
+      fetchPopups(); // Refresh list (지식센터 패턴) - CRITICAL AUTO-REFRESH
+    } catch (err) {
+      console.error('[Save Popup] Error:', err);
+      alert(err instanceof Error ? err.message : 'Failed to save popup');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -174,12 +303,12 @@ export default function AdminPopupsPage() {
           <h1 className="text-3xl font-bold mb-2">팝업 관리</h1>
           <p className="text-gray-600">웹사이트 팝업을 생성하고 관리합니다</p>
         </div>
-        <Link
-          href="/admin/popups/new"
+        <button
+          onClick={openCreateModal}
           className="px-4 py-2 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors"
         >
           + 새 팝업 만들기
-        </Link>
+        </button>
       </div>
 
       {/* Drag & Drop Info */}
@@ -209,12 +338,12 @@ export default function AdminPopupsPage() {
           <div className="text-6xl mb-4">🎨</div>
           <h3 className="text-xl font-bold text-gray-700 mb-2">팝업이 없습니다</h3>
           <p className="text-gray-600 mb-6">첫 팝업을 만들어보세요!</p>
-          <Link
-            href="/admin/popups/new"
-            className="inline-block px-6 py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors"
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center justify-center px-6 py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors"
           >
             팝업 만들기
-          </Link>
+          </button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -270,12 +399,12 @@ export default function AdminPopupsPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <Link
-                    href={`/admin/popups/edit?id=${popup.id}`}
+                  <button
+                    onClick={() => openEditModal(popup)}
                     className="px-4 py-2 text-primary-500 font-semibold rounded-lg hover:bg-primary-50 transition-colors"
                   >
                     수정
-                  </Link>
+                  </button>
                   <button
                     onClick={() => handleDelete(popup.id)}
                     className="px-4 py-2 text-red-500 font-semibold rounded-lg hover:bg-red-50 transition-colors"
@@ -286,6 +415,226 @@ export default function AdminPopupsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Create/Edit Modal (지식센터 패턴) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold">
+                {editingPopup ? '팝업 수정' : '새 팝업 만들기'}
+              </h2>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* 제목 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  제목 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              {/* 내용 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  내용 <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  rows={6}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              {/* 표시 유형 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  표시 유형 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.displayType}
+                  onChange={(e) => setFormData({ ...formData, displayType: e.target.value as Popup['displayType'] })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="modal">모달</option>
+                  <option value="banner">배너</option>
+                  <option value="corner">코너</option>
+                </select>
+              </div>
+
+              {/* 위치 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  위치
+                </label>
+                <select
+                  value={formData.position}
+                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="center">중앙</option>
+                  <option value="top">상단</option>
+                  <option value="bottom">하단</option>
+                  <option value="top-left">좌상단</option>
+                  <option value="top-right">우상단</option>
+                  <option value="bottom-left">좌하단</option>
+                  <option value="bottom-right">우하단</option>
+                </select>
+              </div>
+
+              {/* 크기 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    너비 (px)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.width}
+                    onChange={(e) => setFormData({ ...formData, width: parseInt(e.target.value) })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    min="200"
+                    max="1200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    높이 (px)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.height}
+                    onChange={(e) => setFormData({ ...formData, height: parseInt(e.target.value) })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    min="200"
+                    max="800"
+                  />
+                </div>
+              </div>
+
+              {/* 이미지 URL */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  이미지 URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+
+              {/* 링크 URL */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  링크 URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.linkUrl}
+                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="https://example.com"
+                />
+              </div>
+
+              {/* 링크 텍스트 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  링크 텍스트
+                </label>
+                <input
+                  type="text"
+                  value={formData.linkText}
+                  onChange={(e) => setFormData({ ...formData, linkText: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="자세히 보기"
+                />
+              </div>
+
+              {/* 날짜 범위 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    시작일 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    종료일 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* 체크박스 옵션 */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">활성화</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.showOnce}
+                    onChange={(e) => setFormData({ ...formData, showOnce: e.target.checked })}
+                    className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">하루 한 번만 표시 (쿠키)</span>
+                </label>
+              </div>
+
+              {/* 버튼 */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-2 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                  disabled={isSaving}
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
+                  disabled={isSaving}
+                >
+                  {isSaving ? '저장 중...' : editingPopup ? '수정' : '추가'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
