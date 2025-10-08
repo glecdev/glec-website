@@ -401,7 +401,6 @@ export default function AdminPressPage() {
           </span>
         </div>
       </div>
-      </div>
 
       {/* Loading State */}
       {isLoading && (
