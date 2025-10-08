@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
+import crypto from 'crypto';
 
 // ============================================================
 // Database Connection
@@ -272,13 +273,18 @@ export const POST = withAuth(
       const now = new Date();
       const publishedAt = validated.status === 'PUBLISHED' ? now : null;
 
+      // Generate UUID for new event
+      const newId = crypto.randomUUID();
+
       const result = await sql`
         INSERT INTO events (
+          id,
           title, slug, description, status, start_date, end_date,
           location, location_details, thumbnail_url, max_participants,
           published_at, author_id, created_at, updated_at
         )
         VALUES (
+          ${newId},
           ${validated.title},
           ${validated.slug},
           ${validated.description},
@@ -290,7 +296,7 @@ export const POST = withAuth(
           ${validated.thumbnail_url || null},
           ${validated.max_participants || null},
           ${publishedAt},
-          ${user.id},
+          ${user.userId},
           ${now},
           ${now}
         )

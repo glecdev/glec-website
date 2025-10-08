@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
 import type { PopupDisplayType } from '@prisma/client';
+import crypto from 'crypto';
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -25,7 +26,7 @@ const PopupCreateSchema = z.object({
   content: z.string().optional().nullable(),
   imageUrl: z.string().url('유효한 URL이 아닙니다').or(z.literal('')).optional().nullable(),
   linkUrl: z.string().url('유효한 URL이 아닙니다').or(z.literal('')).optional().nullable(),
-  displayType: z.enum(['MODAL', 'BANNER', 'CORNER']).default('MODAL'),
+  displayType: z.enum(['modal', 'banner', 'corner']).default('modal'),
   isActive: z.boolean().default(false),
   startDate: z.string().datetime().optional().nullable(),
   endDate: z.string().datetime().optional().nullable(),
@@ -196,13 +197,18 @@ export const POST = withAuth(
 
       const input = validation.data;
 
+      // Generate UUID for new popup
+      const newId = crypto.randomUUID();
+
       // Insert popup
       const result = await sql`
         INSERT INTO popups (
+          id,
           title, content, image_url, link_url, display_type,
           is_active, start_date, end_date, z_index, show_once_per_day,
           position, size, background_color, created_at, updated_at
         ) VALUES (
+          ${newId},
           ${input.title},
           ${input.content || null},
           ${input.imageUrl || null},
