@@ -1,4 +1,4 @@
-/**
+﻿/**
  * GET /api/press
  *
  * Based on: GLEC-API-Specification.yaml (GET /api/press)
@@ -12,8 +12,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getMockPressWithIds } from '@/lib/mock-data';
+import { neon } from '@neondatabase/serverless';
 import type { Press } from '@prisma/client';
+
+// Database connection
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+const sql = neon(DATABASE_URL);
 
 interface PressResponse {
   success: boolean;
@@ -44,6 +53,7 @@ export async function GET(request: NextRequest) {
       50
     );
     const search = searchParams.get('search');
+    const status = searchParams.get('status') || 'PUBLISHED';
 
     // Validation
     if (page < 1 || isNaN(page)) {
@@ -70,34 +80,73 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // TODO: Replace with Prisma query when DB is connected
-    let allPress = getMockPressWithIds();
+    // Build SQL query with proper parameter binding
+    let countQuery;
+    let dataQuery;
 
-    // Filter by status (only PUBLISHED)
-    allPress = allPress.filter((p) => p.status === 'PUBLISHED');
-
-    // Filter by search
     if (search) {
-      const searchLower = search.toLowerCase();
-      allPress = allPress.filter(
-        (p) =>
-          p.title.toLowerCase().includes(searchLower) ||
-          p.content.toLowerCase().includes(searchLower)
-      );
+      const searchPattern = `%${search}%`;
+      countQuery = sql`
+        SELECT COUNT(*) as count
+        FROM press
+        WHERE status = ${status}
+          AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+      `;
+      dataQuery = sql`
+        SELECT
+          id, title, slug, content, excerpt, status,
+          thumbnail_url, media_outlet, external_url, view_count,
+          published_at, author_id, created_at, updated_at
+        FROM press
+        WHERE status = ${status}
+          AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
+        ORDER BY published_at DESC, created_at DESC
+        LIMIT ${per_page}
+        OFFSET ${(page - 1) * per_page}
+      `;
+    } else {
+      countQuery = sql`
+        SELECT COUNT(*) as count
+        FROM press
+        WHERE status = ${status}
+      `;
+      dataQuery = sql`
+        SELECT
+          id, title, slug, content, excerpt, status,
+          thumbnail_url, media_outlet, external_url, view_count,
+          published_at, author_id, created_at, updated_at
+        FROM press
+        WHERE status = ${status}
+        ORDER BY published_at DESC, created_at DESC
+        LIMIT ${per_page}
+        OFFSET ${(page - 1) * per_page}
+      `;
     }
 
-    // Sort by publishedAt DESC
-    allPress.sort((a, b) => {
-      const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-      const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-      return dateB - dateA;
-    });
-
-    // Pagination
-    const total = allPress.length;
+    // Execute queries
+    const countResult = await countQuery;
+    const total = Number(countResult[0]?.count || 0);
     const total_pages = Math.ceil(total / per_page);
-    const startIndex = (page - 1) * per_page;
-    const paginatedPress = allPress.slice(startIndex, startIndex + per_page);
+
+    const pressData = await dataQuery;
+
+    // Transform to match Press type (snake_case to camelCase)
+    const paginatedPress = pressData.map((press: any) => ({
+      id: press.id,
+      title: press.title,
+      slug: press.slug,
+      content: press.content,
+      excerpt: press.excerpt,
+      status: press.status,
+      thumbnailUrl: press.thumbnail_url,
+      mediaOutlet: press.media_outlet,
+      externalUrl: press.external_url,
+      viewCount: press.view_count,
+      publishedAt: press.published_at,
+      authorId: press.author_id,
+      createdAt: press.created_at,
+      updatedAt: press.updated_at,
+    }));
 
     const response: PressResponse = {
       success: true,
