@@ -229,7 +229,7 @@ export default function AdminNoticesPage() {
         excerpt: formData.excerpt || undefined,
         status: formData.status,
         category: formData.category,
-        thumbnailUrl: formData.thumbnailUrl || undefined,
+        thumbnail_url: formData.thumbnailUrl || undefined,
       };
 
       let response;

@@ -226,7 +226,7 @@ export default function AdminPressPage() {
         excerpt: formData.excerpt || undefined,
         status: formData.status,
         category: 'PRESS' as const, // Always PRESS category
-        thumbnailUrl: formData.thumbnailUrl || undefined,
+        thumbnail_url: formData.thumbnailUrl || undefined,
       };
 
       let response;
