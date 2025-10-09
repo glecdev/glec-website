@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
+import { auditCreate, auditUpdate, auditDelete } from '@/lib/audit-log';
 
 // ============================================================
 // Database Connection
@@ -327,6 +328,20 @@ export const POST = withAuth(
         updatedAt: event.updated_at,
       };
 
+      // Create audit log
+      await auditCreate(
+        user.userId,
+        'events',
+        event.id,
+        {
+          title: event.title,
+          slug: event.slug,
+          status: event.status,
+          location: event.location,
+        },
+        request
+      );
+
       console.log('[POST /api/admin/events] Created event:', {
         id: event.id,
         title: event.title,
@@ -389,7 +404,7 @@ export const POST = withAuth(
 // ============================================================
 
 export const PUT = withAuth(
-  async (request: NextRequest) => {
+  async (request: NextRequest, { user }) => {
     try {
       const searchParams = request.nextUrl.searchParams;
       const id = searchParams.get('id');
@@ -409,7 +424,7 @@ export const PUT = withAuth(
 
       // Check if event exists and is not deleted
       const existing = await sql`
-        SELECT id, slug, status, start_date, end_date FROM events WHERE id = ${id} AND deleted_at IS NULL LIMIT 1
+        SELECT id, title, slug, status, location, start_date, end_date FROM events WHERE id = ${id} AND deleted_at IS NULL LIMIT 1
       `;
 
       if (existing.length === 0) {
@@ -533,6 +548,26 @@ export const PUT = withAuth(
         updatedAt: event.updated_at,
       };
 
+      // Create audit log with before/after diff
+      await auditUpdate(
+        user.userId,
+        'events',
+        event.id,
+        {
+          title: existing[0].title,
+          slug: existing[0].slug,
+          status: existing[0].status,
+          location: existing[0].location,
+        },
+        {
+          title: event.title,
+          slug: event.slug,
+          status: event.status,
+          location: event.location,
+        },
+        request
+      );
+
       console.log('[PUT /api/admin/events] Updated event:', {
         id: event.id,
         title: event.title,
@@ -594,7 +629,7 @@ export const PUT = withAuth(
 // ============================================================
 
 export const DELETE = withAuth(
-  async (request: NextRequest) => {
+  async (request: NextRequest, { user }) => {
     try {
       const searchParams = request.nextUrl.searchParams;
       const id = searchParams.get('id');
@@ -614,7 +649,7 @@ export const DELETE = withAuth(
 
       // Check if event exists and is not already deleted
       const existing = await sql`
-        SELECT id FROM events WHERE id = ${id} AND deleted_at IS NULL
+        SELECT id, title, location FROM events WHERE id = ${id} AND deleted_at IS NULL
       `;
 
       if (existing.length === 0) {
@@ -637,6 +672,19 @@ export const DELETE = withAuth(
         SET deleted_at = ${now}, updated_at = ${now}
         WHERE id = ${id}
       `;
+
+      // Create audit log
+      await auditDelete(
+        user.userId,
+        'events',
+        id,
+        {
+          id: existing[0].id,
+          title: existing[0].title,
+          location: existing[0].location,
+        },
+        request
+      );
 
       console.log('[DELETE /api/admin/events] Soft deleted event:', {
         id,

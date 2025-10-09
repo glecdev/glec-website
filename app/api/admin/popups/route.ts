@@ -14,6 +14,7 @@ import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
 import type { PopupDisplayType } from '@prisma/client';
 import crypto from 'crypto';
+import { auditCreate, auditUpdate, auditDelete } from '@/lib/audit-log';
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -233,6 +234,19 @@ export const POST = withAuth(
 
       const popup = transformPopupToResponse(result[0]);
 
+      // Create audit log
+      await auditCreate(
+        user.userId,
+        'popups',
+        popup.id,
+        {
+          title: popup.title,
+          displayType: popup.displayType,
+          isActive: popup.isActive,
+        },
+        request
+      );
+
       console.log('[POST /api/admin/popups] Created popup:', {
         id: popup.id,
         title: popup.title,
@@ -296,7 +310,7 @@ export const PUT = withAuth(
 
       // Check if popup exists and is not deleted
       const existing = await sql`
-        SELECT id FROM popups WHERE id = ${id} AND deleted_at IS NULL
+        SELECT id, title, display_type, is_active FROM popups WHERE id = ${id} AND deleted_at IS NULL
       `;
 
       if (existing.length === 0) {
@@ -332,6 +346,24 @@ export const PUT = withAuth(
       `;
 
       const popup = transformPopupToResponse(result[0]);
+
+      // Create audit log with before/after diff
+      await auditUpdate(
+        user.userId,
+        'popups',
+        popup.id,
+        {
+          title: existing[0].title,
+          displayType: existing[0].display_type,
+          isActive: existing[0].is_active,
+        },
+        {
+          title: popup.title,
+          displayType: popup.displayType,
+          isActive: popup.isActive,
+        },
+        request
+      );
 
       console.log('[PUT /api/admin/popups] Updated popup:', {
         id: popup.id,
@@ -369,7 +401,7 @@ export const DELETE = withAuth(
 
       // Check if popup exists and is not already deleted
       const existing = await sql`
-        SELECT id FROM popups WHERE id = ${id} AND deleted_at IS NULL
+        SELECT id, title, display_type FROM popups WHERE id = ${id} AND deleted_at IS NULL
       `;
 
       if (existing.length === 0) {
@@ -385,6 +417,19 @@ export const DELETE = withAuth(
         SET deleted_at = NOW(), updated_at = NOW()
         WHERE id = ${id}
       `;
+
+      // Create audit log
+      await auditDelete(
+        user.userId,
+        'popups',
+        id,
+        {
+          id: existing[0].id,
+          title: existing[0].title,
+          displayType: existing[0].display_type,
+        },
+        request
+      );
 
       console.log('[DELETE /api/admin/popups] Soft deleted popup:', {
         id,

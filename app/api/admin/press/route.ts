@@ -27,6 +27,7 @@ import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 import type { ContentStatus } from '@prisma/client';
+import { auditCreate, auditUpdate, auditDelete } from '@/lib/audit-log';
 
 // Database connection
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -461,6 +462,20 @@ export const POST = withAuth(
 
       const press = result[0];
 
+      // Create audit log
+      await auditCreate(
+        user.userId,
+        'press',
+        press.id,
+        {
+          title: press.title,
+          slug: press.slug,
+          status: press.status,
+          mediaOutlet: press.media_outlet,
+        },
+        request
+      );
+
       return NextResponse.json(
         {
           success: true,
@@ -524,7 +539,7 @@ export const POST = withAuth(
  * Response: { success: true, data: Press }
  */
 export const PUT = withAuth(
-  async (request: NextRequest) => {
+  async (request: NextRequest, { user }) => {
     try {
       const searchParams = request.nextUrl.searchParams;
       const id = searchParams.get('id');
@@ -544,7 +559,7 @@ export const PUT = withAuth(
 
       // Check if press release exists
       const existing = await sql`
-        SELECT id, slug, status
+        SELECT id, title, slug, status, media_outlet
         FROM presses
         WHERE id = ${id} AND deleted_at IS NULL
         LIMIT 1
@@ -622,6 +637,26 @@ export const PUT = withAuth(
 
       const press = result[0];
 
+      // Create audit log with before/after diff
+      await auditUpdate(
+        user.userId,
+        'press',
+        press.id,
+        {
+          title: existing[0].title,
+          slug: existing[0].slug,
+          status: existing[0].status,
+          mediaOutlet: existing[0].media_outlet,
+        },
+        {
+          title: press.title,
+          slug: press.slug,
+          status: press.status,
+          mediaOutlet: press.media_outlet,
+        },
+        request
+      );
+
       return NextResponse.json(
         {
           success: true,
@@ -674,7 +709,7 @@ export const PUT = withAuth(
  * Response: { success: true }
  */
 export const DELETE = withAuth(
-  async (request: NextRequest) => {
+  async (request: NextRequest, { user }) => {
     try {
       const searchParams = request.nextUrl.searchParams;
       const id = searchParams.get('id');
@@ -694,7 +729,7 @@ export const DELETE = withAuth(
 
       // Check if press release exists
       const existing = await sql`
-        SELECT id
+        SELECT id, title, media_outlet
         FROM presses
         WHERE id = ${id} AND deleted_at IS NULL
         LIMIT 1
@@ -719,6 +754,19 @@ export const DELETE = withAuth(
         SET deleted_at = NOW(), updated_at = NOW()
         WHERE id = ${id}
       `;
+
+      // Create audit log
+      await auditDelete(
+        user.userId,
+        'press',
+        id,
+        {
+          id: existing[0].id,
+          title: existing[0].title,
+          mediaOutlet: existing[0].media_outlet,
+        },
+        request
+      );
 
       return NextResponse.json(
         {
