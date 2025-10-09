@@ -1,18 +1,30 @@
 /**
- * Admin Events List Page
+ * Admin Events List Page - Modal-Based CRUD
  *
  * Based on: FR-ADMIN-010 (이벤트 목록 조회)
  * API: GET /api/admin/events
  * Standards: GLEC-Design-System-Standards.md (Table, Pagination, Filter)
+ * Pattern: Knowledge Library (지식센터 패턴 - 사용자 확인된 작동 패턴)
  *
  * Features:
- * - Paginated event list (20 items/page)
+ * - Modal-based Create/Edit (no Link navigation)
+ * - Inline Delete (confirm dialog)
  * - Status filter (DRAFT, PUBLISHED, CLOSED)
  * - Search by title
- * - Create event button
- * - View/Edit/Delete actions
- * - View registrations button
+ * - View registrations Link (separate page)
+ * - Auto-refresh after CRUD operations
  */
+
+
+
+
+
+
+
+
+
+
+
 
 'use client';
 

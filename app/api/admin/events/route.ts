@@ -42,6 +42,8 @@ const EventCreateSchema = z.object({
   status: z.enum(['DRAFT', 'PUBLISHED']),
 });
 
+const EventUpdateSchema = EventCreateSchema.partial();
+
 // ============================================================
 // GET /api/admin/events - List events
 // ============================================================
@@ -366,6 +368,302 @@ export const POST = withAuth(
           { status: 400 }
         );
       }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'An unexpected error occurred',
+          },
+        },
+        { status: 500 }
+      );
+    }
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
+
+// ============================================================
+// PUT /api/admin/events?id=xxx - Update existing event
+// ============================================================
+
+export const PUT = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
+
+      if (!id) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'MISSING_ID',
+              message: 'Event ID is required',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      // Check if event exists and is not deleted
+      const existing = await sql`
+        SELECT id, slug, status, start_date, end_date FROM events WHERE id = ${id} AND deleted_at IS NULL LIMIT 1
+      `;
+
+      if (existing.length === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'NOT_FOUND',
+              message: 'Event not found',
+            },
+          },
+          { status: 404 }
+        );
+      }
+
+      const body = await request.json();
+
+      // Validate with Zod
+      const validationResult = EventUpdateSchema.safeParse(body);
+
+      if (!validationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'Invalid request data',
+              details: validationResult.error.errors.map((err) => ({
+                field: err.path.join('.'),
+                message: err.message,
+              })),
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      const validated = validationResult.data;
+
+      // Check slug uniqueness if slug is being updated
+      if (validated.slug && validated.slug !== existing[0].slug) {
+        const existingSlug = await sql`
+          SELECT id FROM events WHERE slug = ${validated.slug} AND id != ${id}
+        `;
+
+        if (existingSlug.length > 0) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: 'SLUG_EXISTS',
+                message: 'Slug already exists. Please use a different slug.',
+              },
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Validate date range if dates are being updated
+      if (validated.start_date || validated.end_date) {
+        const startDate = validated.start_date ? new Date(validated.start_date) : new Date(existing[0].start_date);
+        const endDate = validated.end_date ? new Date(validated.end_date) : new Date(existing[0].end_date);
+
+        if (endDate < startDate) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: 'INVALID_DATE_RANGE',
+                message: 'End date must be after start date',
+              },
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Update event (using COALESCE for partial updates)
+      const now = new Date();
+      const publishedAt = validated.status === 'PUBLISHED' && existing[0].status !== 'PUBLISHED' ? now : null;
+
+      const result = await sql`
+        UPDATE events
+        SET
+          title = COALESCE(${validated.title || null}, title),
+          slug = COALESCE(${validated.slug || null}, slug),
+          description = COALESCE(${validated.description || null}, description),
+          start_date = COALESCE(${validated.start_date || null}, start_date),
+          end_date = COALESCE(${validated.end_date || null}, end_date),
+          location = COALESCE(${validated.location || null}, location),
+          location_details = COALESCE(${validated.location_details !== undefined ? validated.location_details : null}, location_details),
+          thumbnail_url = COALESCE(${validated.thumbnail_url !== undefined ? validated.thumbnail_url : null}, thumbnail_url),
+          max_participants = COALESCE(${validated.max_participants !== undefined ? validated.max_participants : null}, max_participants),
+          status = COALESCE(${validated.status || null}, status),
+          published_at = COALESCE(${publishedAt}, published_at),
+          updated_at = ${now}
+        WHERE id = ${id}
+        RETURNING *
+      `;
+
+      const event = result[0];
+
+      // Transform to camelCase
+      const transformedEvent = {
+        id: event.id,
+        title: event.title,
+        slug: event.slug,
+        description: event.description,
+        status: event.status,
+        startDate: event.start_date,
+        endDate: event.end_date,
+        location: event.location,
+        locationDetails: event.location_details,
+        thumbnailUrl: event.thumbnail_url,
+        maxParticipants: event.max_participants,
+        viewCount: event.view_count,
+        publishedAt: event.published_at,
+        authorId: event.author_id,
+        createdAt: event.created_at,
+        updatedAt: event.updated_at,
+      };
+
+      console.log('[PUT /api/admin/events] Updated event:', {
+        id: event.id,
+        title: event.title,
+        slug: event.slug,
+        status: event.status,
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: transformedEvent,
+        },
+        {
+          headers: {
+            'Cache-Control': 'no-store, must-revalidate',
+          },
+        }
+      );
+    } catch (error) {
+      console.error('[PUT /api/admin/events] Error:', error);
+      console.error('[PUT /api/admin/events] Error Details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
+        code: (error as any)?.code,
+        detail: (error as any)?.detail,
+      });
+
+      if (error instanceof SyntaxError) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'INVALID_JSON',
+              message: 'Invalid JSON in request body',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'An unexpected error occurred',
+          },
+        },
+        { status: 500 }
+      );
+    }
+  },
+  { requiredRole: 'CONTENT_MANAGER' }
+);
+
+// ============================================================
+// DELETE /api/admin/events?id=xxx - Soft delete event
+// ============================================================
+
+export const DELETE = withAuth(
+  async (request: NextRequest) => {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const id = searchParams.get('id');
+
+      if (!id) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'MISSING_ID',
+              message: 'Event ID is required',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      // Check if event exists and is not already deleted
+      const existing = await sql`
+        SELECT id FROM events WHERE id = ${id} AND deleted_at IS NULL
+      `;
+
+      if (existing.length === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'NOT_FOUND',
+              message: 'Event not found',
+            },
+          },
+          { status: 404 }
+        );
+      }
+
+      // Soft delete
+      const now = new Date();
+      await sql`
+        UPDATE events
+        SET deleted_at = ${now}, updated_at = ${now}
+        WHERE id = ${id}
+      `;
+
+      console.log('[DELETE /api/admin/events] Soft deleted event:', {
+        id,
+        timestamp: now,
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Event deleted successfully',
+        },
+        {
+          status: 200,
+          headers: {
+            'Cache-Control': 'no-store, must-revalidate',
+          },
+        }
+      );
+    } catch (error) {
+      console.error('[DELETE /api/admin/events] Error:', error);
+      console.error('[DELETE /api/admin/events] Error Details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
+        code: (error as any)?.code,
+        detail: (error as any)?.detail,
+      });
 
       return NextResponse.json(
         {

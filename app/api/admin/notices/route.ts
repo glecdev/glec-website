@@ -160,7 +160,7 @@ export const GET = withAuth(
             thumbnail_url, view_count, published_at, author_id,
             created_at, updated_at, deleted_at
           FROM notices
-          WHERE id = ${id}
+          WHERE id = ${id} AND deleted_at IS NULL
           LIMIT 1
         `;
 
