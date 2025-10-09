@@ -140,13 +140,13 @@ export async function GET(request: NextRequest) {
     // 3. Parse and validate query parameters
     const { searchParams } = new URL(request.url);
     const queryParams = {
-      action: searchParams.get('action'),
-      resource: searchParams.get('resource'),
-      user_id: searchParams.get('user_id'),
-      start_date: searchParams.get('start_date'),
-      end_date: searchParams.get('end_date'),
-      page: searchParams.get('page'),
-      per_page: searchParams.get('per_page'),
+      action: searchParams.get('action') || undefined,
+      resource: searchParams.get('resource') || undefined,
+      user_id: searchParams.get('user_id') || undefined,
+      start_date: searchParams.get('start_date') || undefined,
+      end_date: searchParams.get('end_date') || undefined,
+      page: searchParams.get('page') || undefined,
+      per_page: searchParams.get('per_page') || undefined,
     };
 
     const validationResult = LogsQuerySchema.safeParse(queryParams);
