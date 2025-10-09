@@ -21,6 +21,21 @@ import {
   BlogCategory,
   BLOG_CATEGORY_LABELS,
 } from '@/lib/types/knowledge';
+import TabLayout, { TabType } from '@/components/admin/TabLayout';
+import {
+  OverviewCards,
+  StatusDistribution,
+  CategoryDistribution,
+  TopViewedList,
+  RecentPublishedList,
+} from '@/components/admin/InsightsCards';
+import {
+  calculateBaseStats,
+  getTopViewed,
+  getRecentPublished,
+  calculateCategoryDistribution,
+  type BaseStats,
+} from '@/lib/admin-insights';
 
 interface PaginationMeta {
   page: number;
@@ -39,11 +54,20 @@ interface ApiResponse {
   };
 }
 
+interface BlogStats extends BaseStats {
+  categoryDistribution: Record<string, number>;
+  topViewed: KnowledgeBlogPost[];
+  recentPublished: KnowledgeBlogPost[];
+}
+
 export default function AdminKnowledgeBlogPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [activeTab, setActiveTab] = useState<TabType>('management');
   const [posts, setPosts] = useState<KnowledgeBlogPost[]>([]);
+  const [allPosts, setAllPosts] = useState<KnowledgeBlogPost[]>([]);
+  const [stats, setStats] = useState<BlogStats | null>(null);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,11 +94,80 @@ export default function AdminKnowledgeBlogPage() {
   });
 
   /**
+   * Fetch all blog posts for insights
+   */
+  const fetchAllPostsForInsights = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        router.push('/admin/login');
+        return;
+      }
+
+      const response = await fetch('/api/admin/knowledge/blog?per_page=1000', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result: ApiResponse = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error?.message || 'Failed to fetch blog posts');
+      }
+
+      // Convert to stats-compatible format
+      const postsWithStats = result.data.map(post => ({
+        ...post,
+        status: 'PUBLISHED' as const,
+      }));
+
+      setAllPosts(result.data);
+      calculateStats(result.data);
+    } catch (err) {
+      console.error('[Knowledge Blog] Insights fetch error:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Calculate statistics
+   */
+  const calculateStats = (blogList: KnowledgeBlogPost[]) => {
+    const postsWithStatus = blogList.map(p => ({
+      ...p,
+      status: 'PUBLISHED' as const,
+    }));
+
+    const baseStats = calculateBaseStats(postsWithStatus);
+    const categories = Object.keys(BLOG_CATEGORY_LABELS);
+    const categoryDistribution = calculateCategoryDistribution(postsWithStatus, categories);
+    const topViewed = getTopViewed(postsWithStatus, 5);
+    const recentPublished = getRecentPublished(postsWithStatus, 5);
+
+    setStats({
+      ...baseStats,
+      categoryDistribution,
+      topViewed,
+      recentPublished,
+    });
+  };
+
+  /**
    * Fetch blog posts from API
    */
   useEffect(() => {
-    fetchPosts();
-  }, [page, category, search]);
+    if (activeTab === 'management') {
+      fetchPosts();
+    } else if (activeTab === 'insights') {
+      fetchAllPostsForInsights();
+    }
+  }, [page, category, search, activeTab]);
 
   const fetchPosts = async () => {
     try {
@@ -317,29 +410,74 @@ export default function AdminKnowledgeBlogPage() {
     );
   };
 
-  return (
-    <div className="max-w-7xl mx-auto">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">블로그 관리</h1>
-            <p className="mt-2 text-gray-600">블로그 콘텐츠를 조회하고 관리합니다</p>
-          </div>
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            블로그 작성
-          </button>
+  const insightsContent = stats ? (
+    <div className="space-y-6">
+      {/* Overview Cards */}
+      <OverviewCards stats={stats} itemLabel="블로그" />
+
+      {/* Status and Category Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <StatusDistribution stats={stats} />
+        <CategoryDistribution
+          distribution={stats.categoryDistribution}
+          categories={Object.keys(BLOG_CATEGORY_LABELS).map(key => ({
+            key,
+            label: BLOG_CATEGORY_LABELS[key as BlogCategory],
+            color: {
+              TECHNICAL: 'bg-blue-500',
+              GUIDE: 'bg-green-500',
+              NEWS: 'bg-purple-500',
+              CASE_STUDY: 'bg-pink-500',
+              TUTORIAL: 'bg-indigo-500',
+              INDUSTRY_INSIGHTS: 'bg-amber-500',
+              PRODUCT_UPDATES: 'bg-teal-500',
+            }[key] || 'bg-gray-500',
+          }))}
+          totalItems={stats.totalItems}
+        />
+      </div>
+
+      {/* Top Viewed and Recent Published */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TopViewedList
+          items={stats.topViewed}
+          title="조회수 상위 5개"
+          emptyMessage="조회 데이터가 없습니다"
+        />
+        <RecentPublishedList
+          items={stats.recentPublished}
+          title="최근 발행 5개"
+          emptyMessage="최근 발행 블로그가 없습니다"
+          renderBadge={(post: KnowledgeBlogPost) => getCategoryBadge(post.category)}
+        />
+      </div>
+    </div>
+  ) : (
+    <div className="flex items-center justify-center py-12">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+  );
+
+  const managementContent = (
+    <div className="space-y-6">
+      {/* Header with Create Button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-gray-600">블로그 콘텐츠를 조회하고 관리합니다</p>
         </div>
+        <button
+          onClick={openCreateModal}
+          className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          블로그 작성
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="md:col-span-2">
@@ -548,6 +686,23 @@ export default function AdminKnowledgeBlogPage() {
           )}
         </>
       )}
+    </div>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">블로그 관리</h1>
+        <p className="mt-2 text-gray-600">블로그 통계 분석 및 콘텐츠 관리</p>
+      </div>
+
+      <TabLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        insightsContent={insightsContent}
+        managementContent={managementContent}
+      />
 
       {/* Create/Edit Modal */}
       {isModalOpen && (

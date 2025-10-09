@@ -44,6 +44,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import UnifiedInsightsDashboard, { UnifiedInsightsData } from '@/components/admin/UnifiedInsightsDashboard';
+import { fetchUnifiedInsights } from '@/lib/admin-unified-insights';
 
 // ============================================================================
 // TypeScript Interfaces
@@ -120,6 +122,8 @@ export default function AdminDashboardPage() {
   const [userName, setUserName] = useState<string>('');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>('30d');
+  const [unifiedInsights, setUnifiedInsights] = useState<UnifiedInsightsData | null>(null);
+  const [isLoadingUnified, setIsLoadingUnified] = useState(true);
 
   // Fetch dashboard data
   const fetchDashboardData = async (showToast = false) => {
@@ -180,6 +184,20 @@ export default function AdminDashboardPage() {
     }
 
     fetchDashboardData();
+
+    // Fetch unified insights
+    const token = localStorage.getItem('admin_token');
+    if (token) {
+      fetchUnifiedInsights(token)
+        .then((data) => {
+          setUnifiedInsights(data);
+          setIsLoadingUnified(false);
+        })
+        .catch((err) => {
+          console.error('[Dashboard] Failed to fetch unified insights:', err);
+          setIsLoadingUnified(false);
+        });
+    }
   }, [dateRange]);
 
   // Auto-refresh every 60 seconds
@@ -443,6 +461,14 @@ export default function AdminDashboardPage() {
           color="green"
           isLargeNumber
         />
+      </div>
+
+      {/* Unified Content Insights */}
+      <div className="mb-8" role="region" aria-label="통합 콘텐츠 인사이트">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">통합 콘텐츠 인사이트</h2>
+        {unifiedInsights && (
+          <UnifiedInsightsDashboard data={unifiedInsights} isLoading={isLoadingUnified} />
+        )}
       </div>
 
       {/* Popup Analytics Section */}

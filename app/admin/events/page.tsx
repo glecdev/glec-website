@@ -31,6 +31,19 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import TabLayout, { TabType } from '@/components/admin/TabLayout';
+import {
+  OverviewCards,
+  StatusDistribution,
+  TopViewedList,
+  RecentPublishedList,
+} from '@/components/admin/InsightsCards';
+import {
+  calculateBaseStats,
+  getTopViewed,
+  getRecentPublished,
+  type BaseStats,
+} from '@/lib/admin-insights';
 
 interface Event {
   id: string;
@@ -71,12 +84,23 @@ interface ApiResponse {
   };
 }
 
+interface EventStats extends BaseStats {
+  recentPublished: Event[];
+  topViewed: Event[];
+}
+
 export default function AdminEventsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabType>('management');
+
+  // Data states
   const [events, setEvents] = useState<Event[]>([]);
+  const [allEvents, setAllEvents] = useState<Event[]>([]); // For insights
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [stats, setStats] = useState<EventStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,11 +110,15 @@ export default function AdminEventsPage() {
   const search = searchParams.get('search') || '';
 
   /**
-   * Fetch events from API
+   * Fetch data based on active tab
    */
   useEffect(() => {
-    fetchEvents();
-  }, [page, status, search]);
+    if (activeTab === 'management') {
+      fetchEvents();
+    } else if (activeTab === 'insights') {
+      fetchAllEventsForInsights();
+    }
+  }, [activeTab, page, status, search]);
 
   const fetchEvents = async () => {
     try {
@@ -146,6 +174,58 @@ export default function AdminEventsPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /**
+   * Fetch all events for insights
+   */
+  const fetchAllEventsForInsights = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        router.push('/admin/login');
+        return;
+      }
+
+      // Fetch all events (max 1000)
+      const response = await fetch('/api/admin/events?per_page=1000', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result: ApiResponse = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error?.message || 'Failed to fetch events');
+      }
+
+      setAllEvents(result.data);
+      calculateStats(result.data);
+    } catch (err) {
+      console.error('[Events Insights] Fetch error:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Calculate statistics for insights
+   */
+  const calculateStats = (eventsList: Event[]) => {
+    const baseStats = calculateBaseStats(eventsList);
+    const topViewed = getTopViewed(eventsList, 5);
+    const recentPublished = getRecentPublished(eventsList, 5);
+
+    setStats({
+      ...baseStats,
+      recentPublished,
+      topViewed,
+    });
   };
 
   /**
@@ -252,25 +332,46 @@ export default function AdminEventsPage() {
     return `${startStr} ~ ${endStr}`;
   };
 
-  return (
-    <div className="max-w-7xl mx-auto">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">이벤트 관리</h1>
-            <p className="mt-2 text-gray-600">이벤트 목록을 조회하고 참가 신청을 관리합니다</p>
-          </div>
-          <Link
-            href="/admin/events/create"
-            className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            새 이벤트 작성
-          </Link>
+  // Insights Content
+  const insightsContent = (
+    <div className="space-y-6">
+      {isLoading ? (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <svg className="animate-spin h-12 w-12 text-primary-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4" stroke="currentColor" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <p className="text-gray-600">통계 분석 중...</p>
         </div>
+      ) : stats ? (
+        <>
+          <OverviewCards stats={stats} itemLabel="이벤트" />
+
+          <StatusDistribution stats={stats} />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TopViewedList items={stats.topViewed} title="조회수 상위 5개" emptyMessage="데이터 없음" />
+            <RecentPublishedList items={stats.recentPublished} title="최근 발행 5개" emptyMessage="데이터 없음" />
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+
+  // Management Content
+  const managementContent = (
+    <div className="space-y-6">
+      {/* Action Button */}
+      <div className="flex justify-end">
+        <Link
+          href="/admin/events/create"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          새 이벤트 작성
+        </Link>
       </div>
 
       {/* Filters */}
@@ -498,6 +599,24 @@ export default function AdminEventsPage() {
           )}
         </>
       )}
+    </div>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">이벤트 관리</h1>
+        <p className="mt-2 text-gray-600">이벤트 통계 분석 및 참가 신청 관리</p>
+      </div>
+
+      {/* Tabs */}
+      <TabLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        insightsContent={insightsContent}
+        managementContent={managementContent}
+      />
     </div>
   );
 }

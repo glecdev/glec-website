@@ -21,6 +21,21 @@ import {
   VideoCategory,
   VIDEO_CATEGORY_LABELS,
 } from '@/lib/types/knowledge';
+import TabLayout, { TabType } from '@/components/admin/TabLayout';
+import {
+  OverviewCards,
+  StatusDistribution,
+  CategoryDistribution,
+  TopViewedList,
+  RecentPublishedList,
+} from '@/components/admin/InsightsCards';
+import {
+  calculateBaseStats,
+  getTopViewed,
+  getRecentPublished,
+  calculateCategoryDistribution,
+  type BaseStats,
+} from '@/lib/admin-insights';
 
 interface PaginationMeta {
   page: number;
@@ -39,11 +54,20 @@ interface ApiResponse {
   };
 }
 
+interface VideoStats extends BaseStats {
+  categoryDistribution: Record<string, number>;
+  topViewed: KnowledgeVideo[];
+  recentPublished: KnowledgeVideo[];
+}
+
 export default function AdminKnowledgeVideosPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [activeTab, setActiveTab] = useState<TabType>('management');
   const [videos, setVideos] = useState<KnowledgeVideo[]>([]);
+  const [allVideos, setAllVideos] = useState<KnowledgeVideo[]>([]);
+  const [stats, setStats] = useState<VideoStats | null>(null);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,11 +94,81 @@ export default function AdminKnowledgeVideosPage() {
   });
 
   /**
+   * Fetch all videos for insights
+   */
+  const fetchAllVideosForInsights = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        router.push('/admin/login');
+        return;
+      }
+
+      const response = await fetch('/api/admin/knowledge/videos?per_page=1000', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result: ApiResponse = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error?.message || 'Failed to fetch videos');
+      }
+
+      // Convert to stats-compatible format
+      const videosWithStats = result.data.map(video => ({
+        ...video,
+        status: 'PUBLISHED' as const,
+        publishedAt: video.publishedAt,
+      }));
+
+      setAllVideos(result.data);
+      calculateStats(result.data);
+    } catch (err) {
+      console.error('[Knowledge Videos] Insights fetch error:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Calculate statistics
+   */
+  const calculateStats = (videosList: KnowledgeVideo[]) => {
+    const videosWithStatus = videosList.map(v => ({
+      ...v,
+      status: 'PUBLISHED' as const,
+    }));
+
+    const baseStats = calculateBaseStats(videosWithStatus);
+    const categories = Object.keys(VIDEO_CATEGORY_LABELS);
+    const categoryDistribution = calculateCategoryDistribution(videosWithStatus, categories);
+    const topViewed = getTopViewed(videosWithStatus, 5);
+    const recentPublished = getRecentPublished(videosWithStatus, 5);
+
+    setStats({
+      ...baseStats,
+      categoryDistribution,
+      topViewed,
+      recentPublished,
+    });
+  };
+
+  /**
    * Fetch videos from API
    */
   useEffect(() => {
-    fetchVideos();
-  }, [page, category, search]);
+    if (activeTab === 'management') {
+      fetchVideos();
+    } else if (activeTab === 'insights') {
+      fetchAllVideosForInsights();
+    }
+  }, [page, category, search, activeTab]);
 
   const fetchVideos = async () => {
     try {
@@ -317,29 +411,73 @@ export default function AdminKnowledgeVideosPage() {
     );
   };
 
-  return (
-    <div className="max-w-7xl mx-auto">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">영상 관리</h1>
-            <p className="mt-2 text-gray-600">영상 콘텐츠를 조회하고 관리합니다</p>
-          </div>
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            영상 추가
-          </button>
+  const insightsContent = stats ? (
+    <div className="space-y-6">
+      {/* Overview Cards */}
+      <OverviewCards stats={stats} itemLabel="영상" />
+
+      {/* Status and Category Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <StatusDistribution stats={stats} />
+        <CategoryDistribution
+          distribution={stats.categoryDistribution}
+          categories={Object.keys(VIDEO_CATEGORY_LABELS).map(key => ({
+            key,
+            label: VIDEO_CATEGORY_LABELS[key as VideoCategory],
+            color: {
+              TECHNICAL: 'bg-blue-500',
+              GUIDE: 'bg-green-500',
+              TUTORIAL: 'bg-purple-500',
+              WEBINAR: 'bg-pink-500',
+              CASE_STUDY: 'bg-indigo-500',
+              PRODUCT_DEMO: 'bg-amber-500',
+            }[key] || 'bg-gray-500',
+          }))}
+          totalItems={stats.totalItems}
+        />
+      </div>
+
+      {/* Top Viewed and Recent Published */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TopViewedList
+          items={stats.topViewed}
+          title="조회수 상위 5개"
+          emptyMessage="조회 데이터가 없습니다"
+        />
+        <RecentPublishedList
+          items={stats.recentPublished}
+          title="최근 발행 5개"
+          emptyMessage="최근 발행 영상이 없습니다"
+          renderBadge={(video: KnowledgeVideo) => getCategoryBadge(video.category)}
+        />
+      </div>
+    </div>
+  ) : (
+    <div className="flex items-center justify-center py-12">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+  );
+
+  const managementContent = (
+    <div className="space-y-6">
+      {/* Header with Create Button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-gray-600">영상 콘텐츠를 조회하고 관리합니다</p>
         </div>
+        <button
+          onClick={openCreateModal}
+          className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          영상 추가
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="md:col-span-2">
@@ -549,6 +687,23 @@ export default function AdminKnowledgeVideosPage() {
           )}
         </>
       )}
+    </div>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">영상 관리</h1>
+        <p className="mt-2 text-gray-600">영상 통계 분석 및 콘텐츠 관리</p>
+      </div>
+
+      <TabLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        insightsContent={insightsContent}
+        managementContent={managementContent}
+      />
 
       {/* Create/Edit Modal */}
       {isModalOpen && (

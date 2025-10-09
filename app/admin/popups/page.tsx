@@ -1,15 +1,31 @@
 /**
- * Admin Popups Management Page - Modal-Based CRUD
+ * Admin Popups Management Page - Tab Structure with Insights
  *
  * Purpose: 팝업 관리 (생성, 수정, 삭제, 순서 변경)
- * Pattern: Knowledge Library (정상 작동 패턴 적용)
- * Features: Drag & Drop 레이어 순서 변경
+ * Pattern: Tab Structure Standard (Insights + Management)
+ * Features: Drag & Drop 레이어 순서 변경, 통계 분석
+ *
+ * Structure:
+ * - Tab 1: 인사이트 (통계 분석)
+ * - Tab 2: 관리 (CRUD 기능)
  */
 
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import TabLayout, { TabType } from '@/components/admin/TabLayout';
+import {
+  OverviewCards,
+  StatusDistribution,
+  CategoryDistribution,
+  TopViewedList,
+} from '@/components/admin/InsightsCards';
+import {
+  calculateBaseStats,
+  getTopViewed,
+  type BaseStats,
+} from '@/lib/admin-insights';
 
 interface Popup {
   id: string;
@@ -19,6 +35,9 @@ interface Popup {
   linkUrl: string | null;
   linkText: string | null;
   isActive: boolean;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'; // For stats compatibility
+  viewCount: number; // For stats compatibility
+  publishedAt: string | null; // For stats compatibility
   zIndex: number;
   displayType: 'modal' | 'banner' | 'corner';
   position: string;
@@ -29,6 +48,11 @@ interface Popup {
   endDate: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface PopupStats extends BaseStats {
+  displayTypeDistribution: Record<string, number>;
+  topViewed: Popup[];
 }
 
 const DISPLAY_TYPE_LABELS = {
@@ -45,11 +69,18 @@ const DISPLAY_TYPE_COLORS = {
 
 export default function AdminPopupsPage() {
   const router = useRouter();
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabType>('management');
+
+  // Data states
   const [popups, setPopups] = useState<Popup[]>([]);
+  const [allPopups, setAllPopups] = useState<Popup[]>([]); // For insights
+  const [stats, setStats] = useState<PopupStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
-  // Modal states (지식센터 패턴 적용)
+  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPopup, setEditingPopup] = useState<Popup | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -72,11 +103,16 @@ export default function AdminPopupsPage() {
   });
 
   useEffect(() => {
-    fetchPopups();
-  }, []);
+    if (activeTab === 'management') {
+      fetchPopups();
+    } else if (activeTab === 'insights') {
+      fetchAllPopupsForInsights();
+    }
+  }, [activeTab]);
 
   const fetchPopups = async () => {
     try {
+      setIsLoading(true);
       const token = localStorage.getItem('admin_token');
       if (!token) {
         router.push('/admin/login');
@@ -96,6 +132,63 @@ export default function AdminPopupsPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /**
+   * Fetch all popups for insights
+   */
+  const fetchAllPopupsForInsights = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        router.push('/admin/login');
+        return;
+      }
+
+      const response = await fetch('/api/admin/popups', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        // Convert popup data to match stats interface
+        const popupsWithStats = data.data.map((popup: any) => ({
+          ...popup,
+          status: popup.isActive ? 'PUBLISHED' : 'DRAFT',
+          viewCount: 0, // Popups don't track views yet
+          publishedAt: popup.isActive ? popup.startDate : null,
+        }));
+        setAllPopups(popupsWithStats);
+        calculateStats(popupsWithStats);
+      }
+    } catch (error) {
+      console.error('[Popups Insights] Fetch error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Calculate statistics for insights
+   */
+  const calculateStats = (popupsList: Popup[]) => {
+    const baseStats = calculateBaseStats(popupsList);
+
+    // Display type distribution
+    const displayTypeDistribution: Record<string, number> = {
+      modal: popupsList.filter(p => p.displayType === 'modal').length,
+      banner: popupsList.filter(p => p.displayType === 'banner').length,
+      corner: popupsList.filter(p => p.displayType === 'corner').length,
+    };
+
+    const topViewed = getTopViewed(popupsList, 5);
+
+    setStats({
+      ...baseStats,
+      displayTypeDistribution,
+      topViewed,
+    });
   };
 
   /**
@@ -296,23 +389,60 @@ export default function AdminPopupsPage() {
     }
   };
 
-  return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">팝업 관리</h1>
-          <p className="text-gray-600">웹사이트 팝업을 생성하고 관리합니다</p>
+  // Insights Content
+  const insightsContent = (
+    <div className="space-y-6">
+      {isLoading ? (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <svg className="animate-spin h-12 w-12 text-primary-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4" stroke="currentColor" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <p className="text-gray-600">통계 분석 중...</p>
         </div>
+      ) : stats ? (
+        <>
+          <OverviewCards stats={stats} itemLabel="팝업" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <StatusDistribution stats={stats} />
+            <CategoryDistribution
+              distribution={stats.displayTypeDistribution}
+              categories={[
+                { key: 'modal', label: '모달', color: 'bg-blue-500' },
+                { key: 'banner', label: '배너', color: 'bg-green-500' },
+                { key: 'corner', label: '코너', color: 'bg-purple-500' },
+              ]}
+              totalItems={stats.totalItems}
+            />
+          </div>
+
+          {stats.topViewed.length > 0 && (
+            <TopViewedList items={stats.topViewed} title="조회수 상위 5개" emptyMessage="데이터 없음" />
+          )}
+        </>
+      ) : null}
+    </div>
+  );
+
+  // Management Content
+  const managementContent = (
+    <div className="space-y-6">
+      {/* Action Button */}
+      <div className="flex justify-end">
         <button
           onClick={openCreateModal}
-          className="px-4 py-2 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
         >
-          + 새 팝업 만들기
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          새 팝업 만들기
         </button>
       </div>
 
       {/* Drag & Drop Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
           <svg className="w-5 h-5 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -417,8 +547,26 @@ export default function AdminPopupsPage() {
           ))}
         </div>
       )}
+    </div>
+  );
 
-      {/* Create/Edit Modal (지식센터 패턴) */}
+  return (
+    <div className="max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">팝업 관리</h1>
+        <p className="mt-2 text-gray-600">팝업 통계 분석 및 콘텐츠 관리</p>
+      </div>
+
+      {/* Tabs */}
+      <TabLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        insightsContent={insightsContent}
+        managementContent={managementContent}
+      />
+
+      {/* Create/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">

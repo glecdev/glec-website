@@ -22,6 +22,21 @@ import {
   KnowledgeCategory,
   KNOWLEDGE_CATEGORY_LABELS,
 } from '@/lib/types/knowledge';
+import TabLayout, { TabType } from '@/components/admin/TabLayout';
+import {
+  OverviewCards,
+  StatusDistribution,
+  CategoryDistribution,
+  TopViewedList,
+  RecentPublishedList,
+} from '@/components/admin/InsightsCards';
+import {
+  calculateBaseStats,
+  getTopViewed,
+  getRecentPublished,
+  calculateCategoryDistribution,
+  type BaseStats,
+} from '@/lib/admin-insights';
 
 interface PaginationMeta {
   page: number;
@@ -40,12 +55,25 @@ interface ApiResponse {
   };
 }
 
+interface LibraryStats extends BaseStats {
+  categoryDistribution: Record<string, number>;
+  fileTypeDistribution: Record<string, number>;
+  recentPublished: KnowledgeLibraryItem[];
+  topViewed: KnowledgeLibraryItem[];
+}
+
 export default function AdminKnowledgeLibraryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabType>('management');
+
+  // Data states
   const [items, setItems] = useState<KnowledgeLibraryItem[]>([]);
+  const [allItems, setAllItems] = useState<KnowledgeLibraryItem[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [stats, setStats] = useState<LibraryStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,11 +101,15 @@ export default function AdminKnowledgeLibraryPage() {
   });
 
   /**
-   * Fetch library items from API
+   * Fetch data based on active tab
    */
   useEffect(() => {
-    fetchItems();
-  }, [page, category, fileType, search]);
+    if (activeTab === 'management') {
+      fetchItems();
+    } else if (activeTab === 'insights') {
+      fetchAllItemsForInsights();
+    }
+  }, [activeTab, page, category, fileType, search]);
 
   const fetchItems = async () => {
     try {
@@ -119,6 +151,74 @@ export default function AdminKnowledgeLibraryPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /**
+   * Fetch all items for insights
+   */
+  const fetchAllItemsForInsights = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        router.push('/admin/login');
+        return;
+      }
+
+      const response = await fetch('/api/admin/knowledge/library?per_page=1000', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const result: ApiResponse = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error?.message || 'Failed to fetch items');
+      }
+
+      // Convert to compatible format
+      const itemsWithStats = result.data.map(item => ({
+        ...item,
+        status: 'PUBLISHED' as const,
+        viewCount: item.downloadCount,
+      }));
+
+      setAllItems(result.data);
+      calculateStats(itemsWithStats);
+    } catch (err) {
+      console.error('[Library Insights] Fetch error:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Calculate statistics
+   */
+  const calculateStats = (itemsList: any[]) => {
+    const baseStats = calculateBaseStats(itemsList);
+    const categories = Object.keys(KNOWLEDGE_CATEGORY_LABELS);
+    const categoryDistribution = calculateCategoryDistribution(itemsList, categories);
+
+    const fileTypeDistribution = {
+      PDF: itemsList.filter(i => i.fileType === 'PDF').length,
+      DOCX: itemsList.filter(i => i.fileType === 'DOCX').length,
+      XLSX: itemsList.filter(i => i.fileType === 'XLSX').length,
+      PPTX: itemsList.filter(i => i.fileType === 'PPTX').length,
+    };
+
+    const topViewed = getTopViewed(itemsList, 5);
+    const recentPublished = getRecentPublished(itemsList, 5);
+
+    setStats({
+      ...baseStats,
+      categoryDistribution,
+      fileTypeDistribution,
+      topViewed: topViewed.map(item => allItems.find(i => i.id === item.id)!),
+      recentPublished: recentPublished.map(item => allItems.find(i => i.id === item.id)!),
+    });
   };
 
   /**
@@ -337,25 +437,63 @@ export default function AdminKnowledgeLibraryPage() {
     );
   };
 
-  return (
-    <div className="max-w-7xl mx-auto">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">자료실 관리</h1>
-            <p className="mt-2 text-gray-600">자료실 콘텐츠를 조회하고 관리합니다</p>
-          </div>
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            자료 추가
-          </button>
+  // Insights Content
+  const insightsContent = (
+    <div className="space-y-6">
+      {isLoading ? (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <svg className="animate-spin h-12 w-12 text-primary-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4" stroke="currentColor" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <p className="text-gray-600">통계 분석 중...</p>
         </div>
+      ) : stats ? (
+        <>
+          <OverviewCards stats={stats} itemLabel="자료" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <StatusDistribution stats={stats} />
+            <CategoryDistribution
+              distribution={stats.fileTypeDistribution}
+              categories={[
+                { key: 'PDF', label: 'PDF', color: 'bg-red-500' },
+                { key: 'DOCX', label: 'DOCX', color: 'bg-blue-500' },
+                { key: 'XLSX', label: 'XLSX', color: 'bg-green-500' },
+                { key: 'PPTX', label: 'PPTX', color: 'bg-orange-500' },
+              ]}
+              totalItems={stats.totalItems}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TopViewedList items={stats.topViewed} title="다운로드 상위 5개" emptyMessage="데이터 없음" />
+            <RecentPublishedList
+              items={stats.recentPublished}
+              title="최근 발행 5개"
+              emptyMessage="데이터 없음"
+              renderBadge={(item) => getCategoryBadge(item.category)}
+            />
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+
+  // Management Content
+  const managementContent = (
+    <div className="space-y-6">
+      {/* Action Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={openCreateModal}
+          className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          자료 추가
+        </button>
       </div>
 
       {/* Filters */}
@@ -588,6 +726,202 @@ export default function AdminKnowledgeLibraryPage() {
           )}
         </>
       )}
+
+      {/* Create/Edit Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {editingItem ? '자료 수정' : '자료 추가'}
+              </h2>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {/* Title */}
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                  제목 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
+                  maxLength={200}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                  설명 <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  required
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label htmlFor="modal-category" className="block text-sm font-medium text-gray-700 mb-1">
+                  카테고리 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="modal-category"
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value as KnowledgeCategory })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  {Object.entries(KNOWLEDGE_CATEGORY_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* File Type */}
+              <div>
+                <label htmlFor="modal-fileType" className="block text-sm font-medium text-gray-700 mb-1">
+                  파일 타입 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="modal-fileType"
+                  value={formData.fileType}
+                  onChange={(e) => setFormData({ ...formData, fileType: e.target.value as KnowledgeLibraryItem['fileType'] })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="PDF">PDF</option>
+                  <option value="DOCX">DOCX</option>
+                  <option value="XLSX">XLSX</option>
+                  <option value="PPTX">PPTX</option>
+                </select>
+              </div>
+
+              {/* File Size */}
+              <div>
+                <label htmlFor="fileSize" className="block text-sm font-medium text-gray-700 mb-1">
+                  파일 크기 <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2">(예: "2.5 MB")</span>
+                </label>
+                <input
+                  type="text"
+                  id="fileSize"
+                  value={formData.fileSize}
+                  onChange={(e) => setFormData({ ...formData, fileSize: e.target.value })}
+                  required
+                  placeholder="2.5 MB"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* File URL */}
+              <div>
+                <label htmlFor="fileUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                  파일 URL <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="url"
+                  id="fileUrl"
+                  value={formData.fileUrl}
+                  onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
+                  required
+                  placeholder="https://example.com/file.pdf"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Thumbnail URL */}
+              <div>
+                <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                  썸네일 URL
+                  <span className="text-xs text-gray-500 ml-2">(선택사항)</span>
+                </label>
+                <input
+                  type="url"
+                  id="thumbnailUrl"
+                  value={formData.thumbnailUrl}
+                  onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
+                  placeholder="https://example.com/thumbnail.jpg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
+                  태그 <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2">(쉼표로 구분)</span>
+                </label>
+                <input
+                  type="text"
+                  id="tags"
+                  value={formData.tags}
+                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  required
+                  placeholder="ISO, 표준, 탄소배출"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={isSaving}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isSaving ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4" stroke="currentColor" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      저장 중...
+                    </>
+                  ) : (
+                    editingItem ? '수정' : '추가'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">자료실 관리</h1>
+        <p className="mt-2 text-gray-600">자료실 통계 분석 및 콘텐츠 관리</p>
+      </div>
+
+      {/* Tabs */}
+      <TabLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        insightsContent={insightsContent}
+        managementContent={managementContent}
+      />
 
       {/* Create/Edit Modal */}
       {isModalOpen && (

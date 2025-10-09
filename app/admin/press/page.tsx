@@ -1,25 +1,33 @@
 /**
- * Admin Press List Page - Modal-Based CRUD
+ * Admin Press List Page - Tab Structure with Insights
  *
  * Based on: FR-ADMIN-003 (공지사항 목록 조회 - PRESS 카테고리 전용)
  * API: GET/POST/PUT/DELETE /api/admin/notices
- * Pattern: Knowledge Library (정상 작동 패턴 적용)
- * Standards: GLEC-Design-System-Standards.md (Table, Pagination, Filter, Modal)
+ * Pattern: Tab Structure Standard (Insights + Management)
+ * Standards: GLEC-Design-System-Standards.md (Tabs, Table, Pagination, Filter, Modal)
  *
- * Features:
- * - Paginated notice list (20 items/page)
- * - Status filter (DRAFT, PUBLISHED, ARCHIVED)
- * - Category filter (GENERAL, PRODUCT, EVENT, PRESS)
- * - Search by title
- * - **Modal-based Create/Edit** (핵심 개선!)
- * - Inline Delete action
- * - Auto-refresh after CRUD operations
+ * Structure:
+ * - Tab 1: 인사이트 (통계 분석)
+ * - Tab 2: 관리 (CRUD 기능)
  */
 
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import TabLayout, { TabType } from '@/components/admin/TabLayout';
+import {
+  OverviewCards,
+  StatusDistribution,
+  TopViewedList,
+  RecentPublishedList,
+} from '@/components/admin/InsightsCards';
+import {
+  calculateBaseStats,
+  getTopViewed,
+  getRecentPublished,
+  type BaseStats,
+} from '@/lib/admin-insights';
 
 interface Notice {
   id: string;
@@ -55,16 +63,27 @@ interface ApiResponse {
   };
 }
 
+interface PressStats extends BaseStats {
+  recentPublished: Notice[];
+  topViewed: Notice[];
+}
+
 export default function AdminPressPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabType>('management');
+
+  // Data states
   const [pressReleases, setPressReleases] = useState<Notice[]>([]);
+  const [allPressReleases, setAllPressReleases] = useState<Notice[]>([]); // For insights
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [stats, setStats] = useState<PressStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal states (지식센터 패턴 적용)
+  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPress, setEditingPress] = useState<Notice | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -72,7 +91,6 @@ export default function AdminPressPage() {
   // Filter states (from URL query params)
   const page = parseInt(searchParams.get('page') || '1', 10);
   const status = searchParams.get('status') || '';
-
   const search = searchParams.get('search') || '';
 
   // Form states (지식센터 패턴 적용)
@@ -86,11 +104,15 @@ export default function AdminPressPage() {
   });
 
   /**
-   * Fetch notices from API
+   * Fetch data based on active tab
    */
   useEffect(() => {
-    fetchPressReleases();
-  }, [page, status, search]);
+    if (activeTab === 'management') {
+      fetchPressReleases();
+    } else if (activeTab === 'insights') {
+      fetchAllPressReleasesForInsights();
+    }
+  }, [activeTab, page, status, search]);
 
   const fetchPressReleases = async () => {
     try {
@@ -147,6 +169,58 @@ export default function AdminPressPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /**
+   * Fetch all press releases for insights (no pagination)
+   */
+  const fetchAllPressReleasesForInsights = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        router.push('/admin/login');
+        return;
+      }
+
+      // Fetch all press releases (max 1000)
+      const response = await fetch('/api/admin/notices?per_page=1000&category=PRESS', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result: ApiResponse = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error?.message || 'Failed to fetch press releases');
+      }
+
+      setAllPressReleases(result.data);
+      calculateStats(result.data);
+    } catch (err) {
+      console.error('[Press Insights] Fetch error:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Calculate statistics for insights
+   */
+  const calculateStats = (pressList: Notice[]) => {
+    const baseStats = calculateBaseStats(pressList);
+    const topViewed = getTopViewed(pressList, 5);
+    const recentPublished = getRecentPublished(pressList, 5);
+
+    setStats({
+      ...baseStats,
+      recentPublished,
+      topViewed,
+    });
   };
 
   /**
@@ -333,30 +407,54 @@ export default function AdminPressPage() {
     });
   };
 
-  return (
-    <div className="max-w-7xl mx-auto">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">보도자료 관리</h1>
-            <p className="mt-2 text-gray-600">보도자료 목록을 조회하고 관리합니다</p>
-          </div>
-          {/* 지식센터 패턴: Link → 버튼 onClick */}
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            새 보도자료 작성
-          </button>
+  // Insights Content
+  const insightsContent = (
+    <div className="space-y-6">
+      {isLoading ? (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <svg className="animate-spin h-12 w-12 text-primary-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4" stroke="currentColor" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <p className="text-gray-600">통계 분석 중...</p>
         </div>
+      ) : stats ? (
+        <>
+          <OverviewCards stats={stats} itemLabel="보도자료" />
+
+          <StatusDistribution stats={stats} />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TopViewedList items={stats.topViewed} title="조회수 상위 5개" emptyMessage="데이터 없음" />
+            <RecentPublishedList
+              items={stats.recentPublished}
+              title="최근 발행 5개"
+              emptyMessage="데이터 없음"
+            />
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+
+  // Management Content
+  const managementContent = (
+    <div className="space-y-6">
+      {/* Action Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={openCreateModal}
+          className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          새 보도자료 작성
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="md:col-span-2">
@@ -554,8 +652,26 @@ export default function AdminPressPage() {
           )}
         </>
       )}
+    </div>
+  );
 
-      {/* Create/Edit Modal (지식센터 패턴 적용) */}
+  return (
+    <div className="max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">보도자료 관리</h1>
+        <p className="mt-2 text-gray-600">보도자료 통계 분석 및 콘텐츠 관리</p>
+      </div>
+
+      {/* Tabs */}
+      <TabLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        insightsContent={insightsContent}
+        managementContent={managementContent}
+      />
+
+      {/* Create/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
