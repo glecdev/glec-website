@@ -1,0 +1,20 @@
+{
+  "version": "v0.2.0",
+  "timestamp": "2025-10-09T02:30:10.845Z",
+  "baseUrl": "https://glec-website.vercel.app",
+  "viewports": [
+    "mobile (375x667)",
+    "tablet (768x1024)",
+    "desktop (1280x800)"
+  ],
+  "pages": [
+    "/",
+    "/admin/login",
+    "/products/dtg-series5",
+    "/products/carbon-api",
+    "/knowledge/blog",
+    "/contact"
+  ],
+  "totalScreenshots": 18,
+  "outputDirectory": "D:\\GLEC-Website\\glec-website\\screenshots\\v0.2.0"
+}
