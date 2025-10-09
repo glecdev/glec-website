@@ -102,9 +102,9 @@ export const GET = withAuth(
         data: transformedItems,
         meta: {
           page,
-          perPage: per_page,
+          per_page,
           total,
-          totalPages: Math.ceil(total / per_page),
+          total_pages: Math.ceil(total / per_page),
         },
       });
     } catch (error) {

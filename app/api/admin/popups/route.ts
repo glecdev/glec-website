@@ -153,9 +153,9 @@ export const GET = withAuth(
         data: transformedPopups,
         meta: {
           page,
-          perPage: per_page,
+          per_page,
           total,
-          totalPages: Math.ceil(total / per_page),
+          total_pages: Math.ceil(total / per_page),
         },
       });
     } catch (error) {
