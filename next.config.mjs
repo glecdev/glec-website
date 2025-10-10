@@ -34,6 +34,7 @@ const nextConfig = {
               "img-src 'self' data: https:",
               "font-src 'self' data:",
               "connect-src 'self' https://glec-website.vercel.app https://*.neon.tech wss://glec-website.vercel.app",
+              "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
               "frame-ancestors 'none'",
             ].join('; ')
           },
