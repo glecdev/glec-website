@@ -507,7 +507,7 @@ export default function AdminNoticesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600">전체 공지사항</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalNotices}</p>
+                      <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalItems}</p>
                     </div>
                     <div className="p-3 bg-blue-100 rounded-lg">
                       <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
@@ -550,7 +550,7 @@ export default function AdminNoticesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600">평균 조회수</p>
-                      <p className="text-3xl font-bold text-amber-600 mt-2">{stats.avgViewsPerNotice.toLocaleString()}</p>
+                      <p className="text-3xl font-bold text-amber-600 mt-2">{stats.avgViewsPerItem.toLocaleString()}</p>
                     </div>
                     <div className="p-3 bg-amber-100 rounded-lg">
                       <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
