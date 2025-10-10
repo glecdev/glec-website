@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import toast, { Toaster } from 'react-hot-toast';
 import {
   KnowledgeBlogPost,
   BlogCategory,
@@ -410,8 +411,134 @@ export default function AdminKnowledgeBlogPage() {
     );
   };
 
+  /**
+   * Enhanced CSV Export Function
+   */
+  const exportToCSV = () => {
+    if (!stats || !allPosts) return;
+
+    try {
+      const sections: string[] = [];
+
+      // ============================================================
+      // 1. 메타 정보
+      // ============================================================
+      sections.push('=== GLEC 블로그 통계 리포트 ===');
+      sections.push(`생성일시,${new Date().toLocaleString('ko-KR')}`);
+      sections.push(`총 블로그 수,${stats.totalItems}`);
+      sections.push('');
+
+      // ============================================================
+      // 2. 주요 통계
+      // ============================================================
+      sections.push('=== 주요 통계 ===');
+      sections.push('지표,값');
+      sections.push(`전체 블로그,${stats.totalItems}`);
+      sections.push(`작성중,${stats.draftCount}`);
+      sections.push(`발행됨,${stats.publishedCount}`);
+      sections.push(`보관됨,${stats.archivedCount}`);
+      sections.push(`총 조회수,${stats.totalViews}`);
+      sections.push(`평균 조회수,${stats.avgViewsPerItem.toLocaleString()}`);
+      sections.push('');
+
+      // ============================================================
+      // 3. 카테고리별 분포
+      // ============================================================
+      sections.push('=== 카테고리별 분포 ===');
+      sections.push('카테고리,개수,비율(%)');
+      Object.entries(stats.categoryDistribution).forEach(([category, count]) => {
+        const percentage = stats.totalItems > 0 ? Math.round((count / stats.totalItems) * 100) : 0;
+        sections.push(`${BLOG_CATEGORY_LABELS[category as BlogCategory]},${count},${percentage}`);
+      });
+      sections.push('');
+
+      // ============================================================
+      // 4. 조회수 상위 5개
+      // ============================================================
+      sections.push('=== 조회수 상위 5개 ===');
+      sections.push('순위,제목,작성자,카테고리,조회수,게시일');
+      stats.topViewed.forEach((post, index) => {
+        const publishedDate = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('ko-KR') : 'N/A';
+        sections.push(`${index + 1},"${post.title.replace(/"/g, '""')}",${post.author ?? 'N/A'},${BLOG_CATEGORY_LABELS[post.category]},${post.viewCount ?? 0},${publishedDate}`);
+      });
+      sections.push('');
+
+      // ============================================================
+      // 5. 최근 발행 5개
+      // ============================================================
+      sections.push('=== 최근 발행 5개 ===');
+      sections.push('제목,작성자,카테고리,게시일');
+      stats.recentPublished.forEach((post) => {
+        const publishedDate = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('ko-KR') : 'N/A';
+        sections.push(`"${post.title.replace(/"/g, '""')}",${post.author ?? 'N/A'},${BLOG_CATEGORY_LABELS[post.category]},${publishedDate}`);
+      });
+      sections.push('');
+
+      // ============================================================
+      // 6. 전체 블로그 목록
+      // ============================================================
+      sections.push('=== 전체 블로그 목록 ===');
+      sections.push('ID,제목,작성자,카테고리,상태,조회수,댓글수,게시일');
+      allPosts.forEach((post) => {
+        const publishedDate = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('ko-KR') : 'N/A';
+        sections.push(`${post.id},"${post.title.replace(/"/g, '""')}",${post.author ?? 'N/A'},${BLOG_CATEGORY_LABELS[post.category]},${post.status},${post.viewCount ?? 0},${post.commentCount ?? 0},${publishedDate}`);
+      });
+      sections.push('');
+
+      // ============================================================
+      // 7. 리포트 끝
+      // ============================================================
+      sections.push('=== 리포트 끝 ===');
+      sections.push(`생성 시스템,GLEC Admin - Knowledge Blog`);
+      sections.push(`데이터 소스,Neon PostgreSQL`);
+
+      const csvData = sections.join('\n');
+
+      // Create blob and download
+      const blob = new Blob(['\ufeff' + csvData], { type: 'text/csv;charset=utf-8;' }); // UTF-8 BOM
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `glec-knowledge-blog-report-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('블로그 종합 리포트가 다운로드되었습니다', {
+        duration: 3000,
+        icon: '📥',
+      });
+    } catch (err) {
+      console.error('[Knowledge Blog] Failed to export CSV:', err);
+      toast.error('CSV 내보내기 실패', {
+        duration: 3000,
+        icon: '❌',
+      });
+    }
+  };
+
   const insightsContent = stats ? (
     <div className="space-y-6">
+      {/* CSV Export Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={exportToCSV}
+          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          aria-label="CSV 다운로드"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          <span>CSV 다운로드</span>
+        </button>
+      </div>
+
       {/* Overview Cards */}
       <OverviewCards stats={stats} itemLabel="블로그" />
 
@@ -691,6 +818,9 @@ export default function AdminKnowledgeBlogPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      {/* Toast Container */}
+      <Toaster position="top-right" />
+
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">블로그 관리</h1>
