@@ -216,8 +216,8 @@ export default function AdminKnowledgeLibraryPage() {
       ...baseStats,
       categoryDistribution,
       fileTypeDistribution,
-      topViewed: topViewed.map(item => allItems.find(i => i.id === item.id)!),
-      recentPublished: recentPublished.map(item => allItems.find(i => i.id === item.id)!),
+      topViewed: topViewed as KnowledgeLibraryItem[],
+      recentPublished: recentPublished as KnowledgeLibraryItem[],
     });
   };
 

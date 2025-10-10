@@ -16,7 +16,8 @@ export interface BaseStats {
 export interface ContentItem {
   id: string;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  viewCount: number;
+  viewCount?: number;
+  downloadCount?: number; // For Knowledge Library
   publishedAt: string | null;
   title: string;
   [key: string]: any;
@@ -30,7 +31,11 @@ export function calculateBaseStats<T extends ContentItem>(items: T[]): BaseStats
   const draftCount = items.filter(item => item.status === 'DRAFT').length;
   const publishedCount = items.filter(item => item.status === 'PUBLISHED').length;
   const archivedCount = items.filter(item => item.status === 'ARCHIVED').length;
-  const totalViews = items.reduce((sum, item) => sum + item.viewCount, 0);
+  // Support both viewCount and downloadCount (for Knowledge Library)
+  const totalViews = items.reduce((sum, item) => {
+    const count = item.viewCount ?? item.downloadCount ?? 0;
+    return sum + count;
+  }, 0);
   const avgViewsPerItem = totalItems > 0 ? Math.round(totalViews / totalItems) : 0;
 
   return {
@@ -48,7 +53,11 @@ export function calculateBaseStats<T extends ContentItem>(items: T[]): BaseStats
  */
 export function getTopViewed<T extends ContentItem>(items: T[], limit: number = 5): T[] {
   return [...items]
-    .sort((a, b) => b.viewCount - a.viewCount)
+    .sort((a, b) => {
+      const aCount = a.viewCount ?? a.downloadCount ?? 0;
+      const bCount = b.viewCount ?? b.downloadCount ?? 0;
+      return bCount - aCount;
+    })
     .slice(0, limit);
 }
 
