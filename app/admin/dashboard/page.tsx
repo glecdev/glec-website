@@ -270,37 +270,120 @@ export default function AdminDashboardPage() {
     );
   }
 
-  // CSV Export Function
+  // Enhanced CSV Export Function
   const exportToCSV = () => {
     if (!data) return;
 
     try {
-      // Generate CSV header
-      const csvHeader = ['카테고리', '값', '날짜'].join(',') + '\n';
+      const exportDate = new Date().toISOString();
+      const periodLabel = dateRange === '7d' ? '7일' : dateRange === '30d' ? '30일' : '90일';
 
-      // Generate CSV data
-      const csvRows: string[] = [];
+      // CSV 섹션들
+      const sections: string[] = [];
 
-      // Statistics
-      csvRows.push(`전체 콘텐츠,${data.stats.totalContent.current},${new Date().toISOString()}`);
-      csvRows.push(`공지사항,${data.stats.totalNotices.current},${new Date().toISOString()}`);
-      csvRows.push(`보도자료,${data.stats.totalPress.current},${new Date().toISOString()}`);
-      csvRows.push(`총 조회수,${data.stats.totalViews.current},${new Date().toISOString()}`);
+      // ============================================================
+      // 1. 메타 정보
+      // ============================================================
+      sections.push('=== GLEC 대시보드 분석 리포트 ===');
+      sections.push(`생성일시,${new Date().toLocaleString('ko-KR')}`);
+      sections.push(`분석 기간,지난 ${periodLabel}`);
+      sections.push('');
 
-      const csvData = csvHeader + csvRows.join('\n');
+      // ============================================================
+      // 2. 주요 통계 (Period Comparison 포함)
+      // ============================================================
+      sections.push('=== 주요 통계 (기간 비교) ===');
+      sections.push('지표,현재 기간,이전 기간,성장률(%)');
+      sections.push(`전체 콘텐츠,${data.stats.totalContent.current},${data.stats.totalContent.previous},${data.stats.totalContent.growthRate}`);
+      sections.push(`공지사항,${data.stats.totalNotices.current},${data.stats.totalNotices.previous},${data.stats.totalNotices.growthRate}`);
+      sections.push(`보도자료,${data.stats.totalPress.current},${data.stats.totalPress.previous},${data.stats.totalPress.growthRate}`);
+      sections.push(`총 조회수,${data.stats.totalViews.current},${data.stats.totalViews.previous},${data.stats.totalViews.growthRate}`);
+      sections.push(`발행된 콘텐츠,${data.stats.publishedContent.current},${data.stats.publishedContent.previous},${data.stats.publishedContent.growthRate}`);
+      sections.push('');
+
+      // ============================================================
+      // 3. 팝업 분석
+      // ============================================================
+      sections.push('=== 팝업 분석 ===');
+      sections.push('지표,값');
+      sections.push(`전체 팝업,${data.popupAnalytics.total}`);
+      sections.push(`활성 팝업,${data.popupAnalytics.active}`);
+      sections.push(`비활성 팝업,${data.popupAnalytics.inactive}`);
+      sections.push(`활성화율,${data.popupAnalytics.activationRate}%`);
+      sections.push('');
+
+      // ============================================================
+      // 4. 카테고리별 공지사항 분포
+      // ============================================================
+      sections.push('=== 카테고리별 공지사항 분포 ===');
+      sections.push('카테고리,개수');
+      data.distribution.noticesByCategory.forEach((item) => {
+        sections.push(`${item.name},${item.value}`);
+      });
+      sections.push('');
+
+      // ============================================================
+      // 5. 상태별 콘텐츠 분포
+      // ============================================================
+      sections.push('=== 상태별 콘텐츠 분포 ===');
+      sections.push('상태,개수');
+      data.distribution.contentByStatus.forEach((item) => {
+        sections.push(`${item.name},${item.value}`);
+      });
+      sections.push('');
+
+      // ============================================================
+      // 6. 유형별 팝업 분포
+      // ============================================================
+      sections.push('=== 유형별 팝업 분포 ===');
+      sections.push('유형,개수');
+      data.distribution.popupsByType.forEach((item) => {
+        sections.push(`${item.name},${item.value}`);
+      });
+      sections.push('');
+
+      // ============================================================
+      // 7. 일별 추이 데이터
+      // ============================================================
+      sections.push('=== 일별 추이 데이터 ===');
+      sections.push('날짜,공지사항,보도자료,조회수');
+      data.trends.dailyData.forEach((item) => {
+        sections.push(`${item.date},${item.notices},${item.press},${item.views}`);
+      });
+      sections.push('');
+
+      // ============================================================
+      // 8. Top 5 인기 콘텐츠
+      // ============================================================
+      sections.push('=== Top 5 인기 콘텐츠 ===');
+      sections.push('순위,제목,카테고리,조회수,게시일');
+      data.topContent.notices.forEach((item) => {
+        const publishedDate = new Date(item.publishedAt).toLocaleDateString('ko-KR');
+        sections.push(`${item.rank},"${item.title.replace(/"/g, '""')}",${item.category},${item.viewCount},${publishedDate}`);
+      });
+      sections.push('');
+
+      // ============================================================
+      // 9. 리포트 끝
+      // ============================================================
+      sections.push('=== 리포트 끝 ===');
+      sections.push(`생성 시스템,GLEC Admin Dashboard`);
+      sections.push(`데이터 소스,Neon PostgreSQL`);
+
+      const csvData = sections.join('\n');
 
       // Create blob and download
       const blob = new Blob(['\ufeff' + csvData], { type: 'text/csv;charset=utf-8;' }); // UTF-8 BOM
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `dashboard-${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = `glec-dashboard-report-${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast.success('CSV 파일이 다운로드되었습니다', {
+      toast.success('종합 리포트가 다운로드되었습니다', {
         duration: 3000,
         icon: '📥',
       });
