@@ -51,17 +51,61 @@ function generateSlug(title: string): string {
 // Helper: Extract YouTube video ID from URL
 // ============================================================
 
+/**
+ * Extract YouTube video ID from various URL formats
+ * Supports:
+ * - https://www.youtube.com/watch?v=VIDEO_ID
+ * - https://youtu.be/VIDEO_ID
+ * - https://youtu.be/VIDEO_ID?si=SHARE_ID
+ * - https://www.youtube.com/embed/VIDEO_ID
+ * - https://www.youtube.com/v/VIDEO_ID
+ */
 function extractYouTubeId(url: string): string {
+  // Try URL parsing first
+  try {
+    const urlObj = new URL(url);
+
+    // Case 1: youtube.com/watch?v=VIDEO_ID
+    if (urlObj.hostname.includes('youtube.com') && urlObj.pathname === '/watch') {
+      const videoId = urlObj.searchParams.get('v');
+      if (videoId) return videoId;
+    }
+
+    // Case 2: youtu.be/VIDEO_ID
+    if (urlObj.hostname === 'youtu.be') {
+      const videoId = urlObj.pathname.slice(1); // Remove leading '/'
+      if (videoId) return videoId;
+    }
+
+    // Case 3: youtube.com/embed/VIDEO_ID
+    if (urlObj.hostname.includes('youtube.com') && urlObj.pathname.startsWith('/embed/')) {
+      const videoId = urlObj.pathname.slice(7); // Remove '/embed/'
+      if (videoId) return videoId;
+    }
+
+    // Case 4: youtube.com/v/VIDEO_ID
+    if (urlObj.hostname.includes('youtube.com') && urlObj.pathname.startsWith('/v/')) {
+      const videoId = urlObj.pathname.slice(3); // Remove '/v/'
+      if (videoId) return videoId;
+    }
+  } catch (err) {
+    console.warn('[extractYouTubeId] URL parsing failed:', err);
+  }
+
+  // Fallback: regex patterns
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
-    /youtube\.com\/embed\/([^?&\s]+)/,
+    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
   ];
 
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) return match[1];
+    if (match && match[1]) return match[1];
   }
 
+  console.error('[extractYouTubeId] Failed to extract video ID from URL:', url);
   return 'unknown';
 }
 
@@ -190,6 +234,9 @@ export const POST = withAuth(
       const slug = generateSlug(validated.title);
       const youtubeVideoId = extractYouTubeId(validated.videoUrl);
 
+      // Generate thumbnail URL (hqdefault is more reliable than maxresdefault)
+      const defaultThumbnail = `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`;
+
       // Insert new video with explicit UUID and timestamps
       const newItem = await sql`
         INSERT INTO videos (
@@ -197,7 +244,7 @@ export const POST = withAuth(
           duration, tab, author_id, status, published_at, created_at, updated_at
         ) VALUES (
           ${id}, ${validated.title}, ${slug}, ${validated.description}, ${validated.videoUrl},
-          ${youtubeVideoId}, ${validated.thumbnailUrl || `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`},
+          ${youtubeVideoId}, ${validated.thumbnailUrl || defaultThumbnail},
           ${validated.duration}, '전체', ${user.userId}, 'PUBLISHED', NOW(), NOW(), NOW()
         )
         RETURNING *
@@ -305,6 +352,12 @@ export const PUT = withAuth(
         const newVideoId = extractYouTubeId(validated.videoUrl);
         updates.push(`youtube_video_id = $${params.length + 1}`);
         params.push(newVideoId);
+        // Auto-update thumbnail if not explicitly provided
+        if (validated.thumbnailUrl === undefined) {
+          const defaultThumbnail = `https://img.youtube.com/vi/${newVideoId}/hqdefault.jpg`;
+          updates.push(`thumbnail_url = $${params.length + 1}`);
+          params.push(defaultThumbnail);
+        }
       }
       if (validated.thumbnailUrl !== undefined) {
         updates.push(`thumbnail_url = $${params.length + 1}`);
