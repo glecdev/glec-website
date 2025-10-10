@@ -38,7 +38,7 @@ interface Notice {
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   category: 'GENERAL' | 'PRODUCT' | 'EVENT' | 'PRESS';
   thumbnailUrl: string | null;
-  viewCount: number;
+  viewCount?: number; // Optional - may be undefined from API
   publishedAt: string | null;
   authorId: string;
   createdAt: string;

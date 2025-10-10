@@ -57,7 +57,7 @@ interface Event {
   locationDetails: string | null;
   thumbnailUrl: string | null;
   maxParticipants: number | null;
-  viewCount: number;
+  viewCount?: number; // Optional - may be undefined from API
   publishedAt: string | null;
   authorId: string;
   createdAt: string;
