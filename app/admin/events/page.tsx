@@ -31,6 +31,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import toast, { Toaster } from 'react-hot-toast';
 import TabLayout, { TabType } from '@/components/admin/TabLayout';
 import {
   OverviewCards,
@@ -332,9 +333,148 @@ export default function AdminEventsPage() {
     return `${startStr} ~ ${endStr}`;
   };
 
+  /**
+   * Enhanced CSV Export Function
+   * 8 comprehensive sections for Events analysis (includes registrations count)
+   */
+  const exportToCSV = () => {
+    if (!stats || !allEvents) return;
+
+    try {
+      const sections: string[] = [];
+
+      const statusLabels = {
+        DRAFT: '작성중',
+        PUBLISHED: '모집중',
+        CLOSED: '마감',
+      };
+
+      // 1. Meta information
+      sections.push('=== GLEC 이벤트 통계 리포트 ===');
+      sections.push(`생성일시,${new Date().toLocaleString('ko-KR')}`);
+      sections.push(`분석 기준,전체 기간`);
+      sections.push('');
+
+      // 2. Main statistics
+      sections.push('=== 주요 통계 ===');
+      sections.push('지표,값');
+      sections.push(`전체 이벤트,${stats.totalItems}`);
+      sections.push(`작성중,${stats.draftCount}`);
+      sections.push(`모집중,${stats.publishedCount}`);
+      sections.push(`마감,${stats.archivedCount}`);
+      sections.push(`총 조회수,${stats.totalViews.toLocaleString()}`);
+      sections.push(`평균 조회수,${stats.avgViewsPerItem.toLocaleString()}`);
+      sections.push('');
+
+      // 3. Status distribution
+      sections.push('=== 상태별 분포 ===');
+      sections.push('상태,개수,비율(%)');
+      const totalItems = stats.totalItems || 1;
+      sections.push(`작성중,${stats.draftCount},${Math.round((stats.draftCount / totalItems) * 100)}`);
+      sections.push(`모집중,${stats.publishedCount},${Math.round((stats.publishedCount / totalItems) * 100)}`);
+      sections.push(`마감,${stats.archivedCount},${Math.round((stats.archivedCount / totalItems) * 100)}`);
+      sections.push('');
+
+      // 4. Top 5 viewed
+      sections.push('=== 조회수 상위 5개 ===');
+      sections.push('순위,제목,조회수,게시일');
+      stats.topViewed.forEach((item, index) => {
+        const publishedDate = item.publishedAt ? formatDate(item.publishedAt) : 'N/A';
+        sections.push(`${index + 1},"${item.title.replace(/"/g, '""')}",${item.viewCount ?? 0},${publishedDate}`);
+      });
+      sections.push('');
+
+      // 5. Recent 5 published
+      sections.push('=== 최근 발행 5개 ===');
+      sections.push('제목,조회수,게시일');
+      stats.recentPublished.forEach((item) => {
+        const publishedDate = item.publishedAt ? formatDate(item.publishedAt) : 'N/A';
+        sections.push(`"${item.title.replace(/"/g, '""')}",${item.viewCount ?? 0},${publishedDate}`);
+      });
+      sections.push('');
+
+      // 6. Registration statistics
+      sections.push('=== 참가 신청 통계 ===');
+      sections.push('제목,신청자 수,최대 인원,진행 기간');
+      allEvents.forEach((event) => {
+        const registrations = event._count?.registrations ?? 0;
+        const maxParticipants = event.maxParticipants ?? '제한없음';
+        const dateRange = formatDateRange(event.startDate, event.endDate);
+        sections.push(`"${event.title.replace(/"/g, '""')}",${registrations},${maxParticipants},${dateRange}`);
+      });
+      sections.push('');
+
+      // 7. All events list
+      sections.push('=== 전체 이벤트 목록 ===');
+      sections.push('ID,제목,상태,장소,진행 기간,조회수,신청자 수');
+      allEvents.forEach((event) => {
+        const dateRange = formatDateRange(event.startDate, event.endDate);
+        const registrations = event._count?.registrations ?? 0;
+        sections.push(`${event.id},"${event.title.replace(/"/g, '""')}",${statusLabels[event.status]},${event.location},${dateRange},${event.viewCount ?? 0},${registrations}`);
+      });
+      sections.push('');
+
+      // 8. Report footer
+      sections.push('=== 리포트 정보 ===');
+      sections.push(`분석 대상,${stats.totalItems}개 이벤트`);
+      sections.push(`생성일시,${new Date().toLocaleString('ko-KR')}`);
+
+      // Create CSV blob with UTF-8 BOM for Excel compatibility
+      const csvData = sections.join('\n');
+      const blob = new Blob(['\ufeff' + csvData], { type: 'text/csv;charset=utf-8;' });
+
+      // Download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `GLEC_이벤트_통계_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('이벤트 통계 리포트가 다운로드되었습니다', {
+        duration: 3000,
+        icon: '📥',
+      });
+    } catch (err) {
+      console.error('[Events CSV Export] Error:', err);
+      toast.error('CSV 내보내기 실패', {
+        duration: 3000,
+        icon: '❌',
+      });
+    }
+  };
+
   // Insights Content
   const insightsContent = (
     <div className="space-y-6">
+      {/* CSV Export Button */}
+      {stats && !isLoading && (
+        <div className="flex justify-end">
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            aria-label="CSV 다운로드"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <span>CSV 다운로드</span>
+          </button>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <svg className="animate-spin h-12 w-12 text-primary-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
@@ -604,6 +744,9 @@ export default function AdminEventsPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
+      {/* Toast Notifications */}
+      <Toaster position="top-right" />
+
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">이벤트 관리</h1>
