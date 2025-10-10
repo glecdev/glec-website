@@ -3,6 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
+import type { Components } from 'react-markdown';
 import {
   IconArrowLeft,
   IconClock,
@@ -233,11 +238,15 @@ export default function BlogDetailPage() {
       {/* Thumbnail */}
       {post.thumbnailUrl && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="aspect-video rounded-lg overflow-hidden bg-gray-200">
+          <div className="aspect-video rounded-lg overflow-hidden bg-gray-200 relative">
             <img
               src={post.thumbnailUrl}
               alt={post.title}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop';
+              }}
             />
           </div>
         </div>
@@ -246,21 +255,80 @@ export default function BlogDetailPage() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <article className="bg-white rounded-lg shadow-sm border p-8 lg:p-12">
-          <div
-            className="prose prose-lg max-w-none
-              prose-headings:font-bold prose-headings:text-gray-900
-              prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
-              prose-p:text-gray-700 prose-p:leading-relaxed
-              prose-a:text-primary-500 prose-a:no-underline hover:prose-a:underline
-              prose-strong:text-gray-900 prose-strong:font-semibold
-              prose-code:text-primary-600 prose-code:bg-primary-50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded
-              prose-pre:bg-gray-900 prose-pre:text-gray-100
-              prose-blockquote:border-l-4 prose-blockquote:border-primary-500 prose-blockquote:pl-4 prose-blockquote:italic
-              prose-ul:list-disc prose-ol:list-decimal
-              prose-li:text-gray-700
-              prose-img:rounded-lg prose-img:shadow-md"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkBreaks]}
+              components={{
+                h1: ({ node, ...props }) => (
+                  <h1 className="text-3xl font-bold text-gray-900 mb-6 mt-8 leading-tight" {...props} />
+                ),
+                h2: ({ node, ...props }) => (
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4 mt-8 border-b border-gray-200 pb-2" {...props} />
+                ),
+                h3: ({ node, ...props }) => (
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6" {...props} />
+                ),
+                h4: ({ node, ...props }) => (
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2 mt-4" {...props} />
+                ),
+                p: ({ node, ...props }) => (
+                  <p className="text-gray-700 leading-relaxed mb-4" {...props} />
+                ),
+                a: ({ node, ...props }) => (
+                  <a className="text-primary-500 hover:text-primary-600 hover:underline font-medium" {...props} />
+                ),
+                strong: ({ node, ...props }) => (
+                  <strong className="text-gray-900 font-semibold" {...props} />
+                ),
+                em: ({ node, ...props }) => (
+                  <em className="text-gray-700 italic" {...props} />
+                ),
+                ul: ({ node, ...props }) => (
+                  <ul className="list-disc ml-6 my-4 space-y-2" {...props} />
+                ),
+                ol: ({ node, ...props }) => (
+                  <ol className="list-decimal ml-6 my-4 space-y-2" {...props} />
+                ),
+                li: ({ node, ...props }) => (
+                  <li className="text-gray-700 leading-relaxed" {...props} />
+                ),
+                blockquote: ({ node, ...props }) => (
+                  <blockquote className="border-l-4 border-primary-500 pl-4 italic text-gray-600 my-6" {...props} />
+                ),
+                code: ({ node, inline, ...props }: any) =>
+                  inline ? (
+                    <code className="text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded text-sm font-mono" {...props} />
+                  ) : (
+                    <code className="block bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm font-mono my-4" {...props} />
+                  ),
+                pre: ({ node, ...props }) => (
+                  <pre className="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto my-6" {...props} />
+                ),
+                table: ({ node, ...props }) => (
+                  <div className="overflow-x-auto my-6">
+                    <table className="w-full border-collapse border border-gray-300" {...props} />
+                  </div>
+                ),
+                thead: ({ node, ...props }) => (
+                  <thead className="bg-gray-50" {...props} />
+                ),
+                th: ({ node, ...props }) => (
+                  <th className="border border-gray-300 p-3 text-left font-semibold text-gray-900" {...props} />
+                ),
+                td: ({ node, ...props }) => (
+                  <td className="border border-gray-300 p-3 text-gray-700" {...props} />
+                ),
+                hr: ({ node, ...props }) => (
+                  <hr className="my-8 border-gray-200" {...props} />
+                ),
+                img: ({ node, ...props }) => (
+                  <img className="rounded-lg shadow-md my-6 w-full" {...props} />
+                ),
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
+          </div>
         </article>
       </div>
 

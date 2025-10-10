@@ -180,6 +180,10 @@ export default function BlogPage() {
                           src={post.thumbnailUrl}
                           alt={post.title}
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop';
+                          }}
                         />
                       </div>
                     )}
