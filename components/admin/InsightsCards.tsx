@@ -182,7 +182,9 @@ export function TopViewedList<T extends ContentItem>({ items, title = '조회수
                 <span className="text-sm font-bold text-gray-400">#{index + 1}</span>
                 <p className="text-sm text-gray-900 truncate">{item.title}</p>
               </div>
-              <span className="text-sm font-semibold text-purple-600 ml-3">{item.viewCount.toLocaleString()}</span>
+              <span className="text-sm font-semibold text-purple-600 ml-3">
+                {(item.viewCount ?? item.downloadCount ?? 0).toLocaleString()}
+              </span>
             </div>
           ))
         )}
