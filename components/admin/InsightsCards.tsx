@@ -10,6 +10,9 @@ import React from 'react';
 import type { BaseStats, ContentItem } from '@/lib/admin-insights';
 import { formatDate } from '@/lib/admin-insights';
 
+// Export PeriodComparisonCards
+export { PeriodComparisonCards } from './PeriodComparisonCards';
+
 interface OverviewCardsProps {
   stats: BaseStats;
   itemLabel?: string; // e.g., "공지사항", "보도자료", "이벤트"
