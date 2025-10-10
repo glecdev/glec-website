@@ -217,7 +217,7 @@ export default function VideoDetailPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="aspect-video rounded-lg overflow-hidden bg-gray-900 shadow-xl relative">
           <iframe
-            src={`https://www.youtube.com/embed/${video.youtubeVideoId}`}
+            src={`https://www.youtube-nocookie.com/embed/${video.youtubeVideoId}`}
             title={video.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
