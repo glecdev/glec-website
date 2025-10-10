@@ -46,6 +46,8 @@ import {
 } from 'recharts';
 import UnifiedInsightsDashboard, { UnifiedInsightsData } from '@/components/admin/UnifiedInsightsDashboard';
 import { fetchUnifiedInsights } from '@/lib/admin-unified-insights';
+import { PeriodComparisonCards } from '@/components/admin/InsightsCards';
+import type { BaseStats } from '@/lib/admin-insights';
 
 // ============================================================================
 // TypeScript Interfaces
@@ -105,6 +107,38 @@ interface DashboardData {
   };
   topContent: {
     notices: TopContentItem[];
+  };
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Convert StatWithGrowth data to BaseStats format for PeriodComparisonCards
+ */
+function convertToBaseStats(
+  totalContent: StatWithGrowth,
+  publishedContent: StatWithGrowth,
+  totalViews: StatWithGrowth
+): { current: BaseStats; previous: BaseStats } {
+  return {
+    current: {
+      totalItems: totalContent.current,
+      publishedCount: publishedContent.current,
+      draftCount: 0, // Not available in current dashboard data
+      archivedCount: 0, // Not available in current dashboard data
+      totalViews: totalViews.current,
+      avgViewsPerItem: totalContent.current > 0 ? Math.round(totalViews.current / totalContent.current) : 0,
+    },
+    previous: {
+      totalItems: totalContent.previous,
+      publishedCount: publishedContent.previous,
+      draftCount: 0,
+      archivedCount: 0,
+      totalViews: totalViews.previous,
+      avgViewsPerItem: totalContent.previous > 0 ? Math.round(totalViews.previous / totalContent.previous) : 0,
+    },
   };
 }
 
@@ -461,6 +495,27 @@ export default function AdminDashboardPage() {
           color="green"
           isLargeNumber
         />
+      </div>
+
+      {/* Period Comparison Analysis */}
+      <div className="mb-8" role="region" aria-label="기간 비교 분석">
+        {(() => {
+          const { current, previous } = convertToBaseStats(
+            data.stats.totalContent,
+            data.stats.publishedContent,
+            data.stats.totalViews
+          );
+          const periodLabel = `지난 ${dateRange === '7d' ? '7일' : dateRange === '30d' ? '30일' : '90일'} vs 이전 기간`;
+
+          return (
+            <PeriodComparisonCards
+              current={current}
+              previous={previous}
+              itemLabel="콘텐츠"
+              periodLabel={periodLabel}
+            />
+          );
+        })()}
       </div>
 
       {/* Unified Content Insights */}
