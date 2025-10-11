@@ -2,18 +2,23 @@
  * LatestNewsSection Component
  *
  * Based on: GLEC-Functional-Requirements-Specification.md (FR-WEB-006)
- * Security: CLAUDE.md - No hardcoding, dynamic data from mock-data.ts
+ * Security: CLAUDE.md - No hardcoding, dynamic data from API
  * Purpose: Display latest news/announcements in card layout
+ *
+ * Changes (Iteration 12):
+ * - ✅ Removed getMockNoticesWithIds() (hardcoding violation)
+ * - ✅ Migrated to /api/notices endpoint (dynamic data)
+ * - ✅ Added loading/error states
+ * - ✅ Added skeleton loader for better UX
  */
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
-import { getMockNoticesWithIds } from '@/lib/mock-data';
 import type { Notice, NoticeCategory } from '@prisma/client';
 
 // Category configuration
@@ -31,22 +36,75 @@ const categoryLabels: Record<NoticeCategory, string> = {
   PRESS: '보도자료',
 };
 
+// API Response type (from GLEC-API-Specification.yaml)
+interface NoticesApiResponse {
+  success: boolean;
+  data: Notice[];
+  meta: {
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+  };
+}
+
 export function LatestNewsSection() {
   const { elementRef, isIntersecting } = useIntersectionObserver<HTMLDivElement>({
     threshold: 0.3,
     triggerOnce: true,
   });
 
-  // Get latest 3 published notices
-  const allNotices = getMockNoticesWithIds();
-  const latestNotices = allNotices
-    .filter((notice) => notice.status === 'PUBLISHED' && !notice.deletedAt)
-    .sort((a, b) => {
-      const dateA = a.publishedAt?.getTime() || 0;
-      const dateB = b.publishedAt?.getTime() || 0;
-      return dateB - dateA;
-    })
-    .slice(0, 3);
+  // State for API data
+  const [latestNotices, setLatestNotices] = useState<Notice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch latest 3 published notices from API
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchLatestNotices() {
+      try {
+        // Call /api/notices with query params: per_page=3, sort by published_at DESC
+        const response = await fetch('/api/notices?per_page=3&page=1', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch notices: ${response.status}`);
+        }
+
+        const result: NoticesApiResponse = await response.json();
+
+        if (!result.success) {
+          throw new Error('API returned error');
+        }
+
+        if (mounted) {
+          setLatestNotices(result.data);
+          setError(null);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Unknown error');
+          console.error('[LatestNewsSection] Failed to fetch notices:', err);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchLatestNotices();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <section
@@ -73,17 +131,52 @@ export function LatestNewsSection() {
           </p>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {[0, 1, 2].map((index) => (
+              <SkeletonCard key={index} index={index} isIntersecting={isIntersecting} />
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            </div>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors duration-200"
+            >
+              다시 시도
+            </button>
+          </div>
+        )}
+
         {/* News Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {latestNotices.map((notice, index) => (
-            <NoticeCard
-              key={notice.id}
-              notice={notice}
-              isIntersecting={isIntersecting}
-              index={index}
-            />
-          ))}
-        </div>
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {latestNotices.length > 0 ? (
+              latestNotices.map((notice, index) => (
+                <NoticeCard
+                  key={notice.id}
+                  notice={notice}
+                  isIntersecting={isIntersecting}
+                  index={index}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                최신 소식이 없습니다.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* View All CTA */}
         <div
@@ -116,6 +209,48 @@ export function LatestNewsSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+// Skeleton Card Component (Loading state)
+interface SkeletonCardProps {
+  index: number;
+  isIntersecting: boolean;
+}
+
+function SkeletonCard({ index, isIntersecting }: SkeletonCardProps) {
+  return (
+    <div
+      className={cn(
+        'block bg-white rounded-lg overflow-hidden shadow-sm',
+        'transition-all duration-700 ease-out',
+        isIntersecting ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      )}
+      style={{
+        transitionDelay: isIntersecting ? `${index * 100}ms` : '0ms',
+      }}
+    >
+      {/* Image Skeleton */}
+      <div className="relative aspect-video bg-gray-200 animate-pulse" />
+
+      {/* Content Skeleton */}
+      <div className="p-6">
+        {/* Date */}
+        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2" />
+
+        {/* Title */}
+        <div className="h-6 bg-gray-200 rounded animate-pulse mb-3" />
+        <div className="h-6 w-3/4 bg-gray-200 rounded animate-pulse mb-3" />
+
+        {/* Excerpt */}
+        <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
+        <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
+        <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse mb-4" />
+
+        {/* Read More */}
+        <div className="h-6 w-28 bg-gray-200 rounded animate-pulse" />
+      </div>
+    </div>
   );
 }
 
