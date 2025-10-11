@@ -43,6 +43,11 @@ export function ModalToastExample() {
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
 
+  // Custom background states
+  const [isCustomBgModalOpen, setIsCustomBgModalOpen] = useState(false);
+  const [isCustomHeaderModalOpen, setIsCustomHeaderModalOpen] = useState(false);
+  const [isCustomBackdropModalOpen, setIsCustomBackdropModalOpen] = useState(false);
+
   // Delete confirmation handler
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -187,6 +192,37 @@ export function ModalToastExample() {
         </div>
       </div>
 
+      {/* Custom Background Examples */}
+      <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">5. 커스텀 배경 색상</h2>
+        <p className="text-gray-600 mb-6">
+          headerClassName, bodyClassName, backdropClassName props를 사용하여 자유롭게 배경색과 스타일을 변경할 수 있습니다.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <button
+            onClick={() => setIsCustomHeaderModalOpen(true)}
+            className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+          >
+            커스텀 헤더 배경
+          </button>
+
+          <button
+            onClick={() => setIsCustomBgModalOpen(true)}
+            className="px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+          >
+            커스텀 본문 배경
+          </button>
+
+          <button
+            onClick={() => setIsCustomBackdropModalOpen(true)}
+            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+          >
+            커스텀 백드롭
+          </button>
+        </div>
+      </div>
+
       {/* Code Example */}
       <div className="bg-gray-900 rounded-xl shadow-sm p-8 border border-gray-700">
         <h2 className="text-2xl font-bold text-white mb-6">코드 예시</h2>
@@ -281,6 +317,56 @@ return (
 );`}
             </pre>
           </div>
+
+          {/* Custom Background Usage */}
+          <div>
+            <h3 className="text-lg font-semibold text-pink-400 mb-3">커스텀 배경 색상 사용법</h3>
+            <pre className="bg-gray-800 text-gray-300 p-4 rounded-lg overflow-x-auto text-sm">
+              {`import { Modal } from '@/components/admin/ui/Modal';
+
+// 1. 커스텀 헤더 배경 (그라데이션 대신 단색)
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="커스텀 헤더"
+  headerClassName="relative bg-pink-600 text-white p-8 rounded-t-2xl"
+>
+  <p>핑크색 헤더 배경</p>
+</Modal>
+
+// 2. 커스텀 본문 배경 (기본 흰색 대신)
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="커스텀 본문"
+  bodyClassName="p-8 bg-gradient-to-br from-blue-50 to-cyan-50"
+>
+  <p>파란색 그라데이션 본문</p>
+</Modal>
+
+// 3. 커스텀 백드롭 (블러 없이 반투명)
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="커스텀 백드롭"
+  backdropClassName="fixed inset-0 bg-purple-900/80 z-50 animate-fade-in"
+>
+  <p>보라색 백드롭</p>
+</Modal>
+
+// 4. 모든 배경 커스텀
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="완전 커스텀"
+  headerClassName="relative bg-gradient-to-r from-orange-500 to-red-500 text-white p-8 rounded-t-2xl"
+  bodyClassName="p-8 bg-amber-50"
+  backdropClassName="fixed inset-0 bg-black/80 z-50"
+>
+  <p>완전히 커스터마이징된 모달</p>
+</Modal>`}
+            </pre>
+          </div>
         </div>
       </div>
 
@@ -371,6 +457,100 @@ return (
         icon="error"
         buttonText="확인"
       />
+
+      {/* Custom Background Modals */}
+      <Modal
+        isOpen={isCustomHeaderModalOpen}
+        onClose={() => setIsCustomHeaderModalOpen(false)}
+        title="커스텀 헤더 배경"
+        description="핑크 → 퍼플 그라데이션 헤더"
+        headerClassName="relative bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 text-white p-8 rounded-t-2xl overflow-hidden"
+        footer={
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsCustomHeaderModalOpen(false)}
+              className="px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-lg transition-all"
+            >
+              닫기
+            </button>
+          </div>
+        }
+      >
+        <p className="text-gray-700 leading-relaxed">
+          <strong>headerClassName</strong> prop을 사용하여 헤더 배경을 자유롭게 변경할 수 있습니다.
+          기본 그라데이션 대신 원하는 색상이나 패턴을 적용하세요.
+        </p>
+        <div className="mt-4 p-4 bg-pink-50 border border-pink-200 rounded-lg">
+          <code className="text-sm text-pink-800">
+            headerClassName="relative bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 text-white p-8 rounded-t-2xl"
+          </code>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isCustomBgModalOpen}
+        onClose={() => setIsCustomBgModalOpen(false)}
+        title="커스텀 본문 배경"
+        description="그라데이션 본문 배경"
+        variant="info"
+        bodyClassName="p-8 bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50"
+        footer={
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsCustomBgModalOpen(false)}
+              className="px-6 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-medium rounded-lg shadow-lg transition-all"
+            >
+              닫기
+            </button>
+          </div>
+        }
+      >
+        <p className="text-gray-700 leading-relaxed mb-4">
+          <strong>bodyClassName</strong> prop을 사용하여 본문 배경을 변경할 수 있습니다.
+          기본 흰색 배경 대신 그라데이션이나 색상을 적용하세요.
+        </p>
+        <div className="p-6 bg-white/60 backdrop-blur-sm border border-teal-200 rounded-lg">
+          <h4 className="font-semibold text-teal-900 mb-2">예시 카드</h4>
+          <p className="text-teal-700 text-sm">배경이 투명한 카드를 사용하여 그라데이션 효과를 활용할 수 있습니다.</p>
+        </div>
+        <div className="mt-4 p-4 bg-white border border-cyan-200 rounded-lg">
+          <code className="text-sm text-cyan-800">
+            bodyClassName="p-8 bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50"
+          </code>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isCustomBackdropModalOpen}
+        onClose={() => setIsCustomBackdropModalOpen(false)}
+        title="커스텀 백드롭"
+        description="호박색 백드롭"
+        variant="warning"
+        backdropClassName="fixed inset-0 bg-gradient-to-br from-amber-900/70 to-orange-900/70 backdrop-blur-md z-50 animate-fade-in"
+        footer={
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsCustomBackdropModalOpen(false)}
+              className="px-6 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-medium rounded-lg shadow-lg transition-all"
+            >
+              닫기
+            </button>
+          </div>
+        }
+      >
+        <p className="text-gray-700 leading-relaxed mb-4">
+          <strong>backdropClassName</strong> prop을 사용하여 백드롭(배경 오버레이)를 변경할 수 있습니다.
+          기본 검은색 블러 대신 원하는 색상과 효과를 적용하세요.
+        </p>
+        <div className="p-4 bg-amber-50 border border-amber-300 rounded-lg">
+          <p className="text-amber-800 text-sm mb-3">
+            ✨ <strong>Tip:</strong> 배경색과 블러를 조합하여 다양한 분위기를 연출할 수 있습니다.
+          </p>
+          <code className="text-sm text-amber-900 block break-all">
+            backdropClassName="fixed inset-0 bg-gradient-to-br from-amber-900/70 to-orange-900/70 backdrop-blur-md z-50 animate-fade-in"
+          </code>
+        </div>
+      </Modal>
     </div>
   );
 }

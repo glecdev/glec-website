@@ -31,6 +31,10 @@ export interface ModalProps {
   variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
   closeOnBackdropClick?: boolean;
   showCloseButton?: boolean;
+  // Custom styling options
+  headerClassName?: string; // Custom header background (overrides variant)
+  bodyClassName?: string; // Custom body background
+  backdropClassName?: string; // Custom backdrop style
 }
 
 const gradientClasses = {
@@ -60,6 +64,9 @@ export function Modal({
   variant = 'primary',
   closeOnBackdropClick = true,
   showCloseButton = true,
+  headerClassName,
+  bodyClassName,
+  backdropClassName,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -102,7 +109,7 @@ export function Modal({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-fade-in"
+        className={backdropClassName || "fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-fade-in"}
         onClick={handleBackdropClick}
         aria-hidden="true"
       />
@@ -132,12 +139,14 @@ export function Modal({
           )}
 
           {/* Header */}
-          <div className={`relative ${gradientClasses[variant]} text-white p-8 rounded-t-2xl overflow-hidden`}>
+          <div className={headerClassName || `relative ${gradientClasses[variant]} text-white p-8 rounded-t-2xl overflow-hidden`}>
             {/* Animated Background Pattern */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl animate-pulse"></div>
-              <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl animate-pulse delay-700"></div>
-            </div>
+            {!headerClassName && (
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl animate-pulse delay-700"></div>
+              </div>
+            )}
 
             <div className="relative">
               <h2 id="modal-title" className="text-2xl lg:text-3xl font-bold mb-2">
@@ -152,7 +161,7 @@ export function Modal({
           </div>
 
           {/* Body */}
-          <div className="p-8">{children}</div>
+          <div className={bodyClassName || "p-8"}>{children}</div>
 
           {/* Footer */}
           {footer && <div className="px-8 pb-8 pt-0">{footer}</div>}
