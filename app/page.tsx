@@ -8,12 +8,10 @@ import { ContactFormSection } from '@/components/sections/ContactFormSection';
 import { FAQSection } from '@/components/sections/FAQSection';
 import { FooterCTASection } from '@/components/sections/FooterCTASection';
 import { ScrollProgress } from '@/components/ui/ScrollProgress';
-import { LaunchPromotion } from '@/components/launch/LaunchPromotion';
 
 export default function Home() {
   return (
     <>
-      <LaunchPromotion />
       <ScrollProgress />
       <HeroSection />
       <ProblemAwarenessSection />
