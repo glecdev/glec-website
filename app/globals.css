@@ -234,6 +234,10 @@
     animation-fill-mode: both;
   }
 
+  .delay-500 {
+    animation-delay: 0.5s;
+  }
+
   .delay-700 {
     animation-delay: 0.7s;
   }

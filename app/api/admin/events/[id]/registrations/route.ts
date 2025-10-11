@@ -50,30 +50,42 @@ export const GET = withAuth(
 
       const event = eventResult[0];
 
-      // Build WHERE clause for registrations
-      const conditions: string[] = ['event_id = $1'];
-      const params: any[] = [eventId];
+      // Get registrations with dynamic filtering
+      let registrations;
 
-      if (status) {
-        conditions.push(`status = $${params.length + 1}`);
-        params.push(status);
+      if (status && search) {
+        // Both status and search filters
+        registrations = await sql`
+          SELECT * FROM event_registrations
+          WHERE event_id = ${eventId}
+            AND status = ${status}
+            AND (name ILIKE ${'%' + search + '%'} OR email ILIKE ${'%' + search + '%'})
+          ORDER BY created_at DESC
+        `;
+      } else if (status) {
+        // Only status filter
+        registrations = await sql`
+          SELECT * FROM event_registrations
+          WHERE event_id = ${eventId}
+            AND status = ${status}
+          ORDER BY created_at DESC
+        `;
+      } else if (search) {
+        // Only search filter
+        registrations = await sql`
+          SELECT * FROM event_registrations
+          WHERE event_id = ${eventId}
+            AND (name ILIKE ${'%' + search + '%'} OR email ILIKE ${'%' + search + '%'})
+          ORDER BY created_at DESC
+        `;
+      } else {
+        // No filters
+        registrations = await sql`
+          SELECT * FROM event_registrations
+          WHERE event_id = ${eventId}
+          ORDER BY created_at DESC
+        `;
       }
-
-      if (search) {
-        conditions.push(`(name ILIKE $${params.length + 1} OR email ILIKE $${params.length + 1})`);
-        params.push(`%${search}%`);
-      }
-
-      const whereClause = conditions.join(' AND ');
-
-      // Get registrations
-      const registrationsQuery = `
-        SELECT * FROM event_registrations
-        WHERE ${whereClause}
-        ORDER BY created_at DESC
-      `;
-
-      const registrations = await sql.query(registrationsQuery, params);
 
       // Transform snake_case to camelCase
       const transformedRegistrations = registrations.map((reg: any) => ({

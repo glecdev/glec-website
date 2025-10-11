@@ -82,19 +82,14 @@ export const PATCH = withAuth(
       }
 
       // Update status
-      const updateQuery = `
+      const result = await sql`
         UPDATE event_registrations
-        SET status = $1, admin_notes = $2, updated_at = $3
-        WHERE id = $4
+        SET status = ${validated.status},
+            admin_notes = ${validated.admin_notes || existingReg[0].admin_notes},
+            updated_at = ${new Date().toISOString()}
+        WHERE id = ${registrationId}
         RETURNING *
       `;
-
-      const result = await sql.query(updateQuery, [
-        validated.status,
-        validated.admin_notes || existingReg[0].admin_notes,
-        new Date(),
-        registrationId,
-      ]);
 
       const registration = result[0];
 
