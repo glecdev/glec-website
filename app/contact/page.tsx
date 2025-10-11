@@ -408,7 +408,7 @@ export default function ContactPage() {
             <p className="text-lg lg:text-xl text-gray-100 mb-8 max-w-2xl mx-auto animate-fade-in-up delay-200">
               ISO-14083 국제표준 기반 물류 탄소배출 측정 솔루션
               <br />
-              DHL GoGreen 파트너십으로 검증된 기술력
+              <span className="typing-animation">글로벌 기업들이 신뢰하는 검증된 기술력</span>
             </p>
 
             {/* Statistics */}
@@ -704,22 +704,6 @@ export default function ContactPage() {
                 </h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-3 text-gray-700 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="p-1.5 bg-green-100 rounded-full">
-                      <svg
-                        className="w-3.5 h-3.5 text-green-600 flex-shrink-0"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <span className="font-medium">DHL GoGreen 공식 파트너십</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-700 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="p-1.5 bg-blue-100 rounded-full">
                       <svg
                         className="w-3.5 h-3.5 text-blue-600 flex-shrink-0"
@@ -752,6 +736,22 @@ export default function ContactPage() {
                     <span className="font-medium">1,200+ 글로벌 기업 신뢰</span>
                   </div>
                   <div className="flex items-center gap-3 text-gray-700 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="p-1.5 bg-green-100 rounded-full">
+                      <svg
+                        className="w-3.5 h-3.5 text-green-600 flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <span className="font-medium">98% 고객 만족도</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-700 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="p-1.5 bg-pink-100 rounded-full">
                       <svg
                         className="w-3.5 h-3.5 text-pink-600 flex-shrink-0"
@@ -765,7 +765,7 @@ export default function ContactPage() {
                         />
                       </svg>
                     </div>
-                    <span className="font-medium">98% 고객 만족도</span>
+                    <span className="font-medium">24시간 이내 빠른 응대</span>
                   </div>
                 </div>
               </div>
