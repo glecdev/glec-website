@@ -352,7 +352,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Page Content */}
         <main className="p-6">{children}</main>
       </div>
-      </div>
+    </div>
     </ToastProvider>
   );
 }
