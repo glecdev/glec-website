@@ -4,7 +4,7 @@
  */
 
 const RESEND_API_KEY = 're_CWuvh2PM_ES4Et3Dv1DFAK5SZrmZJ2ovi';
-const TEST_EMAIL = 'ghdi0506@gmail.com'; // Test with external email after domain verification
+const TEST_EMAIL = 'oillex.co.kr@gmail.com'; // GLEC official email account
 
 async function testResendAPI() {
   console.log('🧪 Direct Resend API Test');
