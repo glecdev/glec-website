@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS library_items (
   -- Timestamps
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  created_by UUID REFERENCES users(id),
+  created_by UUID,  -- Optional: User ID who created this item
 
   -- Constraints
   CONSTRAINT valid_status CHECK (status IN ('DRAFT', 'PUBLISHED', 'ARCHIVED')),
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS library_leads (
 
   -- Admin Notes
   notes TEXT,
-  assigned_to UUID REFERENCES users(id),
+  assigned_to UUID,  -- Optional: Admin user ID assigned to this lead
 
   -- Timestamps
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -124,22 +124,23 @@ CREATE INDEX idx_library_leads_lead_score ON library_leads(lead_score DESC);
 -- ====================================================================
 
 -- Add lead management columns to existing newsletter_subscribers table
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
-                 WHERE table_name = 'newsletter_subscribers'
-                 AND column_name = 'lead_status') THEN
-    ALTER TABLE newsletter_subscribers
-      ADD COLUMN lead_status VARCHAR(20) NOT NULL DEFAULT 'NEW',
-      ADD COLUMN lead_score INTEGER NOT NULL DEFAULT 0,
-      ADD COLUMN assigned_to UUID REFERENCES users(id),
-      ADD COLUMN notes TEXT,
-      ADD COLUMN last_contacted_at TIMESTAMP WITH TIME ZONE;
-
-    CREATE INDEX idx_newsletter_subscribers_lead_status ON newsletter_subscribers(lead_status);
-    CREATE INDEX idx_newsletter_subscribers_lead_score ON newsletter_subscribers(lead_score DESC);
-  END IF;
-END $$;
+-- SKIP: newsletter_subscribers table does not exist yet (will be added in future migration)
+-- DO $$
+-- BEGIN
+--   IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+--                  WHERE table_name = 'newsletter_subscribers'
+--                  AND column_name = 'lead_status') THEN
+--     ALTER TABLE newsletter_subscribers
+--       ADD COLUMN lead_status VARCHAR(20) NOT NULL DEFAULT 'NEW',
+--       ADD COLUMN lead_score INTEGER NOT NULL DEFAULT 0,
+--       ADD COLUMN assigned_to UUID,  -- Optional: Admin user ID
+--       ADD COLUMN notes TEXT,
+--       ADD COLUMN last_contacted_at TIMESTAMP WITH TIME ZONE;
+--
+--     CREATE INDEX idx_newsletter_subscribers_lead_status ON newsletter_subscribers(lead_status);
+--     CREATE INDEX idx_newsletter_subscribers_lead_score ON newsletter_subscribers(lead_score DESC);
+--   END IF;
+-- END $$;
 
 -- ====================================================================
 -- 4. Unified Leads View (통합 리드 뷰)
@@ -162,45 +163,41 @@ SELECT
   ll.last_contacted_at,
   li.title AS source_detail
 FROM library_leads ll
-LEFT JOIN library_items li ON ll.library_item_id = li.id
+LEFT JOIN library_items li ON ll.library_item_id = li.id;
 
-UNION ALL
-
--- Newsletter Subscribers
-SELECT
-  'NEWSLETTER' AS source_type,
-  ns.id,
-  NULL AS company_name,
-  ns.name AS contact_name,
-  ns.email,
-  NULL AS phone,
-  ns.lead_status,
-  ns.lead_score,
-  ns.assigned_to,
-  ns.notes,
-  ns.created_at,
-  ns.last_contacted_at,
-  '뉴스레터 구독' AS source_detail
-FROM newsletter_subscribers ns
-
-UNION ALL
-
--- Contact Form
-SELECT
-  'CONTACT_FORM' AS source_type,
-  c.id,
-  c.company_name,
-  c.contact_name,
-  c.email,
-  c.phone,
-  'NEW' AS lead_status,
-  50 AS lead_score,
-  NULL AS assigned_to,
-  c.message AS notes,
-  c.created_at,
-  c.created_at AS last_contacted_at,
-  c.inquiry_type AS source_detail
-FROM contacts c;
+-- SKIP: Newsletter Subscribers (table does not exist yet)
+-- UNION ALL
+-- SELECT
+--   'NEWSLETTER' AS source_type,
+--   ns.id,
+--   NULL AS company_name,
+--   ns.name AS contact_name,
+--   ns.email,
+--   NULL AS phone,
+--   ns.lead_status,
+--   ns.lead_score,
+--   ns.assigned_to,
+--   ns.notes,
+--   ns.created_at,
+--   ns.last_contacted_at,
+--   '뉴스레터 구독' AS source_detail
+-- FROM newsletter_subscribers ns
+-- UNION ALL
+-- SELECT
+--   'CONTACT_FORM' AS source_type,
+--   c.id,
+--   c.company_name,
+--   c.contact_name,
+--   c.email,
+--   c.phone,
+--   'NEW' AS lead_status,
+--   50 AS lead_score,
+--   NULL AS assigned_to,
+--   c.message AS notes,
+--   c.created_at,
+--   c.created_at AS last_contacted_at,
+--   c.inquiry_type AS source_detail
+-- FROM contacts c;
 
 -- ====================================================================
 -- 5. Seed Initial Data (GLEC Framework v3.0)
