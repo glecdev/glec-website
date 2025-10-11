@@ -61,14 +61,14 @@ interface ApiResponse {
 // ============================================================
 
 const downloadRequestSchema = z.object({
+  library_item_id: z.string().uuid(),
   company_name: z.string().min(1, '회사명을 입력해주세요').max(100),
   contact_name: z.string().min(1, '담당자명을 입력해주세요').max(50),
   email: z.string().email('유효한 이메일 형식이 아닙니다'),
-  phone: z.string().regex(/^010-\d{4}-\d{4}$/, '전화번호 형식: 010-1234-5678').optional().or(z.literal('')),
-  privacy_consent: z.boolean().refine((val) => val === true, {
-    message: '개인정보 수집 및 이용에 동의해주세요',
-  }),
-  marketing_consent: z.boolean().optional(),
+  phone: z.string().optional(),
+  industry: z.string().min(1),
+  job_title: z.string().optional(),
+  message: z.string().optional(),
 });
 
 type DownloadRequestForm = z.infer<typeof downloadRequestSchema>;
@@ -139,8 +139,9 @@ export default function LibraryPage() {
       contact_name: formData.get('contact_name') as string,
       email: formData.get('email') as string,
       phone: formData.get('phone') as string,
-      privacy_consent: formData.get('privacy_consent') === 'on',
-      marketing_consent: formData.get('marketing_consent') === 'on',
+      industry: formData.get('industry') as string,
+      job_title: formData.get('job_title') as string,
+      message: '', // Optional field
     };
 
     try {
@@ -149,7 +150,7 @@ export default function LibraryPage() {
 
       setSubmitting(true);
 
-      const response = await fetch('/api/library/download', {
+      const response = await fetch('/api/library/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -473,40 +474,51 @@ function DownloadModal({ item, onClose, onSubmit, submitting }: DownloadModalPro
           />
 
           <Input
-            label="전화번호 (선택)"
+            label="전화번호"
             name="phone"
+            required
             placeholder="예: 010-1234-5678"
           />
 
-          {/* Privacy Consent */}
-          <div className="pt-4 border-t border-gray-200">
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                name="privacy_consent"
-                required
-                className="mt-1 w-5 h-5 text-primary-500 rounded border-gray-300 focus:ring-primary-500"
-              />
-              <span className="text-sm text-gray-700 group-hover:text-gray-900">
-                <a href="/privacy-policy" target="_blank" className="text-primary-600 underline">
-                  개인정보 수집 및 이용
-                </a>
-                에 동의합니다 (필수)
-              </span>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              산업 <span className="text-error-500">*</span>
             </label>
+            <select
+              name="industry"
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="">산업 선택...</option>
+              <option value="Manufacturing">제조업</option>
+              <option value="Logistics">물류업</option>
+              <option value="Retail">소매업</option>
+              <option value="E-commerce">전자상거래</option>
+              <option value="Technology">기술/IT</option>
+              <option value="Consulting">컨설팅</option>
+              <option value="Government">공공기관</option>
+              <option value="Other">기타</option>
+            </select>
           </div>
 
-          <div>
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                name="marketing_consent"
-                className="mt-1 w-5 h-5 text-primary-500 rounded border-gray-300 focus:ring-primary-500"
-              />
-              <span className="text-sm text-gray-700 group-hover:text-gray-900">
-                마케팅 정보 수신에 동의합니다 (선택)
-              </span>
-            </label>
+          <Input
+            label="직책"
+            name="job_title"
+            required
+            placeholder="예: 팀장, 부장, 대표 등"
+          />
+
+          {/* Privacy Notice */}
+          <div className="pt-4 border-t border-gray-200 bg-gray-50 rounded-lg p-4">
+            <p className="text-sm font-semibold text-gray-700 mb-2">개인정보 수집 및 이용 안내</p>
+            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+              <li>수집 항목: 회사명, 담당자명, 이메일, 전화번호, 산업, 직책</li>
+              <li>이용 목적: 자료 다운로드 링크 발송, 문의사항 응대</li>
+              <li>보유 기간: 3년</li>
+            </ul>
+            <p className="text-xs text-gray-500 mt-2">
+              위 사항에 동의하시고 계속 진행하시려면 아래 버튼을 클릭해주세요.
+            </p>
           </div>
 
           {/* Info Box */}
