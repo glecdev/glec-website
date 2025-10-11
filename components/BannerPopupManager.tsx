@@ -15,13 +15,12 @@ interface Popup {
   content: string;
   imageUrl: string | null;
   linkUrl: string | null;
-  linkText: string | null;
-  zIndex: number;
   displayType: 'modal' | 'banner' | 'corner';
-  position: string;
-  width: number;
-  height: number;
-  showOnce: boolean;
+  zIndex: number;
+  showOncePerDay: boolean;
+  position: string | null;
+  size: string | null;
+  backgroundColor: string | null;
 }
 
 export function BannerPopupManager() {
@@ -64,10 +63,10 @@ export function BannerPopupManager() {
     }
   };
 
-  const closePopup = (id: string, showOnce: boolean) => {
+  const closePopup = (id: string, showOncePerDay: boolean) => {
     setClosedIds((prev) => new Set([...prev, id]));
 
-    if (showOnce) {
+    if (showOncePerDay) {
       const stored = localStorage.getItem('closed_popups');
       const closedData = stored ? JSON.parse(stored) : [];
       const today = new Date().toDateString();
@@ -83,11 +82,13 @@ export function BannerPopupManager() {
     <>
       {visiblePopups.map((popup) => {
         const positionClasses = popup.position === 'top' ? '' : 'order-last';
+        const bgColor = popup.backgroundColor || '#0600f7';
+
         return (
           <div
             key={popup.id}
-            className={`w-full bg-primary-700 text-white px-4 py-3 shadow-lg ${positionClasses}`}
-            style={{ height: popup.height }}
+            className={`w-full text-white px-4 py-3 shadow-lg ${positionClasses}`}
+            style={{ backgroundColor: bgColor }}
           >
             <div className="container mx-auto flex items-center justify-center gap-4 relative">
               <div className="flex items-center gap-4">
@@ -95,15 +96,16 @@ export function BannerPopupManager() {
                 {popup.linkUrl && (
                   <a
                     href={popup.linkUrl}
-                    className="px-4 py-2 bg-white text-primary-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
-                    onClick={() => closePopup(popup.id, popup.showOnce)}
+                    className="px-4 py-2 bg-white font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                    style={{ color: bgColor }}
+                    onClick={() => closePopup(popup.id, popup.showOncePerDay)}
                   >
-                    {popup.linkText || '자세히 보기'}
+                    자세히 보기
                   </a>
                 )}
               </div>
               <button
-                onClick={() => closePopup(popup.id, popup.showOnce)}
+                onClick={() => closePopup(popup.id, popup.showOncePerDay)}
                 className="absolute right-0 text-white hover:text-gray-200 transition-colors"
                 aria-label="배너 닫기"
               >
