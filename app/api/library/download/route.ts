@@ -24,6 +24,13 @@ import { Resend } from 'resend';
 // ============================================================
 
 const sql = neon(process.env.DATABASE_URL!);
+
+// Validate RESEND_API_KEY at initialization
+if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.includes('placeholder')) {
+  console.error('[Library Download] CRITICAL: RESEND_API_KEY is not set or is a placeholder!');
+  console.error('[Library Download] Current value:', process.env.RESEND_API_KEY ? `${process.env.RESEND_API_KEY.substring(0, 10)}...` : 'NOT_SET');
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ============================================================
@@ -437,8 +444,12 @@ export async function POST(req: NextRequest) {
     const lead = leads[0] as LibraryLead;
 
     // 7. Send email
+    let emailSent = false;
+    let emailError = null;
+
     try {
       await sendLibraryDownloadEmail(data, libraryItem, lead.id);
+      emailSent = true;
 
       // 8. Update email sent status
       await sql`
@@ -446,19 +457,51 @@ export async function POST(req: NextRequest) {
         SET email_sent = TRUE, email_sent_at = NOW()
         WHERE id = ${lead.id}
       `;
-    } catch (emailError) {
-      console.error('[Library Download] Email delivery failed:', emailError);
-      // Continue execution - don't fail the API call
+    } catch (error) {
+      emailError = error;
+      console.error('[Library Download] Email delivery failed:', error);
+      console.error('[Library Download] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        resendApiKey: process.env.RESEND_API_KEY ? `${process.env.RESEND_API_KEY.substring(0, 10)}...` : 'NOT_SET',
+      });
+
+      // Update lead with email failure
+      await sql`
+        UPDATE library_leads
+        SET email_sent = FALSE, email_sent_at = NULL
+        WHERE id = ${lead.id}
+      `;
     }
 
-    // 9. Increment download count
-    await sql`
-      UPDATE library_items
-      SET download_count = download_count + 1
-      WHERE id = ${libraryItem.id}
-    `;
+    // 9. Increment download count (only if email sent successfully)
+    if (emailSent) {
+      await sql`
+        UPDATE library_items
+        SET download_count = download_count + 1
+        WHERE id = ${libraryItem.id}
+      `;
+    }
 
-    // 10. Return success response
+    // 10. Return response (success if lead saved, but indicate email status)
+    if (!emailSent) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'EMAIL_DELIVERY_FAILED',
+            message: '이메일 전송에 실패했습니다. 관리자에게 문의해주세요.',
+            details: emailError instanceof Error ? emailError.message : 'Unknown error',
+          },
+          data: {
+            lead_id: lead.id,
+            email_sent: false,
+          },
+        },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
       {
         success: true,
