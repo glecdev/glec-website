@@ -51,6 +51,11 @@ interface Meta {
 // Component
 // ====================================================================
 
+interface LibraryItemOption {
+  id: string;
+  title: string;
+}
+
 export default function CustomerLeadsPage() {
   // State
   const [leads, setLeads] = useState<LibraryLead[]>([]);
@@ -64,15 +69,41 @@ export default function CustomerLeadsPage() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<Meta | null>(null);
 
+  // Library items for filter dropdown
+  const [libraryItems, setLibraryItems] = useState<LibraryItemOption[]>([]);
+
   const { showToast } = useToast();
 
   // ====================================================================
   // Data Fetching
   // ====================================================================
 
+  // Load library items for dropdown on mount
+  useEffect(() => {
+    fetchLibraryItems();
+  }, []);
+
   useEffect(() => {
     fetchLeads();
   }, [leadStatus, libraryItemId, search, page]);
+
+  async function fetchLibraryItems() {
+    try {
+      const response = await fetch('/api/admin/library/items?per_page=1000&status=ALL');
+      const result = await response.json();
+
+      if (result.success) {
+        setLibraryItems(
+          result.data.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+          }))
+        );
+      }
+    } catch (err) {
+      console.error('Failed to load library items:', err);
+    }
+  }
 
   async function fetchLeads() {
     try {
@@ -152,7 +183,7 @@ export default function CustomerLeadsPage() {
             </Select>
           </div>
 
-          {/* Library Item - TODO: Load from API */}
+          {/* Library Item */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">자료</label>
             <Select
@@ -162,7 +193,12 @@ export default function CustomerLeadsPage() {
                 setPage(1);
               }}
             >
-              <option value="ALL">전체</option>
+              <option value="ALL">전체 자료</option>
+              {libraryItems.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.title}
+                </option>
+              ))}
             </Select>
           </div>
         </div>
