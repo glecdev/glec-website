@@ -307,7 +307,7 @@ async function sendLibraryDownloadEmail(
   `;
 
   await resend.emails.send({
-    from: 'GLEC <noreply@glec.io>',
+    from: 'GLEC <noreply@no-reply.glec.io>',
     to: lead.email,
     subject: `[GLEC] ${libraryItem.title} 다운로드`,
     html: htmlBody,

@@ -4,7 +4,7 @@
  */
 
 const RESEND_API_KEY = 're_CWuvh2PM_ES4Et3Dv1DFAK5SZrmZJ2ovi';
-const TEST_EMAIL = 'contact@glec.io'; // Changed from ghdi0506@gmail.com - must use registered email
+const TEST_EMAIL = 'ghdi0506@gmail.com'; // Test with external email after domain verification
 
 async function testResendAPI() {
   console.log('🧪 Direct Resend API Test');
@@ -23,7 +23,7 @@ async function testResendAPI() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'onboarding@resend.dev',
+        from: 'noreply@no-reply.glec.io',
         to: [TEST_EMAIL],
         subject: '[TEST] Resend API Direct Test',
         html: `
