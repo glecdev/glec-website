@@ -14,6 +14,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import TabLayout, { TabType } from '@/components/admin/TabLayout';
 import {
   OverviewCards,
@@ -430,15 +431,15 @@ export default function AdminPopupsPage() {
     <div className="space-y-6">
       {/* Action Button */}
       <div className="flex justify-end">
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
+        <Link
+          href="/admin/popups/create"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
           새 팝업 만들기
-        </button>
+        </Link>
       </div>
 
       {/* Drag & Drop Info */}
