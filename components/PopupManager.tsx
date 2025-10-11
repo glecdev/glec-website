@@ -1,8 +1,11 @@
 /**
- * Popup Manager Component
+ * Popup Manager Component (Premium Design)
  *
  * Purpose: 웹사이트 전역 팝업 관리 및 표시
- * Features: Modal, Banner, Corner 팝업, "오늘 하루 보지 않기"
+ * Features: Modal, Corner 팝업, "오늘 하루 보지 않기"
+ * Design: Premium gradient design matching LaunchModal
+ *
+ * Based on: LaunchModal.tsx design, admin Modal component
  */
 
 'use client';
@@ -15,13 +18,12 @@ interface Popup {
   content: string;
   imageUrl: string | null;
   linkUrl: string | null;
-  linkText: string | null;
   zIndex: number;
   displayType: 'modal' | 'banner' | 'corner';
-  position: string;
-  width: number;
-  height: number;
-  showOnce: boolean;
+  position: string | null;
+  size: string | null;
+  showOncePerDay: boolean;
+  backgroundColor: string | null;
 }
 
 export function PopupManager() {
@@ -64,10 +66,10 @@ export function PopupManager() {
     }
   };
 
-  const closePopup = (id: string, showOnce: boolean) => {
+  const closePopup = (id: string, showOncePerDay: boolean) => {
     setClosedIds((prev) => new Set([...prev, id]));
 
-    if (showOnce) {
+    if (showOncePerDay) {
       const stored = localStorage.getItem('closed_popups');
       const closedData = stored ? JSON.parse(stored) : [];
       const today = new Date().toDateString();
@@ -77,107 +79,223 @@ export function PopupManager() {
     }
   };
 
+  // ESC key to close all modals
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        const modalPopups = visiblePopups.filter((p) => p.displayType === 'modal');
+        if (modalPopups.length > 0) {
+          closePopup(modalPopups[0].id, modalPopups[0].showOncePerDay);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [popups, closedIds]);
+
+  // Prevent body scroll when modal is open
   const visiblePopups = popups.filter((popup) => !closedIds.has(popup.id));
+  const hasModalOpen = visiblePopups.some((p) => p.displayType === 'modal');
+
+  useEffect(() => {
+    if (hasModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [hasModalOpen]);
 
   return (
     <>
       {visiblePopups.map((popup) => {
         if (popup.displayType === 'modal') {
+          // Parse size (default: 600px x auto)
+          let width = '600px';
+          let maxHeight = 'auto';
+          if (popup.size) {
+            try {
+              const sizeObj = JSON.parse(popup.size);
+              width = sizeObj.width || '600px';
+              maxHeight = sizeObj.height || 'auto';
+            } catch (e) {
+              console.warn('[PopupManager] Invalid size JSON:', popup.size);
+            }
+          }
+
+          // Premium Modal (LaunchModal design)
           return (
-            <div
-              key={popup.id}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
-              style={{ zIndex: 40 }}
-            >
+            <div key={popup.id}>
+              {/* Backdrop */}
               <div
-                className="bg-white rounded-lg shadow-2xl relative max-w-full"
-                style={{ width: popup.width, maxHeight: popup.height }}
-              >
-                {/* Close Button */}
-                <button
-                  onClick={() => closePopup(popup.id, popup.showOnce)}
-                  className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
-                  aria-label="팝업 닫기"
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-fade-in"
+                onClick={() => closePopup(popup.id, popup.showOncePerDay)}
+                aria-hidden="true"
+              />
+
+              {/* Modal */}
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+                <div
+                  className="relative bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto animate-fade-in-up"
+                  style={{ maxWidth: width }}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                  {/* Close Button */}
+                  <button
+                    onClick={() => closePopup(popup.id, popup.showOncePerDay)}
+                    className="absolute top-4 right-4 p-2 text-white hover:bg-white/20 rounded-lg transition-colors z-10"
+                    aria-label="팝업 닫기"
+                  >
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
 
-                {/* Image */}
-                {popup.imageUrl && (
-                  <div className="w-full h-64 rounded-t-lg overflow-hidden">
-                    <img src={popup.imageUrl} alt={popup.title} className="w-full h-full object-cover" />
+                  {/* Header with Gradient (LaunchModal style) */}
+                  <div
+                    className="relative bg-gradient-to-br from-primary-500 via-primary-600 to-purple-600 text-white p-8 rounded-t-2xl overflow-hidden"
+                    style={{
+                      backgroundColor: popup.backgroundColor || undefined,
+                    }}
+                  >
+                    {/* Animated Background Pattern */}
+                    <div className="absolute inset-0 opacity-20">
+                      <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl animate-pulse"></div>
+                      <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl animate-pulse delay-700"></div>
+                    </div>
+
+                    <div className="relative">
+                      <h2 className="text-2xl lg:text-3xl font-bold mb-2">{popup.title}</h2>
+                    </div>
                   </div>
-                )}
 
-                {/* Content */}
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold mb-4">{popup.title}</h3>
-                  <div className="prose prose-sm mb-6" dangerouslySetInnerHTML={{ __html: popup.content }} />
+                  {/* Body */}
+                  <div className="p-8">
+                    {/* Image */}
+                    {popup.imageUrl && (
+                      <div className="mb-6">
+                        <img
+                          src={popup.imageUrl}
+                          alt={popup.title}
+                          className="w-full rounded-lg object-cover"
+                          style={{ maxHeight: '400px' }}
+                        />
+                      </div>
+                    )}
 
-                  {popup.linkUrl && (
-                    <a
-                      href={popup.linkUrl}
-                      className="inline-block px-6 py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors"
-                      onClick={() => closePopup(popup.id, popup.showOnce)}
-                    >
-                      {popup.linkText || '자세히 보기'}
-                    </a>
-                  )}
+                    {/* Content (HTML) */}
+                    <div
+                      className="prose prose-lg max-w-none mb-6"
+                      dangerouslySetInnerHTML={{ __html: popup.content }}
+                    />
+
+                    {/* Link Button */}
+                    {popup.linkUrl && (
+                      <div className="flex justify-center pt-4">
+                        <a
+                          href={popup.linkUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                          onClick={() => closePopup(popup.id, popup.showOncePerDay)}
+                        >
+                          자세히 보기
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Show Once Button */}
+                    {popup.showOncePerDay && (
+                      <div className="mt-6 pt-6 border-t">
+                        <button
+                          onClick={() => closePopup(popup.id, true)}
+                          className="w-full py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          오늘 하루 보지 않기
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-
-                {/* Show Once */}
-                {popup.showOnce && (
-                  <div className="border-t px-8 py-4 bg-gray-50 rounded-b-lg">
-                    <button
-                      onClick={() => closePopup(popup.id, true)}
-                      className="text-sm text-gray-600 hover:text-gray-800"
-                    >
-                      오늘 하루 보지 않기
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           );
         }
 
-        // Banner popups are handled by BannerPopupManager in layout.tsx
+        // Corner popups (small notifications)
         if (popup.displayType === 'corner') {
-          const positionClasses = {
-            'top-left': 'top-4 left-4',
-            'top-right': 'top-4 right-4',
-            'bottom-left': 'bottom-4 left-4',
-            'bottom-right': 'bottom-4 right-4',
-          }[popup.position] || 'bottom-4 right-4';
+          // Parse position (default: bottom-right)
+          let positionClasses = 'bottom-4 right-4';
+          if (popup.position) {
+            try {
+              const posObj = JSON.parse(popup.position);
+              if (posObj.top && posObj.right) positionClasses = 'top-4 right-4';
+              else if (posObj.top && posObj.left) positionClasses = 'top-4 left-4';
+              else if (posObj.bottom && posObj.left) positionClasses = 'bottom-4 left-4';
+              else positionClasses = 'bottom-4 right-4';
+            } catch (e) {
+              console.warn('[PopupManager] Invalid position JSON:', popup.position);
+            }
+          }
+
+          // Parse size (default: 320px x auto)
+          let width = '320px';
+          if (popup.size) {
+            try {
+              const sizeObj = JSON.parse(popup.size);
+              width = sizeObj.width || '320px';
+            } catch (e) {
+              console.warn('[PopupManager] Invalid size JSON:', popup.size);
+            }
+          }
 
           return (
             <div
               key={popup.id}
-              className={`fixed ${positionClasses} bg-white rounded-lg shadow-2xl p-4`}
-              style={{ zIndex: 40, width: popup.width, maxHeight: popup.height }}
+              className={`fixed ${positionClasses} bg-white rounded-xl shadow-2xl p-4 z-50 animate-fade-in-up border border-gray-200`}
+              style={{ maxWidth: width }}
             >
+              {/* Close Button */}
               <button
-                onClick={() => closePopup(popup.id, popup.showOnce)}
+                onClick={() => closePopup(popup.id, popup.showOncePerDay)}
                 className="absolute top-2 right-2 w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
                 aria-label="알림 닫기"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
 
-              <h4 className="font-bold mb-2">{popup.title}</h4>
-              <div className="text-sm mb-3" dangerouslySetInnerHTML={{ __html: popup.content }} />
+              {/* Content */}
+              <h4 className="font-bold text-gray-900 mb-2 pr-6">{popup.title}</h4>
+              <div className="text-sm text-gray-700 mb-3" dangerouslySetInnerHTML={{ __html: popup.content }} />
 
+              {/* Image */}
+              {popup.imageUrl && (
+                <div className="mb-3">
+                  <img src={popup.imageUrl} alt={popup.title} className="w-full rounded-lg object-cover" />
+                </div>
+              )}
+
+              {/* Link Button */}
               {popup.linkUrl && (
                 <a
                   href={popup.linkUrl}
-                  className="inline-block px-3 py-1 bg-primary-500 text-white text-sm font-semibold rounded hover:bg-primary-600 transition-colors"
-                  onClick={() => closePopup(popup.id, popup.showOnce)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-500 text-white text-sm font-semibold rounded hover:bg-primary-600 transition-colors"
+                  onClick={() => closePopup(popup.id, popup.showOncePerDay)}
                 >
-                  {popup.linkText || '보기'}
+                  보기
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
                 </a>
               )}
             </div>
