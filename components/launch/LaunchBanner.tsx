@@ -101,12 +101,12 @@ export function LaunchBanner({ eventId, eventSlug, launchDate, maxParticipants }
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-block px-2 py-0.5 bg-yellow-400 text-primary-900 text-xs font-bold rounded-full uppercase animate-pulse">
-                  New Launch
+                  10/16 Launch
                 </span>
-                <span className="text-sm font-semibold">GLEC Carbon API 공식 런칭</span>
+                <span className="text-sm font-semibold">GLEC Carbon API Console 공식 런칭</span>
               </div>
               <p className="text-xs text-gray-100 truncate">
-                선착순 {maxParticipants}명 한정 · Early Access 특전 $100 크레딧 제공
+                선착순 {maxParticipants}명 한정 · 테스트 API 무료 + 프로덕션 API 1달 무료 (500만원 상당)
               </p>
             </div>
           </div>

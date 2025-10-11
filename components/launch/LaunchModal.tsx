@@ -103,9 +103,9 @@ export function LaunchModal({ eventId, eventSlug, launchDate, maxParticipants }:
 
               {/* Title */}
               <h2 className="text-3xl lg:text-4xl font-bold mb-3">
-                GLEC Carbon API
+                GLEC Carbon API Console
                 <br />
-                공식 런칭 이벤트
+                공식 런칭
               </h2>
 
               <p className="text-lg text-gray-100">
@@ -120,15 +120,15 @@ export function LaunchModal({ eventId, eventSlug, launchDate, maxParticipants }:
           <div className="p-8">
             {/* Benefits */}
             <div className="space-y-4 mb-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">🎁 Early Access 참가자 특전</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">🎁 가입 고객 전원 혜택</h3>
 
               <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                 <div className="flex-shrink-0 w-10 h-10 bg-green-500 text-white rounded-full flex items-center justify-center font-bold">
                   1
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">무료 API 크레딧 $100 제공</h4>
-                  <p className="text-sm text-gray-600">정식 출시 후 6개월간 사용 가능</p>
+                  <h4 className="font-semibold text-gray-900 mb-1">테스트 API 월 1,000회 호출 무료</h4>
+                  <p className="text-sm text-gray-600">개발 및 테스트 환경에서 영구 무료 사용</p>
                 </div>
               </div>
 
@@ -137,28 +137,8 @@ export function LaunchModal({ eventId, eventSlug, launchDate, maxParticipants }:
                   2
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">연간 구독 30% 할인</h4>
-                  <p className="text-sm text-gray-600">Early Adopter 전용 특별 할인</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-                <div className="flex-shrink-0 w-10 h-10 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold">
-                  3
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">1:1 기술 지원</h4>
-                  <p className="text-sm text-gray-600">3개월 무료 프리미엄 지원</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
-                <div className="flex-shrink-0 w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold">
-                  4
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">파트너십 우선 협상권</h4>
-                  <p className="text-sm text-gray-600">대량 사용 고객 대상</p>
+                  <h4 className="font-semibold text-gray-900 mb-1">1달 간 프로덕션 API 완전 무료</h4>
+                  <p className="text-sm text-gray-600">월 최대 500만원 상당 크레딧 제공 · 호출량 무제한</p>
                 </div>
               </div>
             </div>
