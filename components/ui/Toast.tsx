@@ -147,3 +147,52 @@ export function ToastContainer({ toasts }: ToastContainerProps) {
     </div>
   );
 }
+
+// ====================================================================
+// Toast Context & Provider
+// ====================================================================
+
+interface ToastContextValue {
+  showToast: (type: ToastType, message: string, duration?: number) => void;
+}
+
+const ToastContext = React.createContext<ToastContextValue | undefined>(undefined);
+
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [toasts, setToasts] = React.useState<Array<ToastProps & { id: string }>>([]);
+
+  const showToast = React.useCallback((type: ToastType, message: string, duration = 5000) => {
+    const id = Math.random().toString(36).substring(2, 11);
+
+    const newToast = {
+      id,
+      type,
+      message,
+      duration,
+      onClose: () => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      },
+    };
+
+    setToasts((prev) => [...prev, newToast]);
+  }, []);
+
+  const value = React.useMemo(() => ({ showToast }), [showToast]);
+
+  return (
+    <ToastContext.Provider value={value}>
+      {children}
+      <ToastContainer toasts={toasts} />
+    </ToastContext.Provider>
+  );
+}
+
+export function useToast(): ToastContextValue {
+  const context = React.useContext(ToastContext);
+
+  if (!context) {
+    throw new Error('useToast must be used within ToastProvider');
+  }
+
+  return context;
+}
