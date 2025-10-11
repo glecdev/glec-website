@@ -1,0 +1,20 @@
+[
+  {
+    "title": "2030년 물류혁명을 이끌 7대 기술",
+    "slug": "logistics-revolution-7-technologies-2030",
+    "excerpt": "2030년까지 물류 산업을 혁명적으로 변화시킬 7대 핵심 기술을 소개합니다. AI, 자율주행, 드론, 블록체인 등 미래 물류의 청사진을 확인하세요.",
+    "category": "기술 트렌드",
+    "tags": ["AI물류", "물류자동화", "물류혁신", "미래물류", "자율주행", "드론배송", "블록체인"],
+    "thumbnailUrl": "https://blog.kakaocdn.net/dn/lTVy7/btsQXBhflsl/AAAAAAAAAAAAAAAAAAAAAOkUwxupcp5CT-O9qfLwcscLZYt1ovC_1vjaAQNGjzaP/img.png",
+    "publishedAt": "2025-10-01T00:00:00Z"
+  },
+  {
+    "title": "2025년 그린물류 선두기업 10곳의 Movement",
+    "slug": "green-logistics-leading-companies-2025",
+    "excerpt": "DHL, UPS, FedEx, CJ대한통운, 쿠팡 등 글로벌 그린물류 선두기업들의 혁신 사례와 탄소중립 전략을 분석합니다.",
+    "category": "산업 동향",
+    "tags": ["그린물류", "DHL", "CJ대한통운", "쿠팡", "탄소중립", "ESG"],
+    "thumbnailUrl": "https://blog.kakaocdn.net/dn/bwJgvA/btsQXQL0h0S/img.png",
+    "publishedAt": "2025-10-01T00:00:00Z"
+  }
+]

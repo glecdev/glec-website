@@ -37,8 +37,10 @@ interface Notice {
   content: string;
   excerpt: string | null;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  category: 'GENERAL' | 'PRODUCT' | 'EVENT' | 'PRESS';
+  category?: 'GENERAL' | 'PRODUCT' | 'EVENT' | 'PRESS'; // Optional for presses table
   thumbnailUrl: string | null;
+  mediaOutlet?: string | null; // Press-specific field
+  externalUrl?: string | null; // Press-specific field
   viewCount?: number; // Optional - may be undefined from API
   publishedAt: string | null;
   authorId: string;
@@ -94,14 +96,15 @@ export default function AdminPressPage() {
   const status = searchParams.get('status') || '';
   const search = searchParams.get('search') || '';
 
-  // Form states (지식센터 패턴 적용)
+  // Form states (지식센터 패턴 적용 + press 필드 추가)
   const [formData, setFormData] = useState({
     title: '',
-    slug: '',
     content: '',
     excerpt: '',
     status: 'DRAFT' as Notice['status'],
     thumbnailUrl: '',
+    mediaOutlet: '',
+    externalUrl: '',
   });
 
   /**
@@ -132,10 +135,9 @@ export default function AdminPressPage() {
         per_page: '20',
       });
       if (status) params.append('status', status);
-      params.append('category', 'PRESS'); // Fixed filter
       if (search) params.append('search', search);
 
-      const response = await fetch(`/api/admin/notices?${params.toString()}`, {
+      const response = await fetch(`/api/admin/press?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -187,7 +189,7 @@ export default function AdminPressPage() {
       }
 
       // Fetch all press releases (max 1000)
-      const response = await fetch('/api/admin/notices?per_page=1000&category=PRESS', {
+      const response = await fetch('/api/admin/press?per_page=1000', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -254,11 +256,12 @@ export default function AdminPressPage() {
     setEditingPress(null);
     setFormData({
       title: '',
-      slug: '',
       content: '',
       excerpt: '',
       status: 'DRAFT',
       thumbnailUrl: '',
+      mediaOutlet: '',
+      externalUrl: '',
     });
     setIsModalOpen(true);
   };
@@ -270,11 +273,12 @@ export default function AdminPressPage() {
     setEditingPress(press);
     setFormData({
       title: press.title,
-      slug: press.slug,
       content: press.content,
       excerpt: press.excerpt || '',
       status: press.status,
       thumbnailUrl: press.thumbnailUrl || '',
+      mediaOutlet: press.mediaOutlet || '',
+      externalUrl: press.externalUrl || '',
     });
     setIsModalOpen(true);
   };
@@ -285,7 +289,7 @@ export default function AdminPressPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.slug || !formData.content) {
+    if (!formData.title || !formData.content) {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
@@ -296,18 +300,18 @@ export default function AdminPressPage() {
       const token = localStorage.getItem('admin_token');
       const payload = {
         title: formData.title,
-        slug: formData.slug,
         content: formData.content,
         excerpt: formData.excerpt || undefined,
         status: formData.status,
-        category: 'PRESS' as const, // Always PRESS category
-        thumbnail_url: formData.thumbnailUrl || undefined,
+        thumbnailUrl: formData.thumbnailUrl || undefined,
+        mediaOutlet: formData.mediaOutlet || undefined,
+        externalUrl: formData.externalUrl || undefined,
       };
 
       let response;
       if (editingPress) {
         // Update
-        response = await fetch(`/api/admin/notices?id=${editingPress.id}`, {
+        response = await fetch(`/api/admin/press?id=${editingPress.id}`, {
           method: 'PUT',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -317,7 +321,7 @@ export default function AdminPressPage() {
         });
       } else {
         // Create
-        response = await fetch('/api/admin/notices', {
+        response = await fetch('/api/admin/press', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -330,7 +334,7 @@ export default function AdminPressPage() {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error?.message || 'Failed to save notice');
+        throw new Error(result.error?.message || 'Failed to save press');
       }
 
       alert(editingPress ? '보도자료가 수정되었습니다.' : '보도자료가 추가되었습니다.');
@@ -338,7 +342,7 @@ export default function AdminPressPage() {
       fetchPressReleases(); // Refresh list (지식센터 패턴)
     } catch (err) {
       console.error('[Save Press] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to save notice');
+      alert(err instanceof Error ? err.message : 'Failed to save press');
     } finally {
       setIsSaving(false);
     }
@@ -354,23 +358,24 @@ export default function AdminPressPage() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const response = await fetch(`/api/admin/notices?id=${id}`, {
+      const response = await fetch(`/api/admin/press?id=${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (response.status === 204) {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
         alert('보도자료가 삭제되었습니다.');
         fetchPressReleases(); // Refresh list
       } else {
-        const result = await response.json();
         throw new Error(result.error?.message || 'Delete failed');
       }
     } catch (err) {
       console.error('[Delete Press] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete notice');
+      alert(err instanceof Error ? err.message : 'Failed to delete press');
     }
   };
 
@@ -665,6 +670,9 @@ export default function AdminPressPage() {
                       제목
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      언론사
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       상태
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -681,7 +689,7 @@ export default function AdminPressPage() {
                 <tbody className="divide-y divide-gray-200">
                   {pressReleases.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                         보도자료가 없습니다.
                       </td>
                     </tr>
@@ -694,10 +702,12 @@ export default function AdminPressPage() {
                             <p className="text-sm text-gray-500 mt-1 line-clamp-1">{press.excerpt}</p>
                           )}
                         </td>
-                        
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-gray-700">{press.mediaOutlet || '-'}</span>
+                        </td>
                         <td className="px-6 py-4">{getStatusBadge(press.status)}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{formatDate(press.publishedAt)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{press.viewCount.toLocaleString()}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{(press.viewCount || 0).toLocaleString()}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
                             {/* 지식센터 패턴: 버튼 onClick */}
@@ -823,21 +833,35 @@ export default function AdminPressPage() {
                 />
               </div>
 
-              {/* Slug */}
+              {/* Media Outlet */}
               <div>
-                <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
-                  슬러그 (URL 경로) <span className="text-red-500">*</span>
-                  <span className="text-xs text-gray-500 ml-2">(예: "glec-website-open")</span>
+                <label htmlFor="mediaOutlet" className="block text-sm font-medium text-gray-700 mb-1">
+                  언론사
+                  <span className="text-xs text-gray-500 ml-2">(예: "조선일보", "TechCrunch")</span>
                 </label>
                 <input
                   type="text"
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  required
-                  maxLength={200}
-                  pattern="[a-z0-9-]+"
-                  placeholder="glec-website-open"
+                  id="mediaOutlet"
+                  value={formData.mediaOutlet}
+                  onChange={(e) => setFormData({ ...formData, mediaOutlet: e.target.value })}
+                  maxLength={100}
+                  placeholder="조선일보"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* External URL */}
+              <div>
+                <label htmlFor="externalUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                  기사 원문 URL
+                  <span className="text-xs text-gray-500 ml-2">(선택사항)</span>
+                </label>
+                <input
+                  type="url"
+                  id="externalUrl"
+                  value={formData.externalUrl}
+                  onChange={(e) => setFormData({ ...formData, externalUrl: e.target.value })}
+                  placeholder="https://www.chosun.com/article/..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
@@ -888,17 +912,6 @@ export default function AdminPressPage() {
                   <option value="PUBLISHED">발행</option>
                   <option value="ARCHIVED">보관</option>
                 </select>
-              </div>
-
-              {/* Category (PRESS - Fixed, Display Only) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">카테고리</label>
-                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                  <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700">
-                    보도자료 (PRESS)
-                  </span>
-                  <p className="text-xs text-gray-500 mt-1">카테고리는 자동으로 PRESS로 설정됩니다.</p>
-                </div>
               </div>
 
               {/* Thumbnail URL */}

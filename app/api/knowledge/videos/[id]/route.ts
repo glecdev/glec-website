@@ -29,13 +29,11 @@ export async function GET(
       );
     }
 
-    // Get video
+    // Get video from knowledge_videos table
     const result = await sql`
-      SELECT
-        id, title, description, youtube_url, youtube_video_id, thumbnail_url,
-        duration, tab, view_count, published_at, created_at, updated_at
-      FROM videos
-      WHERE status = 'PUBLISHED' AND id = ${id}
+      SELECT *
+      FROM knowledge_videos
+      WHERE id = ${id}
       LIMIT 1
     `;
 
@@ -56,21 +54,28 @@ export async function GET(
 
     // Increment view count
     await sql`
-      UPDATE videos
+      UPDATE knowledge_videos
       SET view_count = view_count + 1
       WHERE id = ${video.id}
     `;
+
+    // Extract YouTube video ID from URL
+    const extractYouTubeId = (url: string): string => {
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : '';
+    };
 
     // Transform to camelCase
     const transformedVideo = {
       id: video.id,
       title: video.title,
       description: video.description || '',
-      youtubeUrl: video.youtube_url,
-      youtubeVideoId: video.youtube_video_id,
+      youtubeUrl: video.video_url,
+      youtubeVideoId: extractYouTubeId(video.video_url),
       thumbnailUrl: video.thumbnail_url,
       duration: video.duration || '0:00',
-      category: video.tab,
+      category: video.category,
+      tags: video.tags || [],
       viewCount: video.view_count + 1, // Return updated count
       publishedAt: video.published_at,
       createdAt: video.created_at,
@@ -79,14 +84,11 @@ export async function GET(
 
     // Get related videos (same category, excluding current video)
     const relatedResult = await sql`
-      SELECT
-        id, title, description, youtube_url, youtube_video_id, thumbnail_url,
-        duration, tab, view_count, published_at
-      FROM videos
-      WHERE status = 'PUBLISHED'
-        AND id != ${video.id}
-        AND tab = ${video.tab}
-      ORDER BY published_at DESC NULLS LAST, created_at DESC
+      SELECT *
+      FROM knowledge_videos
+      WHERE id != ${video.id}
+        AND category = ${video.category}
+      ORDER BY published_at DESC, created_at DESC
       LIMIT 3
     `;
 
@@ -94,11 +96,12 @@ export async function GET(
       id: item.id,
       title: item.title,
       description: item.description || '',
-      youtubeUrl: item.youtube_url,
-      youtubeVideoId: item.youtube_video_id,
+      youtubeUrl: item.video_url,
+      youtubeVideoId: extractYouTubeId(item.video_url),
       thumbnailUrl: item.thumbnail_url,
       duration: item.duration || '0:00',
-      category: item.tab,
+      category: item.category,
+      tags: item.tags || [],
       viewCount: item.view_count,
       publishedAt: item.published_at,
     }));

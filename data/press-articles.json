@@ -1,0 +1,387 @@
+[
+  {
+    "title": "AI 모드",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&udm=50&aep=1&ntc=1&sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQ2J8OegQIBRAD",
+    "publishedAt": "2025-10-11T00:41:57.452Z",
+    "excerpt": "AI 모드"
+  },
+  {
+    "title": "도서",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&udm=36&source=lnms&sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQ0pQJegQIBRAU",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "도서"
+  },
+  {
+    "title": "금융",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/finance?sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQ0pQJegQIBRAW",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "금융"
+  },
+  {
+    "title": "웹 검색",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&sxsrf=ADLYWIIhXDIb6_vPr--vhh0qKVmm8_Mk0Q%3A1736498690134&ei=Bi-CZ9mLGPrV2roPqo77sQk&ved=0ahUKEwiZqd2d-uGKAxX6qlYBHSrHPpYQ4dUDCA0&uact=5&oq=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&gs_lp=Eg%20xnd3Mtd2l6LW5ld3MiDyLsmKTsnbzro4nsiqQiMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABEjTGFCbCFi1FnABeACQAQCYAcwBoAH3B6oBAzAuNrgBA8gBAPgBAZgCCaAC-AfCAgoQABiwAxjWBBhHwgINEAAYgAQYsAMYQxiKBcICDRAAGLADGNYEGEcYiwPCAg4QLhiABBjHARiOBRivAcICBhAAGBYYHsICCBAAGBYYHhgPmAMAiAYBkAYKkgcFMS44LjGgB-BV&sclient=gws-wiz-news#",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "웹 검색"
+  },
+  {
+    "title": "한국어 웹",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=lr:lang_1ko&lr=lang_ko&sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQpwV6BAgDEAY",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "한국어 웹"
+  },
+  {
+    "title": "지난 1시간",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:h&sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQpwV6BAgDEAo",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "지난 1시간"
+  },
+  {
+    "title": "지난 1일",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:d&sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQpwV6BAgDEAs",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "지난 1일"
+  },
+  {
+    "title": "지난 1주",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:w&sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQpwV6BAgDEAw",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "지난 1주"
+  },
+  {
+    "title": "지난 1개월",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:m&sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQpwV6BAgDEA0",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "지난 1개월"
+  },
+  {
+    "title": "지난 1년",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:y&sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQpwV6BAgDEA4",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "지난 1년"
+  },
+  {
+    "title": "자료실",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EC%98%A4%EC%9D%BC%EB%A0%89%EC%8A%A4%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=ar:1&sa=X&ved=2ahUKEwiHt_3n9JqQAxV-s1YBHexlPbsQpwV6BAgDEA8",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "자료실"
+  },
+  {
+    "title": "콜드체인뉴스[인터뷰] 강덕호·김은우 오일렉스 공동대표물류차량 운행 시 배출되는 온실가스 산출은 물류기업이 ESG경영 운영 시 어려움을 겪는 영역 중 하나다. 오일렉스는 이 점을 파악해 솔루션을 개발·....2024. 10. 15.",
+    "mediaOutlet": "coldchainnews.kr",
+    "externalUrl": "https://www.coldchainnews.kr/news/article.html?no=26751",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "콜드체인뉴스[인터뷰] 강덕호·김은우 오일렉스 공동대표물류차량 운행 시 배출되는 온실가스 산출은 물류기업이 ESG경영 운영 시 어려움을 겪는 영역 중 하나다. 오일렉스는 이 점을 파악해 솔루션을 개발·....2024. 10. 15."
+  },
+  {
+    "title": "물류신문한국통합물류협회, 오일렉스와 물류부문 ESG 경영전환 협력한국통합물류협회는 ESG에 대한 물류 분야의 대응력과 지속가능성을 높이기 위해 ESG 전문기업 오일렉스와 협력 양해각서(MOU)를 체결했다고 밝혔다..2024. 4. 4.",
+    "mediaOutlet": "klnews.co.kr",
+    "externalUrl": "https://www.klnews.co.kr/news/articleView.html?idxno=311848",
+    "publishedAt": "2025-10-11T00:41:57.454Z",
+    "excerpt": "물류신문한국통합물류협회, 오일렉스와 물류부문 ESG 경영전환 협력한국통합물류협회는 ESG에 대한 물류 분야의 대응력과 지속가능성을 높이기 위해 ESG 전문기업 오일렉스와 협력 양해각서(MOU)를 체결했다고 밝혔다..2024. 4. 4."
+  },
+  {
+    "title": "데일리경제오일렉스 강덕호 대표 2024 ESG친환경대전, ESG 스타트업 생존 전략 기조 강연 발표오일렉스의 강덕호 대표가 10월 10일부터 12일까지 서울 삼성동 코엑스에서 열린 2024 한국 ESG 친환경 대전에서 기조 강연 발표를 성공적으로....2024. 10. 14.",
+    "mediaOutlet": "kdpress.co.kr",
+    "externalUrl": "http://www.kdpress.co.kr/news/articleView.html?idxno=132457",
+    "publishedAt": "2025-10-11T00:41:57.455Z",
+    "excerpt": "데일리경제오일렉스 강덕호 대표 2024 ESG친환경대전, ESG 스타트업 생존 전략 기조 강연 발표오일렉스의 강덕호 대표가 10월 10일부터 12일까지 서울 삼성동 코엑스에서 열린 2024 한국 ESG 친환경 대전에서 기조 강연 발표를 성공적으로....2024. 10. 14."
+  },
+  {
+    "title": "세계일보‘리터 주유권’ 오일렉스, 한국석유공사 이어 보이미와 MOU 체결한국석유공사 오피넷 선정 스타트업 기업 오일렉스를 운영하는 ㈜빅핸드파트너스가 국내 디지털 사이니지 전문기업으로 평가되는 ㈜보이미와 MOU를 체결....2023. 4. 6.",
+    "mediaOutlet": "segye.com",
+    "externalUrl": "https://www.segye.com/newsView/20230406512209",
+    "publishedAt": "2025-10-11T00:41:57.455Z",
+    "excerpt": "세계일보‘리터 주유권’ 오일렉스, 한국석유공사 이어 보이미와 MOU 체결한국석유공사 오피넷 선정 스타트업 기업 오일렉스를 운영하는 ㈜빅핸드파트너스가 국내 디지털 사이니지 전문기업으로 평가되는 ㈜보이미와 MOU를 체결....2023. 4. 6."
+  },
+  {
+    "title": "헬로티한국통합물류협회, 오일렉스와 MOU “물류 분야 ESG 선도”한국통합물류협회는 4일 ESG에 대한 물류 분야의 대응력과 지속가능성을 높이고 미래를 선도해 나아가기 위해 ESG 전문기업 오일렉스와 협력 양해....2024. 4. 4.",
+    "mediaOutlet": "hellot.net",
+    "externalUrl": "https://www.hellot.net/news/article.html?no=88687",
+    "publishedAt": "2025-10-11T00:41:57.455Z",
+    "excerpt": "헬로티한국통합물류협회, 오일렉스와 MOU “물류 분야 ESG 선도”한국통합물류협회는 4일 ESG에 대한 물류 분야의 대응력과 지속가능성을 높이고 미래를 선도해 나아가기 위해 ESG 전문기업 오일렉스와 협력 양해....2024. 4. 4."
+  },
+  {
+    "title": "프라임경제[카드] 오일렉스, 오피넷과 MOU 체결[프라임경제] 오일렉스를 운영하는 스타트업 기업인 빅핸드파트너스는 15일 한국석유공사 오피넷 스타트업에 선정, MOU를 체결했다고 밝혔다..2023. 3. 15.",
+    "mediaOutlet": "m.newsprime.co.kr",
+    "externalUrl": "https://m.newsprime.co.kr/section_view.html?no=595841",
+    "publishedAt": "2025-10-11T00:41:57.455Z",
+    "excerpt": "프라임경제[카드] 오일렉스, 오피넷과 MOU 체결[프라임경제] 오일렉스를 운영하는 스타트업 기업인 빅핸드파트너스는 15일 한국석유공사 오피넷 스타트업에 선정, MOU를 체결했다고 밝혔다..2023. 3. 15."
+  },
+  {
+    "title": "에너지경제신문 모바일이퓨얼, 산업부-SK그룹 기술나눔 수혜 기업 선정오일렉스의 이퓨얼은 산업통상자원부와 SK그룹, 한국산업기술진흥원이 주최하는 2024년도 산업통상자원부-SK 기술 나눔 행사에 수혜 기업으로 참여....2024. 3. 14.",
+    "mediaOutlet": "m.ekn.kr",
+    "externalUrl": "https://m.ekn.kr/view.php?key=20240313022254507",
+    "publishedAt": "2025-10-11T00:41:57.455Z",
+    "excerpt": "에너지경제신문 모바일이퓨얼, 산업부-SK그룹 기술나눔 수혜 기업 선정오일렉스의 이퓨얼은 산업통상자원부와 SK그룹, 한국산업기술진흥원이 주최하는 2024년도 산업통상자원부-SK 기술 나눔 행사에 수혜 기업으로 참여....2024. 3. 14."
+  },
+  {
+    "title": "이투뉴스[이기업, 이사람] 프로그램 하나로 법인차 '주유깡' 근절[이투뉴스] \"온라인 중고거래 사이트에서 주유보관증이 버젓 팔리고 있다. 상당수가 '주유깡'을 통해 만든 것들이라고 본다..2023. 10. 16.",
+    "mediaOutlet": "e2news.com",
+    "externalUrl": "http://www.e2news.com/news/articleView.html?idxno=301406",
+    "publishedAt": "2025-10-11T00:41:57.455Z",
+    "excerpt": "이투뉴스[이기업, 이사람] 프로그램 하나로 법인차 '주유깡' 근절[이투뉴스] \"온라인 중고거래 사이트에서 주유보관증이 버젓 팔리고 있다. 상당수가 '주유깡'을 통해 만든 것들이라고 본다..2023. 10. 16."
+  },
+  {
+    "title": "물류신문한국통합물류협회, 오일렉스·마리나체인과 통합 ESG경영 서비스 시작물류분야에서의 육상과 해상을 통합한 ESG경영 서비스가 출시된다.한국통합물류협회는 육상물류 ESG 전문기업인 오일렉스, 해상물류 ESG 전문기업....2024. 5. 23.",
+    "mediaOutlet": "klnews.co.kr",
+    "externalUrl": "https://www.klnews.co.kr/news/articleView.html?idxno=312407",
+    "publishedAt": "2025-10-11T00:41:57.455Z",
+    "excerpt": "물류신문한국통합물류협회, 오일렉스·마리나체인과 통합 ESG경영 서비스 시작물류분야에서의 육상과 해상을 통합한 ESG경영 서비스가 출시된다.한국통합물류협회는 육상물류 ESG 전문기업인 오일렉스, 해상물류 ESG 전문기업....2024. 5. 23."
+  },
+  {
+    "title": "데일리경제이퓨얼, 2024 데이터바우처 수요기업 대상 최대 3200만원 지원ESG 차량관제 및 탄소배출 저감 솔루션을 운영하는 이퓨얼(이하'주식회사 오일렉스')은 2024 데이터바우처(가공부문) 수요기업을 2024년 4월 1일까지....2024. 3. 14.",
+    "mediaOutlet": "kdpress.co.kr",
+    "externalUrl": "http://www.kdpress.co.kr/news/articleView.html?idxno=127178",
+    "publishedAt": "2025-10-11T00:41:57.455Z",
+    "excerpt": "데일리경제이퓨얼, 2024 데이터바우처 수요기업 대상 최대 3200만원 지원ESG 차량관제 및 탄소배출 저감 솔루션을 운영하는 이퓨얼(이하'주식회사 오일렉스')은 2024 데이터바우처(가공부문) 수요기업을 2024년 4월 1일까지....2024. 3. 14."
+  },
+  {
+    "title": "AI 모드",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&udm=50&aep=1&ntc=1&sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQ2J8OegQIAhAD",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "AI 모드"
+  },
+  {
+    "title": "도서",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&udm=36&source=lnms&sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQ0pQJegQIAhAU",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "도서"
+  },
+  {
+    "title": "금융",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/finance?sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQ0pQJegQIAhAW",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "금융"
+  },
+  {
+    "title": "웹 검색",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&sxsrf=ADLYWIIS0QJrp4fDEcUw1Vvv2RsY7s25CQ%3A1736498717856&ei=IS-CZ8-xMdSy2roP99q3-Ao&ved=0ahUKEwjP2Kur-uGKAxVUmVYBHXftDa8Q4dUDCA0&uact=5&oq=%22%EA%B8%80%EB%A0%89%22&gs_lp=Egxnd3Mtd2l6LW5ld3MiCCLquIDroYkiMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABEj9BVAAWOIEcAB4AJABAJgBuwGgAfcEqgEDMC40uAEDyAEA-AEBmAIFoAKqBcICChAAGLADGNYEGEfCAg0QABiABBiwAxhDGIoFwgINEAAYsAMY1gQYRxiLA8ICDhAuGIAEGMcBGI4FGK8BwgIGEAAYFhgewgIIEAAYFhgeGA_CAgcQABiABBgNmAMAiAYBkAYKkgcDMS40oAf7TA&sclient=gws-wiz-news#",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "웹 검색"
+  },
+  {
+    "title": "한국어 웹",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=lr:lang_1ko&lr=lang_ko&sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQpwV6BAgGEAY",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "한국어 웹"
+  },
+  {
+    "title": "지난 1시간",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:h&sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQpwV6BAgGEAo",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "지난 1시간"
+  },
+  {
+    "title": "지난 1일",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:d&sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQpwV6BAgGEAs",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "지난 1일"
+  },
+  {
+    "title": "지난 1주",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:w&sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQpwV6BAgGEAw",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "지난 1주"
+  },
+  {
+    "title": "지난 1개월",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:m&sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQpwV6BAgGEA0",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "지난 1개월"
+  },
+  {
+    "title": "지난 1년",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:y&sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQpwV6BAgGEA4",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "지난 1년"
+  },
+  {
+    "title": "자료실",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22%EA%B8%80%EB%A0%89%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=ar:1&sa=X&ved=2ahUKEwj0ytTq9JqQAxVDrlYBHUIEJUIQpwV6BAgGEA8",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "자료실"
+  },
+  {
+    "title": "시선뉴스한국 기업 글렉(GLEC), 실시간 탄소 측정이 가능한 AI Tachograph(ATG) 시스템 선보여한국 기업 글렉(GLEC)이 실시간 탄소 측정이 가능한 AI Tachograph(ATG) 시스템을 선보였다고 16일 밝혔다. 글렉 관계자는 \"유럽연합의 탄소국경조정....3주 전",
+    "mediaOutlet": "sisunnews.co.kr",
+    "externalUrl": "http://www.sisunnews.co.kr/news/articleView.html?idxno=229051",
+    "publishedAt": "2025-09-20T00:42:02.906Z",
+    "excerpt": "시선뉴스한국 기업 글렉(GLEC), 실시간 탄소 측정이 가능한 AI Tachograph(ATG) 시스템 선보여한국 기업 글렉(GLEC)이 실시간 탄소 측정이 가능한 AI Tachograph(ATG) 시스템을 선보였다고 16일 밝혔다. 글렉 관계자는 \"유럽연합의 탄소국경조정....3주 전"
+  },
+  {
+    "title": "에스콰이어 코리아미식가를 위한 ‘우드포드 리저브’ 그리고 ‘더 글렉드로낙’미식가를 위한 '우드포드 리저브' 그리고 '더 글렉드로낙' - 소문난 미식 축제에 술이 빠질 수 없다. '아시아 50 베스트 레스토랑 2025' 행사 공식....2025. 4. 1.",
+    "mediaOutlet": "esquirekorea.co.kr",
+    "externalUrl": "https://www.esquirekorea.co.kr/article/1879363",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "에스콰이어 코리아미식가를 위한 ‘우드포드 리저브’ 그리고 ‘더 글렉드로낙’미식가를 위한 '우드포드 리저브' 그리고 '더 글렉드로낙' - 소문난 미식 축제에 술이 빠질 수 없다. '아시아 50 베스트 레스토랑 2025' 행사 공식....2025. 4. 1."
+  },
+  {
+    "title": "더리포트글렌피딕, 규현·안재현과 ‘로스옥’ 찾아 위스키 페어링 선봬싱글몰트 위스키의 대명사 글렌피딕이 가수 규현, 배우 안재현과 프리미엄 소고기 전문점 로스옥을 찾아 위스키와 로스구이 페어링을 큐레이션했다..2024. 9. 27.",
+    "mediaOutlet": "thereport.co.kr",
+    "externalUrl": "https://www.thereport.co.kr/news/articleView.html?idxno=54089",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "더리포트글렌피딕, 규현·안재현과 ‘로스옥’ 찾아 위스키 페어링 선봬싱글몰트 위스키의 대명사 글렌피딕이 가수 규현, 배우 안재현과 프리미엄 소고기 전문점 로스옥을 찾아 위스키와 로스구이 페어링을 큐레이션했다..2024. 9. 27."
+  },
+  {
+    "title": "뉴스웍스서울신라호텔, 위스키 명가와 맞손…'더 디스틸러스 라이브러리' 공개[뉴스웍스=김상우 기자] 서울신라호텔이 위스키 명가인 윌리엄그랜트앤선즈코리아와 손잡고 1층에 위치한 라운지&바 '더 라이브러리'에서 프리미엄....2024. 3. 14.",
+    "mediaOutlet": "newsworks.co.kr",
+    "externalUrl": "https://www.newsworks.co.kr/news/articleView.html?idxno=746582",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "뉴스웍스서울신라호텔, 위스키 명가와 맞손…'더 디스틸러스 라이브러리' 공개[뉴스웍스=김상우 기자] 서울신라호텔이 위스키 명가인 윌리엄그랜트앤선즈코리아와 손잡고 1층에 위치한 라운지&바 '더 라이브러리'에서 프리미엄....2024. 3. 14."
+  },
+  {
+    "title": "Hypebeast.KR글렌피딕, ‘Time Re:Imagined’ 컬렉션 출시싱글몰트 위스키 글렌피딕이 'Time Re:Imagined' 컬렉션을 출시한다. 글렉피딕 시그니처 증류 스타일의 정점을 담은 'Time Re:Imagined' 컬렉션은....2023. 3. 2.",
+    "mediaOutlet": "hypebeast.kr",
+    "externalUrl": "https://hypebeast.kr/2023/3/glenfiddich-whisky-time-reimagined-collection",
+    "publishedAt": "2025-10-11T00:42:02.906Z",
+    "excerpt": "Hypebeast.KR글렌피딕, ‘Time Re:Imagined’ 컬렉션 출시싱글몰트 위스키 글렌피딕이 'Time Re:Imagined' 컬렉션을 출시한다. 글렉피딕 시그니처 증류 스타일의 정점을 담은 'Time Re:Imagined' 컬렉션은....2023. 3. 2."
+  },
+  {
+    "title": "AI 모드",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&udm=50&aep=1&ntc=1&sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQ2J8OegQIBRAD",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "AI 모드"
+  },
+  {
+    "title": "도서",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&udm=36&source=lnms&sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQ0pQJegQIBRAU",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "도서"
+  },
+  {
+    "title": "금융",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/finance?sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQ0pQJegQIBRAW",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "금융"
+  },
+  {
+    "title": "웹 검색",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&sxsrf=ADLYWIICYtHH5yfJF-KJg7O3aFGQC-M7Jw%3A1736498737002&ei=NC-CZ9-YEL2j2roP3N6f8QE&ved=0ahUKEwjfhKy0-uGKAxW9kVYBHVzvJx4Q4dUDCA0&uact=5&oq=%22glec%22&gs_lp=Egxnd3Mtd2l6LW5ld3MiByJnbGVjIjIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgARIihxQlwhY9RlwAXgAkAEAmAHcAaABvguqAQUwLjcuMbgBA8gBAPgBAZgCCqAC0QvCAgoQABiwAxjWBBhHwgINEAAYgAQYsAMYQxiKBcICDRAAGLADGNYEGEcYiwPCAggQABiABBiiBMICBhAAGBYYHsICCBAAGBYYHhgPmAMAiAYBkAYKkgcFMS44LjGgB_Bd&sclient=gws-wiz-news#",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "웹 검색"
+  },
+  {
+    "title": "한국어 웹",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=lr:lang_1ko&lr=lang_ko&sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQpwV6BAgDEAY",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "한국어 웹"
+  },
+  {
+    "title": "지난 1시간",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:h&sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQpwV6BAgDEAo",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "지난 1시간"
+  },
+  {
+    "title": "지난 1일",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:d&sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQpwV6BAgDEAs",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "지난 1일"
+  },
+  {
+    "title": "지난 1주",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:w&sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQpwV6BAgDEAw",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "지난 1주"
+  },
+  {
+    "title": "지난 1개월",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:m&sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQpwV6BAgDEA0",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "지난 1개월"
+  },
+  {
+    "title": "지난 1년",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=qdr:y&sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQpwV6BAgDEA4",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "지난 1년"
+  },
+  {
+    "title": "자료실",
+    "mediaOutlet": "google.com",
+    "externalUrl": "https://www.google.com/search?q=%22glec%22&sca_esv=bbf23e8cd9a48da6&rlz=1C1SQJL_koKR1134KR1134&biw=1920&bih=953&tbm=nws&source=lnt&tbs=ar:1&sa=X&ved=2ahUKEwjqiaHt9JqQAxVjR-sIHdp8COIQpwV6BAgDEA8",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "자료실"
+  },
+  {
+    "title": "필드뉴스GLEC, CES 2026서 AI 타코그래프 'ATG AX' 공개[필드뉴스 = 이승철 기자] 물류 기술 기업 글렉(GLEC)이 운전자 상태 모니터링과 차량 예측 정비를 통합한 'AI Tachograph(ATG) AX 솔루션'을 개발....3주 전",
+    "mediaOutlet": "fieldnews.kr",
+    "externalUrl": "http://www.fieldnews.kr/news/articleView.html?idxno=21524",
+    "publishedAt": "2025-09-20T00:42:08.266Z",
+    "excerpt": "필드뉴스GLEC, CES 2026서 AI 타코그래프 'ATG AX' 공개[필드뉴스 = 이승철 기자] 물류 기술 기업 글렉(GLEC)이 운전자 상태 모니터링과 차량 예측 정비를 통합한 'AI Tachograph(ATG) AX 솔루션'을 개발....3주 전"
+  },
+  {
+    "title": "미주중앙일보GLEC AI Tachograph (ATG) AX Solution: An Integrated Solution Predicting Everything from Driver Fatigue to Vehicle FailuresKorean logistics technology company GLEC is developing the “AI Tachograph (ATG) AX Solution”, an integrated platform that combines driver....3주 전",
+    "mediaOutlet": "koreadaily.com",
+    "externalUrl": "https://www.koreadaily.com/article/20250918180004796",
+    "publishedAt": "2025-09-20T00:42:08.266Z",
+    "excerpt": "미주중앙일보GLEC AI Tachograph (ATG) AX Solution: An Integrated Solution Predicting Everything from Driver Fatigue to Vehicle FailuresKorean logistics technology company GLEC is developing the “AI Tachograph (ATG) AX Solution”, an integrated platform that combines driver....3주 전"
+  },
+  {
+    "title": "물류신문한국통합물류협회, 물류분야 탄소 배출량 산정 글로벌 표준 ‘GLEC Framework v3.0’ 번역 출간한국통합물류협회는 29일 물류기업의 ESG 대응 역량강화를 지원하기 위해 물류분야 탄소 배출량 산정의 글로벌 표준으로 인정받는 'GLEC Framework....2024. 11. 29.",
+    "mediaOutlet": "klnews.co.kr",
+    "externalUrl": "https://www.klnews.co.kr/news/articleView.html?idxno=314741",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "물류신문한국통합물류협회, 물류분야 탄소 배출량 산정 글로벌 표준 ‘GLEC Framework v3.0’ 번역 출간한국통합물류협회는 29일 물류기업의 ESG 대응 역량강화를 지원하기 위해 물류분야 탄소 배출량 산정의 글로벌 표준으로 인정받는 'GLEC Framework....2024. 11. 29."
+  },
+  {
+    "title": "미주중앙일보GLEC AI Tachograph Sets New Benchmark for Logistics Industry with Real-Time Carbon Measurement Every SecondKorean logistics technology company GLEC is redefining industry standards with its AI Tachograph (ATG), a breakthrough device capable of....3주 전",
+    "mediaOutlet": "koreadaily.com",
+    "externalUrl": "https://www.koreadaily.com/article/20250916180016517",
+    "publishedAt": "2025-09-20T00:42:08.266Z",
+    "excerpt": "미주중앙일보GLEC AI Tachograph Sets New Benchmark for Logistics Industry with Real-Time Carbon Measurement Every SecondKorean logistics technology company GLEC is redefining industry standards with its AI Tachograph (ATG), a breakthrough device capable of....3주 전"
+  },
+  {
+    "title": "ACROFAN USAGLEC Targets Global Telematics Market with Next-Generation ATG Featuring AI-Based Automatic Analysis and Voice GuidanceKorean logistics technology company GLEC is developing its next-generation AI Tachograph, the “ATG Series 5”, equipped with an AI-powered....3주 전",
+    "mediaOutlet": "us.acrofan.com",
+    "externalUrl": "https://us.acrofan.com/detail.php?number=996183",
+    "publishedAt": "2025-09-20T00:42:08.266Z",
+    "excerpt": "ACROFAN USAGLEC Targets Global Telematics Market with Next-Generation ATG Featuring AI-Based Automatic Analysis and Voice GuidanceKorean logistics technology company GLEC is developing its next-generation AI Tachograph, the “ATG Series 5”, equipped with an AI-powered....3주 전"
+  },
+  {
+    "title": "와우테일에듀테크 ‘러너스마인드’, GLEC어학원에 ‘클래스카드PRO’ 공급계약 체결교실용 스마트단어장 '클래스카드'를 만드는 에듀테크 스타트업 러너스마인드는 올림피아드교육이 운영하는 GLEC어학원의 전 캠퍼스에 '클래스....2019. 12. 12.",
+    "mediaOutlet": "wowtale.net",
+    "externalUrl": "https://wowtale.net/2019/12/12/9794/",
+    "publishedAt": "2025-10-11T00:42:08.266Z",
+    "excerpt": "와우테일에듀테크 ‘러너스마인드’, GLEC어학원에 ‘클래스카드PRO’ 공급계약 체결교실용 스마트단어장 '클래스카드'를 만드는 에듀테크 스타트업 러너스마인드는 올림피아드교육이 운영하는 GLEC어학원의 전 캠퍼스에 '클래스....2019. 12. 12."
+  },
+  {
+    "title": "데일리시큐GLEC어학원 2020 대한민국 교육브랜드 대상 5년 연속 수상올림피아드교육이 운영하는 영어전문학원 GLEC어학원이 '2020 대한민국 교육브랜드 대상'에서 초중고어학원 부문 대상을 수상했다..2020. 7. 14.",
+    "mediaOutlet": "dailysecu.com",
+    "externalUrl": "https://www.dailysecu.com/news/articleView.html?idxno=111225",
+    "publishedAt": "2025-10-11T00:42:08.267Z",
+    "excerpt": "데일리시큐GLEC어학원 2020 대한민국 교육브랜드 대상 5년 연속 수상올림피아드교육이 운영하는 영어전문학원 GLEC어학원이 '2020 대한민국 교육브랜드 대상'에서 초중고어학원 부문 대상을 수상했다..2020. 7. 14."
+  }
+]

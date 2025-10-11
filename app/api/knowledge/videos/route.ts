@@ -4,9 +4,7 @@
  * Endpoint: GET /api/knowledge/videos
  * Purpose: 사용자에게 공개된 비디오 목록 제공
  * Security: Public access (no auth required)
- * Filter: Only status='PUBLISHED' items
- *
- * Note: videos table doesn't have 'category' column
+ * Database: knowledge_videos table
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -29,83 +27,58 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build WHERE clause (always filter by PUBLISHED status)
-    const conditions: string[] = ["status = 'PUBLISHED'"];
-    const params: any[] = [];
-
-    if (tab) {
-      conditions.push(`tab = $${params.length + 1}`);
-      params.push(tab);
-    }
-
-    if (search) {
-      conditions.push(`title ILIKE $${params.length + 1}`);
-      params.push(`%${search}%`);
-    }
-
-    const whereClause = `WHERE ${conditions.join(' AND ')}`;
-
-    // Count total
+    // Build WHERE clause
+    const category = searchParams.get('category');
     const offset = (page - 1) * per_page;
 
     // Build dynamic query using tagged template
     let countResult;
     let items;
 
-    if (tab && search) {
+    if (category && search) {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM videos
-        WHERE status = 'PUBLISHED' AND tab = ${tab} AND title ILIKE ${`%${search}%`}
+        SELECT COUNT(*) as total FROM knowledge_videos
+        WHERE category = ${category} AND title ILIKE ${`%${search}%`}
       `;
       items = await sql`
-        SELECT
-          id, title, description, youtube_url, youtube_video_id, thumbnail_url,
-          duration, tab, view_count, published_at, created_at, updated_at
-        FROM videos
-        WHERE status = 'PUBLISHED' AND tab = ${tab} AND title ILIKE ${`%${search}%`}
-        ORDER BY published_at DESC NULLS LAST, created_at DESC
+        SELECT *
+        FROM knowledge_videos
+        WHERE category = ${category} AND title ILIKE ${`%${search}%`}
+        ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
-    } else if (tab) {
+    } else if (category) {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM videos
-        WHERE status = 'PUBLISHED' AND tab = ${tab}
+        SELECT COUNT(*) as total FROM knowledge_videos
+        WHERE category = ${category}
       `;
       items = await sql`
-        SELECT
-          id, title, description, youtube_url, youtube_video_id, thumbnail_url,
-          duration, tab, view_count, published_at, created_at, updated_at
-        FROM videos
-        WHERE status = 'PUBLISHED' AND tab = ${tab}
-        ORDER BY published_at DESC NULLS LAST, created_at DESC
+        SELECT *
+        FROM knowledge_videos
+        WHERE category = ${category}
+        ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
     } else if (search) {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM videos
-        WHERE status = 'PUBLISHED' AND title ILIKE ${`%${search}%`}
+        SELECT COUNT(*) as total FROM knowledge_videos
+        WHERE title ILIKE ${`%${search}%`}
       `;
       items = await sql`
-        SELECT
-          id, title, description, youtube_url, youtube_video_id, thumbnail_url,
-          duration, tab, view_count, published_at, created_at, updated_at
-        FROM videos
-        WHERE status = 'PUBLISHED' AND title ILIKE ${`%${search}%`}
-        ORDER BY published_at DESC NULLS LAST, created_at DESC
+        SELECT *
+        FROM knowledge_videos
+        WHERE title ILIKE ${`%${search}%`}
+        ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
     } else {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM videos
-        WHERE status = 'PUBLISHED'
+        SELECT COUNT(*) as total FROM knowledge_videos
       `;
       items = await sql`
-        SELECT
-          id, title, description, youtube_url, youtube_video_id, thumbnail_url,
-          duration, tab, view_count, published_at, created_at, updated_at
-        FROM videos
-        WHERE status = 'PUBLISHED'
-        ORDER BY published_at DESC NULLS LAST, created_at DESC
+        SELECT *
+        FROM knowledge_videos
+        ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
     }
@@ -117,11 +90,11 @@ export async function GET(request: NextRequest) {
       id: item.id,
       title: item.title,
       description: item.description || '',
-      youtubeUrl: item.youtube_url,
-      youtubeVideoId: item.youtube_video_id,
+      youtubeUrl: item.video_url,
       thumbnailUrl: item.thumbnail_url,
       duration: item.duration || '0:00',
-      category: item.tab, // Map 'tab' field to 'category' for frontend compatibility
+      category: item.category,
+      tags: item.tags || [],
       viewCount: item.view_count,
       publishedAt: item.published_at,
       createdAt: item.created_at,

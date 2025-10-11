@@ -3,14 +3,13 @@
  *
  * Based on: GLEC-API-Specification.yaml (GET /api/press, GET /api/press/{slug})
  * Security: CLAUDE.md - No hardcoding, dynamic data only
- * Purpose: Fetch published press releases from notices table (category=PRESS)
+ * Purpose: Fetch published press releases from presses table
  *
  * Query Parameters:
  * - page: number (default: 1)
  * - per_page: number (default: 10, max: 50)
- * - (No category filter - always PRESS)
  * - search: string (optional)
- * - slug: string (optional) - If provided, returns single notice
+ * - slug: string (optional) - If provided, returns single press
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -108,17 +107,17 @@ export async function GET(request: NextRequest) {
       const searchPattern = `%${search}%`;
       countQuery = sql`
         SELECT COUNT(*) as count
-        FROM notices
-        WHERE status = 'PUBLISHED' AND category = 'PRESS'
+        FROM presses
+        WHERE status = 'PUBLISHED' AND deleted_at IS NULL
           AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
       `;
       dataQuery = sql`
         SELECT
-          id, title, slug, content, excerpt, status, category,
-          thumbnail_url, view_count, published_at, author_id,
+          id, title, slug, content, excerpt, status,
+          thumbnail_url, media_outlet, external_url, view_count, published_at, author_id,
           created_at, updated_at
-        FROM notices
-        WHERE status = 'PUBLISHED' AND category = 'PRESS'
+        FROM presses
+        WHERE status = 'PUBLISHED' AND deleted_at IS NULL
           AND (title ILIKE ${searchPattern} OR content ILIKE ${searchPattern})
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page}
@@ -128,16 +127,16 @@ export async function GET(request: NextRequest) {
       // No filters
       countQuery = sql`
         SELECT COUNT(*) as count
-        FROM notices
-        WHERE status = 'PUBLISHED' AND category = 'PRESS'
+        FROM presses
+        WHERE status = 'PUBLISHED' AND deleted_at IS NULL
       `;
       dataQuery = sql`
         SELECT
-          id, title, slug, content, excerpt, status, category,
-          thumbnail_url, view_count, published_at, author_id,
+          id, title, slug, content, excerpt, status,
+          thumbnail_url, media_outlet, external_url, view_count, published_at, author_id,
           created_at, updated_at
-        FROM notices
-        WHERE status = 'PUBLISHED' AND category = 'PRESS'
+        FROM presses
+        WHERE status = 'PUBLISHED' AND deleted_at IS NULL
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page}
         OFFSET ${(page - 1) * per_page}
@@ -151,21 +150,22 @@ export async function GET(request: NextRequest) {
 
     const pressItems = await dataQuery;
 
-    // Transform to match Notice type (snake_case to camelCase for consistency)
-    const paginatedPress = pressItems.map((notice: any) => ({
-      id: notice.id,
-      title: notice.title,
-      slug: notice.slug,
-      content: notice.content,
-      excerpt: notice.excerpt,
-      status: notice.status,
-      category: notice.category,
-      thumbnailUrl: notice.thumbnail_url,
-      viewCount: notice.view_count,
-      publishedAt: notice.published_at,
-      authorId: notice.author_id,
-      createdAt: notice.created_at,
-      updatedAt: notice.updated_at,
+    // Transform to match Press type (snake_case to camelCase for consistency)
+    const paginatedPress = pressItems.map((press: any) => ({
+      id: press.id,
+      title: press.title,
+      slug: press.slug,
+      content: press.content,
+      excerpt: press.excerpt,
+      status: press.status,
+      thumbnailUrl: press.thumbnail_url,
+      mediaOutlet: press.media_outlet,
+      externalUrl: press.external_url,
+      viewCount: press.view_count,
+      publishedAt: press.published_at,
+      authorId: press.author_id,
+      createdAt: press.created_at,
+      updatedAt: press.updated_at,
     }));
 
     // Response format from API Spec
@@ -202,11 +202,11 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Helper function: Get single notice by slug
+ * Helper function: Get single press by slug
  */
 async function getNoticeBySlug(slug: string) {
   try {
-    // Query database for notice by slug
+    // Query database for press by slug
     const pressItems = await sql`
       SELECT
         id,
@@ -215,16 +215,18 @@ async function getNoticeBySlug(slug: string) {
         content,
         excerpt,
         status,
-        category,
         thumbnail_url,
+        media_outlet,
+        external_url,
         view_count,
         published_at,
         author_id,
         created_at,
         updated_at
-      FROM notices
+      FROM presses
       WHERE slug = ${slug}
         AND status = 'PUBLISHED'
+        AND deleted_at IS NULL
       LIMIT 1
     `;
 
@@ -239,36 +241,37 @@ async function getNoticeBySlug(slug: string) {
       return NextResponse.json(errorResponse, { status: 404 });
     }
 
-    const notice = pressItems[0];
+    const press = pressItems[0];
 
     // Increment view count
     await sql`
-      UPDATE notices
+      UPDATE presses
       SET view_count = view_count + 1,
           updated_at = NOW()
-      WHERE id = ${notice.id}
+      WHERE id = ${press.id}
     `;
 
-    // Transform to match Notice type
-    const noticeData = {
-      id: notice.id,
-      title: notice.title,
-      slug: notice.slug,
-      content: notice.content,
-      excerpt: notice.excerpt,
-      status: notice.status,
-      category: notice.category,
-      thumbnailUrl: notice.thumbnail_url,
-      viewCount: notice.view_count + 1, // Reflect incremented view count
-      publishedAt: notice.published_at,
-      authorId: notice.author_id,
-      createdAt: notice.created_at,
-      updatedAt: notice.updated_at,
+    // Transform to match Press type
+    const pressData = {
+      id: press.id,
+      title: press.title,
+      slug: press.slug,
+      content: press.content,
+      excerpt: press.excerpt,
+      status: press.status,
+      thumbnailUrl: press.thumbnail_url,
+      mediaOutlet: press.media_outlet,
+      externalUrl: press.external_url,
+      viewCount: press.view_count + 1, // Reflect incremented view count
+      publishedAt: press.published_at,
+      authorId: press.author_id,
+      createdAt: press.created_at,
+      updatedAt: press.updated_at,
     };
 
     const response: PressDetailResponse = {
       success: true,
-      data: noticeData as any,
+      data: pressData as any,
     };
 
     return NextResponse.json(response, {

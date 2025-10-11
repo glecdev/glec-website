@@ -14,18 +14,18 @@ interface PressItem {
   id: string;
   title: string;
   excerpt: string;
-  category: string;
   publishedAt: string;
   thumbnailUrl: string;
-  source?: string;
+  mediaOutlet?: string; // Press-specific field (언론사)
+  externalUrl?: string; // Press-specific field (기사 원문 URL)
 }
 
 const CATEGORIES = {
   ALL: { value: '', label: '전체' },
-  PRODUCT: { value: 'PRODUCT', label: '제품' },
-  TECHNOLOGY: { value: 'TECHNOLOGY', label: '기술' },
-  PARTNERSHIP: { value: 'PARTNERSHIP', label: '파트너십' },
-  AWARD: { value: 'AWARD', label: '수상' },
+  LOGISTICS: { value: '물류', label: '물류' },
+  TECH: { value: 'Tech', label: '기술' },
+  ECONOMY: { value: '경제', label: '경제' },
+  OVERSEAS: { value: 'USA', label: '해외' },
 } as const;
 
 export default function PressPage() {
@@ -53,21 +53,24 @@ export default function PressPage() {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      params.append('category', 'PRESS');
-      params.append('per_page', '20');
+      params.append('per_page', '100'); // Show more items
 
-      if (selectedCategory) {
-        params.append('subcategory', selectedCategory);
-      }
       if (debouncedSearch) {
         params.append('search', debouncedSearch);
       }
 
-      const response = await fetch(`/api/notices?${params.toString()}`);
+      const response = await fetch(`/api/press?${params.toString()}`);
       const data = await response.json();
 
       if (data.success) {
-        setPressItems(data.data);
+        // Filter by media outlet if category selected
+        let filteredData = data.data;
+        if (selectedCategory) {
+          filteredData = data.data.filter((item: PressItem) =>
+            item.mediaOutlet?.includes(selectedCategory)
+          );
+        }
+        setPressItems(filteredData);
         setError(null);
       } else {
         setError('Failed to load press items');
@@ -186,40 +189,53 @@ export default function PressPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pressItems.map((item) => (
-              <Link
-                key={item.id}
-                href={`/notices/${item.id}`}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden group"
-              >
-                {item.thumbnailUrl && (
-                  <div className="h-48 bg-gray-200 overflow-hidden">
-                    <img
-                      src={item.thumbnailUrl}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+            {pressItems.map((item) => {
+              // Use external URL if available, otherwise internal link
+              const href = item.externalUrl || `/knowledge/press/${item.id}`;
+              const isExternal = !!item.externalUrl;
+
+              return (
+                <a
+                  key={item.id}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden group block"
+                >
+                  {item.thumbnailUrl && (
+                    <div className="h-48 bg-gray-200 overflow-hidden">
+                      <img
+                        src={item.thumbnailUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-semibold text-primary-500 bg-primary-50 px-2 py-1 rounded">
+                        언론보도
+                      </span>
+                      {item.mediaOutlet && (
+                        <span className="text-xs text-gray-500">{item.mediaOutlet}</span>
+                      )}
+                      {isExternal && (
+                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      )}
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-500 transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-600 line-clamp-2 mb-4">{item.excerpt}</p>
+                    <time className="text-sm text-gray-400">
+                      {new Date(item.publishedAt).toLocaleDateString('ko-KR')}
+                    </time>
                   </div>
-                )}
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-semibold text-primary-500 bg-primary-50 px-2 py-1 rounded">
-                      언론보도
-                    </span>
-                    {item.source && (
-                      <span className="text-xs text-gray-500">{item.source}</span>
-                    )}
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-500 transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-600 line-clamp-2 mb-4">{item.excerpt}</p>
-                  <time className="text-sm text-gray-400">
-                    {new Date(item.publishedAt).toLocaleDateString('ko-KR')}
-                  </time>
-                </div>
-              </Link>
-            ))}
+                </a>
+              );
+            })}
           </div>
         )}
       </main>
