@@ -17,6 +17,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { ToastProvider } from '@/components/admin/ui/Toast';
 
 interface AdminUser {
   id: string;
@@ -141,6 +142,16 @@ const navigation: NavItem[] = [
     ),
     roles: ['SUPER_ADMIN'],
   },
+  {
+    name: 'UI 컴포넌트 예시',
+    href: '/admin/ui-examples',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+      </svg>
+    ),
+    roles: ['SUPER_ADMIN', 'CONTENT_MANAGER'],
+  },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -229,15 +240,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile Sidebar Backdrop */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+    <ToastProvider>
+      <div className="min-h-screen bg-gray-50">
+        {/* Mobile Sidebar Backdrop */}
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
 
       {/* Sidebar */}
       <aside
@@ -340,6 +352,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Page Content */}
         <main className="p-6">{children}</main>
       </div>
-    </div>
+      </div>
+    </ToastProvider>
   );
 }
