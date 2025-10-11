@@ -212,16 +212,27 @@ export function EventCard({ event }: EventCardProps) {
               참가 신청
             </Button>
           </Link>
-        ) : (
+        ) : event.status === 'COMPLETED' ? (
           <Button
             variant="outline"
             size="md"
             fullWidth={true}
             disabled={true}
-            aria-label="신청 마감 또는 종료된 이벤트"
+            aria-label="종료된 이벤트"
           >
-            {event.status === 'COMPLETED' ? '종료됨' : '자세히 보기'}
+            종료됨
           </Button>
+        ) : (
+          <Link href={`/events/${event.slug}`} className="w-full">
+            <Button
+              variant="outline"
+              size="md"
+              fullWidth={true}
+              aria-label={`${event.title} 자세히 보기`}
+            >
+              자세히 보기
+            </Button>
+          </Link>
         )}
       </CardFooter>
     </Card>
