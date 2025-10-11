@@ -122,9 +122,14 @@ RESEND_FROM_EMAIL="onboarding@resend.dev"
 - **Lead ID**: bcb424e6-0283-4f8c-a470-efc59b5fa0ca
 - **Email**: ghdi0506@gmail.com
 - **API Response**: `email_sent: true` ✅
-- **Actual Email Delivery**: ⏳ **Checking...**
+- **Admin API Confirmation**: ✅ Lead found with email_sent: true
+- **Actual Email Delivery**: ⏳ **Awaiting user confirmation**
 
-**Action Required**: Check ghdi0506@gmail.com inbox!
+**Action Required**:
+1. ✅ API reports email sent successfully
+2. ✅ Admin UI shows lead with email_sent: true
+3. ⏳ User needs to check ghdi0506@gmail.com inbox
+4. ⏳ If email NOT received → Update Vercel env vars (see Step 1 above)
 
 ---
 
