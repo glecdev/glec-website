@@ -310,7 +310,7 @@ export async function POST(request: NextRequest) {
 
       // Send admin notification email
       console.log('[Contact Form] About to call resend.emails.send() for admin...');
-      await resend.emails.send({
+      const adminEmailResult = await resend.emails.send({
         from: `GLEC <${FROM_EMAIL}>`,
         to: ADMIN_EMAIL,
         replyTo: sanitizedData.email,
@@ -328,10 +328,16 @@ export async function POST(request: NextRequest) {
         }),
       });
 
+      console.log('[Contact Form] Admin email result:', JSON.stringify(adminEmailResult));
+
+      if (adminEmailResult.error) {
+        throw new Error(`Resend API error: ${JSON.stringify(adminEmailResult.error)}`);
+      }
+
       console.log('[Contact Form] Admin notification email sent to:', ADMIN_EMAIL);
 
       // Send user auto-response email
-      await resend.emails.send({
+      const userEmailResult = await resend.emails.send({
         from: `GLEC <${FROM_EMAIL}>`,
         to: sanitizedData.email,
         subject: '[GLEC] 문의 접수 확인 - 영업일 기준 1-2일 내 답변드리겠습니다',
@@ -343,6 +349,12 @@ export async function POST(request: NextRequest) {
           timestamp,
         }),
       });
+
+      console.log('[Contact Form] User email result:', JSON.stringify(userEmailResult));
+
+      if (userEmailResult.error) {
+        throw new Error(`Resend API error: ${JSON.stringify(userEmailResult.error)}`);
+      }
 
       console.log('[Contact Form] Auto-response email sent to:', sanitizedData.email);
 
