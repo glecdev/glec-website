@@ -68,11 +68,15 @@ Environments: Production, Preview, Development
 
 ```
 Name: ADMIN_EMAIL
-Value: oillex.co.kr@gmail.com
+Value: contact@glec.io
 Environments: Production, Preview, Development
 ```
 
 ⚠️ **IMPORTANT**: Paste the value **without quotes**, **without spaces**, **without newlines**
+
+📝 **NOTE**:
+- Production: `contact@glec.io` (회사 공식 이메일)
+- Development/Test: `oillex.co.kr@gmail.com` (테스트용)
 
 ---
 
