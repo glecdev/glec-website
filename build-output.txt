@@ -1,0 +1,171 @@
+
+> glec-website@0.1.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to .\node_modules\@prisma\client in 285ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+   ▲ Next.js 15.5.2
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+
+
+Source path: D:\GLEC-Website\glec-website\app\globals.css
+Setting up new context...
+Finding changed files: 41.96ms
+Reading changed files: 480.745ms
+Sorting candidates: 14.948ms
+Generate rules: 293.44ms
+Build stylesheet: 6.994ms
+Potential classes:  16536
+Active contexts:  1
+JIT TOTAL: 1.386s
+
+
+ ✓ Compiled successfully in 29.4s
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+   Generating static pages (0/103) ...
+   Generating static pages (25/103) 
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+   Generating static pages (51/103) 
+   Generating static pages (77/103) 
+ ✓ Generating static pages (103/103)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                   Size  First Load JS
+┌ ○ /                                                      16.2 kB         138 kB
+├ ○ /_not-found                                               1 kB         103 kB
+├ ○ /about                                                   307 B         102 kB
+├ ○ /about/certifications                                  4.64 kB         110 kB
+├ ○ /about/company                                         6.02 kB         111 kB
+├ ○ /about/partners                                        6.87 kB         112 kB
+├ ○ /about/team                                            4.94 kB         110 kB
+├ ○ /admin/analytics                                       10.4 kB         220 kB
+├ ○ /admin/customer-leads                                  4.53 kB         114 kB
+├ ○ /admin/dashboard                                       12.5 kB         233 kB
+├ ○ /admin/demo-requests                                   4.79 kB         110 kB
+├ ○ /admin/events                                          6.28 kB         120 kB
+├ ƒ /admin/events/[id]/edit                                3.67 kB         222 kB
+├ ƒ /admin/events/[id]/registrations                       2.96 kB         108 kB
+├ ○ /admin/events/create                                   3.02 kB         222 kB
+├ ○ /admin/knowledge-blog                                  7.57 kB         118 kB
+├ ○ /admin/knowledge-library                               7.84 kB         118 kB
+├ ○ /admin/knowledge-videos                                6.46 kB         112 kB
+├ ○ /admin/library-items                                   7.27 kB         130 kB
+├ ○ /admin/login                                           2.41 kB         117 kB
+├ ○ /admin/logs                                            2.56 kB         104 kB
+├ ○ /admin/notices                                         8.17 kB         115 kB
+├ ○ /admin/notices/edit                                     3.5 kB         222 kB
+├ ○ /admin/notices/new                                     2.78 kB         221 kB
+├ ○ /admin/popups                                           5.5 kB         114 kB
+├ ○ /admin/popups/create                                   4.47 kB         112 kB
+├ ○ /admin/popups/edit                                     3.16 kB         108 kB
+├ ○ /admin/popups/new                                      2.09 kB         107 kB
+├ ○ /admin/press                                           6.82 kB         117 kB
+├ ○ /admin/ui-examples                                     4.19 kB         108 kB
+├ ○ /api                                                     177 B         105 kB
+├ ƒ /api/admin/analytics                                     307 B         102 kB
+├ ƒ /api/admin/analytics/dashboard                           307 B         102 kB
+├ ƒ /api/admin/analytics/query                               307 B         102 kB
+├ ƒ /api/admin/audit-logs                                    307 B         102 kB
+├ ƒ /api/admin/contact-submissions                           307 B         102 kB
+├ ƒ /api/admin/demo-requests                                 307 B         102 kB
+├ ƒ /api/admin/events                                        307 B         102 kB
+├ ƒ /api/admin/events/[id]                                   307 B         102 kB
+├ ƒ /api/admin/events/[id]/registrations                     307 B         102 kB
+├ ƒ /api/admin/events/[id]/registrations/[registrationId]    307 B         102 kB
+├ ƒ /api/admin/knowledge/blog                                307 B         102 kB
+├ ƒ /api/admin/knowledge/library                             307 B         102 kB
+├ ƒ /api/admin/knowledge/videos                              307 B         102 kB
+├ ƒ /api/admin/library/items                                 307 B         102 kB
+├ ƒ /api/admin/library/items/[id]                            307 B         102 kB
+├ ƒ /api/admin/library/items/[id]/publish                    307 B         102 kB
+├ ƒ /api/admin/library/leads                                 307 B         102 kB
+├ ƒ /api/admin/login                                         307 B         102 kB
+├ ƒ /api/admin/logs                                          307 B         102 kB
+├ ƒ /api/admin/notices                                       307 B         102 kB
+├ ƒ /api/admin/partnerships                                  307 B         102 kB
+├ ƒ /api/admin/popups                                        307 B         102 kB
+├ ƒ /api/admin/popups/reorder                                307 B         102 kB
+├ ƒ /api/admin/press                                         307 B         102 kB
+├ ƒ /api/admin/test                                          307 B         102 kB
+├ ƒ /api/admin/upload/presigned-url                          307 B         102 kB
+├ ƒ /api/analytics/conversion                                307 B         102 kB
+├ ƒ /api/analytics/event                                     307 B         102 kB
+├ ƒ /api/analytics/pageview                                  307 B         102 kB
+├ ƒ /api/analytics/session                                   307 B         102 kB
+├ ƒ /api/certifications                                      307 B         102 kB
+├ ƒ /api/company                                             307 B         102 kB
+├ ƒ /api/contact                                             307 B         102 kB
+├ ƒ /api/demo-requests                                       307 B         102 kB
+├ ƒ /api/events                                              307 B         102 kB
+├ ƒ /api/events/[slug]/register                              307 B         102 kB
+├ ƒ /api/knowledge/blog                                      307 B         102 kB
+├ ƒ /api/knowledge/blog/[slug]                               307 B         102 kB
+├ ƒ /api/knowledge/case-studies                              307 B         102 kB
+├ ƒ /api/knowledge/library                                   307 B         102 kB
+├ ƒ /api/knowledge/videos                                    307 B         102 kB
+├ ƒ /api/knowledge/videos/[id]                               307 B         102 kB
+├ ƒ /api/library/download                                    307 B         102 kB
+├ ƒ /api/library/items                                       307 B         102 kB
+├ ƒ /api/notices                                             307 B         102 kB
+├ ƒ /api/partners                                            307 B         102 kB
+├ ƒ /api/partnership                                         307 B         102 kB
+├ ƒ /api/popups                                              307 B         102 kB
+├ ƒ /api/press                                               307 B         102 kB
+├ ƒ /api/team                                                307 B         102 kB
+├ ƒ /api/webhooks/resend                                     307 B         102 kB
+├ ○ /cloud                                                   177 B         105 kB
+├ ○ /contact                                               10.3 kB         133 kB
+├ ○ /demo                                                    307 B         102 kB
+├ ○ /demo-request                                          4.85 kB         120 kB
+├ ○ /demo-request/success                                  3.42 kB         109 kB
+├ ○ /dtg                                                   6.86 kB         112 kB
+├ ○ /events                                                4.83 kB         118 kB
+├ ƒ /events/[slug]                                         3.56 kB         117 kB
+├ ○ /knowledge                                               177 B         105 kB
+├ ○ /knowledge/blog                                        2.42 kB         108 kB
+├ ƒ /knowledge/blog/[slug]                                 46.7 kB         152 kB
+├ ○ /knowledge/case-studies                                3.63 kB         109 kB
+├ ○ /knowledge/library                                     2.12 kB         107 kB
+├ ○ /knowledge/press                                       2.34 kB         108 kB
+├ ƒ /knowledge/press/[slug]                                2.68 kB         108 kB
+├ ○ /knowledge/videos                                      2.35 kB         108 kB
+├ ƒ /knowledge/videos/[id]                                 3.73 kB         109 kB
+├ ○ /legal/privacy                                           307 B         102 kB
+├ ○ /legal/terms                                             307 B         102 kB
+├ ○ /library                                               6.32 kB         129 kB
+├ ○ /news                                                  3.41 kB         105 kB
+├ ○ /notices                                                 307 B         102 kB
+├ ● /notices/[slug]                                        2.77 kB         105 kB
+├ ○ /partnership                                           5.21 kB         120 kB
+├ ○ /press                                                   307 B         102 kB
+├ ○ /products                                                177 B         105 kB
+├ ○ /products/carbon-api                                   5.64 kB         119 kB
+├ ○ /products/dtg                                            307 B         102 kB
+├ ○ /products/glec-cloud                                     307 B         102 kB
+├ ○ /solutions/ai-dtg                                      7.29 kB         112 kB
+├ ○ /solutions/api                                         6.25 kB         111 kB
+├ ○ /solutions/cloud                                       6.19 kB         111 kB
+└ ○ /solutions/dtg                                           307 B         102 kB
++ First Load JS shared by all                               102 kB
+  ├ chunks/1255-f206d8cb7c37a3ff.js                        45.5 kB
+  ├ chunks/4bd1b696-100b9d70ed4e49c1.js                    54.2 kB
+  └ other shared chunks (total)                            2.01 kB
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
