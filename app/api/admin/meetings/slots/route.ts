@@ -36,24 +36,25 @@ export async function GET(req: NextRequest) {
     const per_page = parseInt(searchParams.get('per_page') || '50');
     const offset = (page - 1) * per_page;
     
-    let countQuery = 'SELECT COUNT(*) as total FROM meeting_slots WHERE 1=1';
-    let dataQuery = 'SELECT * FROM meeting_slots WHERE 1=1';
-    
+    // Build query conditions
+    const conditions = [];
+
     if (meeting_type !== 'ALL') {
-      countQuery += ` AND meeting_type = '${meeting_type}'`;
-      dataQuery += ` AND meeting_type = '${meeting_type}'`;
+      conditions.push(`meeting_type = '${meeting_type}'`);
     }
-    
+
     if (is_available !== 'ALL') {
-      const availVal = is_available === 'true';
-      countQuery += ` AND is_available = ${availVal}`;
-      dataQuery += ` AND is_available = ${availVal}`;
+      const availVal = is_available === 'TRUE';
+      conditions.push(`is_available = ${availVal}`);
     }
-    
-    dataQuery += ` ORDER BY start_time ASC LIMIT ${per_page} OFFSET ${offset}`;
-    
-    const countResult = await sql([countQuery]);
-    const slots = await sql([dataQuery]);
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const countQuery = `SELECT COUNT(*) as total FROM meeting_slots ${whereClause}`;
+    const dataQuery = `SELECT * FROM meeting_slots ${whereClause} ORDER BY start_time ASC LIMIT ${per_page} OFFSET ${offset}`;
+
+    const countResult = await sql.query(countQuery);
+    const slots = await sql.query(dataQuery);
     
     const total = parseInt(countResult[0]?.total || '0');
     
