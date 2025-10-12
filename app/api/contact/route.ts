@@ -301,7 +301,15 @@ export async function POST(request: NextRequest) {
       const koreaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
       const timestamp = koreaTime.toISOString().replace('T', ' ').substring(0, 19);
 
+      console.log('[Contact Form] Preparing to send emails...');
+      console.log('[Contact Form] RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+      console.log('[Contact Form] Resend client exists:', !!resend);
+      console.log('[Contact Form] FROM_EMAIL:', FROM_EMAIL);
+      console.log('[Contact Form] ADMIN_EMAIL:', ADMIN_EMAIL);
+      console.log('[Contact Form] Contact ID:', contact.id);
+
       // Send admin notification email
+      console.log('[Contact Form] About to call resend.emails.send() for admin...');
       await resend.emails.send({
         from: `GLEC <${FROM_EMAIL}>`,
         to: ADMIN_EMAIL,
@@ -339,9 +347,36 @@ export async function POST(request: NextRequest) {
       console.log('[Contact Form] Auto-response email sent to:', sanitizedData.email);
 
     } catch (emailError) {
-      console.error('[Contact Form] Email sending failed:', emailError);
+      console.error('[Contact Form] Email sending failed:');
+      console.error('Error name:', emailError?.name);
+      console.error('Error message:', emailError?.message);
+      console.error('Error stack:', emailError?.stack);
+      console.error('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+      console.error('RESEND_API_KEY length:', process.env.RESEND_API_KEY?.length);
+      console.error('RESEND_FROM_EMAIL:', process.env.RESEND_FROM_EMAIL);
+      console.error('ADMIN_EMAIL:', process.env.ADMIN_EMAIL);
+      console.error('Resend client initialized:', !!resend);
       // Don't fail the API call even if email fails
       // Contact is already saved to database
+
+      // Return error details in response for debugging
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: contact.id,
+          message: '문의가 접수되었습니다. 이메일 발송 중 오류가 발생했습니다.',
+        },
+        debug: {
+          emailError: {
+            name: emailError?.name,
+            message: emailError?.message,
+            hasApiKey: !!process.env.RESEND_API_KEY,
+            apiKeyLength: process.env.RESEND_API_KEY?.length,
+            fromEmail: process.env.RESEND_FROM_EMAIL,
+            adminEmail: process.env.ADMIN_EMAIL,
+          }
+        }
+      });
     }
 
     // Success response
