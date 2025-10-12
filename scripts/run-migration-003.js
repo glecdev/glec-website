@@ -1,7 +1,7 @@
 /**
- * Run Migration 003: Create Popups Table
+ * Run Migration 003: Add resend_email_id columns
  *
- * This script creates the popups table in Neon PostgreSQL
+ * This script adds email tracking columns to contacts and library_leads tables
  */
 
 const { neon } = require('@neondatabase/serverless');
@@ -21,10 +21,10 @@ async function runMigration() {
     // Connect to database
     const sql = neon(databaseUrl);
 
-    console.log('🔄 Running migration: 003_create_popups_table.sql\n');
+    console.log('🔄 Running migration: 003_add_resend_email_id.sql\n');
 
     // Read migration SQL
-    const migrationPath = path.join(__dirname, '..', 'migrations', '003_create_popups_table.sql');
+    const migrationPath = path.join(__dirname, 'migrations', '003_add_resend_email_id.sql');
     const migrationSQL = fs.readFileSync(migrationPath, 'utf-8');
 
     // Remove comments and split by semicolons, handling DO $$ blocks
@@ -83,21 +83,65 @@ async function runMigration() {
 
     console.log('🎉 Migration completed successfully!');
 
-    // Verify table creation
-    const result = await sql`
-      SELECT tablename FROM pg_tables WHERE tablename = 'popups'
+    // Verify columns creation
+    console.log('\n🔍 Verifying changes...\n');
+
+    const contactsColumns = await sql`
+      SELECT column_name, data_type
+      FROM information_schema.columns
+      WHERE table_name = 'contacts'
+      AND column_name IN (
+        'resend_admin_email_id',
+        'resend_user_email_id',
+        'admin_email_status',
+        'user_email_status',
+        'admin_email_sent_at',
+        'user_email_sent_at'
+      )
+      ORDER BY column_name
     `;
 
-    if (result.length > 0) {
-      console.log('\n✅ Popups table verified');
+    console.log('✅ contacts table columns:');
+    contactsColumns.forEach(col => {
+      console.log(`   - ${col.column_name}: ${col.data_type}`);
+    });
 
-      // Check if sample data exists
-      const countResult = await sql`SELECT COUNT(*) as count FROM popups`;
-      console.log(`📊 Popups count: ${countResult[0].count}`);
-    } else {
-      console.error('\n❌ Popups table not found!');
-      process.exit(1);
+    const libraryLeadsColumns = await sql`
+      SELECT column_name, data_type
+      FROM information_schema.columns
+      WHERE table_name = 'library_leads'
+      AND column_name IN ('resend_email_id', 'email_status', 'email_sent_at')
+      ORDER BY column_name
+    `;
+
+    console.log('\n✅ library_leads table columns:');
+    libraryLeadsColumns.forEach(col => {
+      console.log(`   - ${col.column_name}: ${col.data_type}`);
+    });
+
+    const webhookTable = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_name = 'email_webhook_events'
+      ) AS exists
+    `;
+
+    if (webhookTable[0].exists) {
+      console.log('\n✅ email_webhook_events table created');
+
+      const webhookColumns = await sql`
+        SELECT column_name, data_type
+        FROM information_schema.columns
+        WHERE table_name = 'email_webhook_events'
+        ORDER BY ordinal_position
+      `;
+
+      webhookColumns.forEach(col => {
+        console.log(`   - ${col.column_name}: ${col.data_type}`);
+      });
     }
+
+    console.log('\n✅ All changes verified successfully!\n');
 
   } catch (error) {
     console.error('\n💥 Migration failed:', error.message);

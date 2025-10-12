@@ -336,6 +336,18 @@ export async function POST(request: NextRequest) {
 
       console.log('[Contact Form] Admin notification email sent to:', ADMIN_EMAIL);
 
+      // Update database with admin email ID
+      if (adminEmailResult.data?.id) {
+        await sql`
+          UPDATE contacts
+          SET resend_admin_email_id = ${adminEmailResult.data.id},
+              admin_email_status = 'sent',
+              admin_email_sent_at = NOW()
+          WHERE id = ${contact.id}
+        `;
+        console.log('[Contact Form] Admin email ID saved:', adminEmailResult.data.id);
+      }
+
       // Send user auto-response email
       const userEmailResult = await resend.emails.send({
         from: `GLEC <${FROM_EMAIL}>`,
@@ -357,6 +369,18 @@ export async function POST(request: NextRequest) {
       }
 
       console.log('[Contact Form] Auto-response email sent to:', sanitizedData.email);
+
+      // Update database with user email ID
+      if (userEmailResult.data?.id) {
+        await sql`
+          UPDATE contacts
+          SET resend_user_email_id = ${userEmailResult.data.id},
+              user_email_status = 'sent',
+              user_email_sent_at = NOW()
+          WHERE id = ${contact.id}
+        `;
+        console.log('[Contact Form] User email ID saved:', userEmailResult.data.id);
+      }
 
     } catch (emailError) {
       console.error('[Contact Form] Email sending failed:');

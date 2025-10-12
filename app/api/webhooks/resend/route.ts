@@ -6,14 +6,17 @@
  * Events:
  * - email.sent: Email successfully sent
  * - email.delivered: Email delivered to recipient
+ * - email.delivery_delayed: Email delivery delayed
  * - email.opened: Recipient opened email
  * - email.clicked: Recipient clicked link in email
  * - email.bounced: Email bounced
  * - email.complained: Recipient marked as spam
+ * - email.failed: Email sending failed
  *
- * Updates library_leads table:
- * - email_opened = TRUE, email_opened_at = NOW()
- * - download_link_clicked = TRUE, download_link_clicked_at = NOW()
+ * Updates tables:
+ * - contacts: admin_email_status, user_email_status
+ * - library_leads: email_status, email_opened, download_link_clicked
+ * - email_webhook_events: Audit log of all webhook events
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -37,14 +40,109 @@ interface ResendWebhookEvent {
   };
 }
 
+// Map Resend event types to email_delivery_status enum
+const EVENT_STATUS_MAP: Record<string, string> = {
+  'email.sent': 'sent',
+  'email.delivered': 'delivered',
+  'email.delivery_delayed': 'pending', // Keep as pending, will retry
+  'email.complained': 'complained',
+  'email.bounced': 'bounced',
+  'email.opened': 'opened',
+  'email.clicked': 'clicked',
+  'email.failed': 'failed',
+};
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Parse webhook payload
     const event: ResendWebhookEvent = await req.json();
 
-    console.log('[Resend Webhook] Received event:', event.type, event.data.to);
+    console.log('[Resend Webhook] Received event:', event.type);
+    console.log('[Resend Webhook] Email ID:', event.data.email_id);
 
-    // 2. Extract email address
+    // 2. Store webhook event for audit trail
+    await sql`
+      INSERT INTO email_webhook_events (
+        resend_email_id,
+        event_type,
+        payload,
+        processed,
+        created_at
+      ) VALUES (
+        ${event.data.email_id},
+        ${event.type},
+        ${JSON.stringify(event)},
+        FALSE,
+        NOW()
+      )
+    `;
+
+    console.log('[Resend Webhook] Event stored in email_webhook_events');
+
+    // 3. Update contacts/library_leads tables based on email_id
+    const newStatus = EVENT_STATUS_MAP[event.type];
+
+    if (newStatus) {
+      // Update contacts table (admin email)
+      const contactAdminUpdate = await sql`
+        UPDATE contacts
+        SET admin_email_status = ${newStatus}::email_delivery_status,
+            admin_email_delivered_at = CASE
+              WHEN ${newStatus} = 'delivered' THEN NOW()
+              ELSE admin_email_delivered_at
+            END
+        WHERE resend_admin_email_id = ${event.data.email_id}
+        RETURNING id
+      `;
+
+      if (contactAdminUpdate.length > 0) {
+        console.log('[Resend Webhook] Updated contact admin email:', contactAdminUpdate[0].id, '→', newStatus);
+      }
+
+      // Update contacts table (user email)
+      const contactUserUpdate = await sql`
+        UPDATE contacts
+        SET user_email_status = ${newStatus}::email_delivery_status,
+            user_email_delivered_at = CASE
+              WHEN ${newStatus} = 'delivered' THEN NOW()
+              ELSE user_email_delivered_at
+            END
+        WHERE resend_user_email_id = ${event.data.email_id}
+        RETURNING id
+      `;
+
+      if (contactUserUpdate.length > 0) {
+        console.log('[Resend Webhook] Updated contact user email:', contactUserUpdate[0].id, '→', newStatus);
+      }
+
+      // Update library_leads table
+      const libraryLeadUpdate = await sql`
+        UPDATE library_leads
+        SET email_status = ${newStatus}::email_delivery_status,
+            email_delivered_at = CASE
+              WHEN ${newStatus} = 'delivered' THEN NOW()
+              ELSE email_delivered_at
+            END
+        WHERE resend_email_id = ${event.data.email_id}
+        RETURNING id
+      `;
+
+      if (libraryLeadUpdate.length > 0) {
+        console.log('[Resend Webhook] Updated library lead:', libraryLeadUpdate[0].id, '→', newStatus);
+      }
+
+      // Mark webhook event as processed
+      await sql`
+        UPDATE email_webhook_events
+        SET processed = TRUE,
+            processed_at = NOW()
+        WHERE resend_email_id = ${event.data.email_id}
+        AND event_type = ${event.type}
+        AND processed = FALSE
+      `;
+    }
+
+    // 4. Extract email address for legacy handlers
     const email = Array.isArray(event.data.to) ? event.data.to[0] : event.data.to;
 
     if (!email) {
@@ -52,7 +150,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    // 3. Handle different event types
+    // 5. Handle specific event types (for library_leads engagement tracking)
     switch (event.type) {
       case 'email.opened':
         await handleEmailOpened(email);
