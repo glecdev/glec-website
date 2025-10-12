@@ -237,8 +237,28 @@ export async function POST(request: NextRequest) {
 
     } catch (emailError) {
       console.error('[Contact Form] Email sending failed:', emailError);
-      // Don't fail the API call even if email fails
-      // Contact is already saved to database
+      console.error('[Contact Form] Error details:', {
+        name: emailError instanceof Error ? emailError.name : 'Unknown',
+        message: emailError instanceof Error ? emailError.message : String(emailError),
+        stack: emailError instanceof Error ? emailError.stack : 'No stack trace'
+      });
+
+      // TEMPORARY: Return error to debug production issue
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'EMAIL_SEND_FAILED',
+            message: 'Email sending failed',
+            details: emailError instanceof Error ? {
+              name: emailError.name,
+              message: emailError.message,
+              cause: emailError.cause
+            } : { error: String(emailError) }
+          },
+        },
+        { status: 500 }
+      );
     }
 
     // Success response
