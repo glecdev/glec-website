@@ -14,6 +14,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 import { Resend } from 'resend';
+import {
+  renderContactAdminNotification,
+  type ContactAdminNotificationData
+} from '@/lib/email-templates/contact-admin-notification';
+import {
+  renderContactUserAutoResponse,
+  type ContactUserAutoResponseData
+} from '@/lib/email-templates/contact-user-autoresponse';
 
 const sql = neon(process.env.DATABASE_URL!);
 const resend = new Resend(process.env.RESEND_API_KEY!);
@@ -175,7 +183,7 @@ export async function POST(request: NextRequest) {
     const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@no-reply.glec.io';
 
     try {
-      // Email to admin (notification)
+      // Inquiry type labels
       const inquiryTypeLabels = {
         PRODUCT: '제품 문의',
         PARTNERSHIP: '제휴 문의',
@@ -183,141 +191,46 @@ export async function POST(request: NextRequest) {
         GENERAL: '일반 문의',
       };
 
-      const adminEmailHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>GLEC 고객 문의</title>
-        </head>
-        <body style="font-family: 'Pretendard', sans-serif; line-height: 1.6; color: #333;">
-          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #0600f7; border-bottom: 2px solid #0600f7; padding-bottom: 10px;">
-              🔔 새로운 고객 문의
-            </h1>
+      // Prepare admin notification email data
+      const adminEmailData: ContactAdminNotificationData = {
+        inquiryType: sanitizedData.inquiry_type,
+        inquiryTypeLabel: inquiryTypeLabels[sanitizedData.inquiry_type],
+        companyName: sanitizedData.company_name,
+        contactName: sanitizedData.contact_name,
+        email: sanitizedData.email,
+        phone: sanitizedData.phone,
+        message: sanitizedData.message,
+        contactId: contact.id,
+        timestamp: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+        ipAddress,
+      };
 
-            <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h2 style="margin-top: 0;">📋 문의 정보</h2>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 8px; font-weight: bold; width: 120px;">문의 유형:</td>
-                  <td style="padding: 8px;">${inquiryTypeLabels[sanitizedData.inquiry_type]}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px; font-weight: bold;">회사명:</td>
-                  <td style="padding: 8px;">${sanitizedData.company_name}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px; font-weight: bold;">담당자명:</td>
-                  <td style="padding: 8px;">${sanitizedData.contact_name}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px; font-weight: bold;">이메일:</td>
-                  <td style="padding: 8px;">
-                    <a href="mailto:${sanitizedData.email}" style="color: #0600f7;">${sanitizedData.email}</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px; font-weight: bold;">전화번호:</td>
-                  <td style="padding: 8px;">${sanitizedData.phone}</td>
-                </tr>
-              </table>
-            </div>
-
-            <div style="background-color: #fff; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; margin: 20px 0;">
-              <h3 style="margin-top: 0;">💬 문의 내용</h3>
-              <p style="white-space: pre-wrap;">${sanitizedData.message}</p>
-            </div>
-
-            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 12px; color: #666;">
-              <p style="margin: 5px 0;"><strong>접수 ID:</strong> ${contact.id}</p>
-              <p style="margin: 5px 0;"><strong>접수 시간:</strong> ${new Date().toLocaleString('ko-KR')}</p>
-              <p style="margin: 5px 0;"><strong>IP 주소:</strong> ${ipAddress}</p>
-            </div>
-
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; font-size: 12px; color: #999;">
-              <p>이 이메일은 GLEC 웹사이트 Contact Form에서 자동 발송되었습니다.</p>
-              <p>Admin Dashboard: <a href="https://glec-website.vercel.app/admin/contacts" style="color: #0600f7;">https://glec-website.vercel.app/admin/contacts</a></p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
-
+      // Send admin notification email
       await resend.emails.send({
         from: `GLEC <${FROM_EMAIL}>`,
         to: ADMIN_EMAIL,
-        replyTo: sanitizedData.email, // User can reply directly
+        replyTo: sanitizedData.email,
         subject: `[GLEC 문의] ${inquiryTypeLabels[sanitizedData.inquiry_type]} - ${sanitizedData.company_name}`,
-        html: adminEmailHtml,
+        html: renderContactAdminNotification(adminEmailData),
       });
 
       console.log('[Contact Form] Admin notification email sent to:', ADMIN_EMAIL);
 
-      // Email to user (auto-response)
-      const userEmailHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>GLEC 문의 접수 확인</title>
-        </head>
-        <body style="font-family: 'Pretendard', sans-serif; line-height: 1.6; color: #333;">
-          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #0600f7; border-bottom: 2px solid #0600f7; padding-bottom: 10px;">
-              ✅ 문의가 접수되었습니다
-            </h1>
+      // Prepare user auto-response email data
+      const userEmailData: ContactUserAutoResponseData = {
+        contactName: sanitizedData.contact_name,
+        companyName: sanitizedData.company_name,
+        inquiryTypeLabel: inquiryTypeLabels[sanitizedData.inquiry_type],
+        contactId: contact.id,
+        timestamp: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+      };
 
-            <p>안녕하세요, <strong>${sanitizedData.contact_name}</strong>님!</p>
-            <p>GLEC에 문의해 주셔서 감사합니다.</p>
-            <p>고객님의 문의가 성공적으로 접수되었으며, 담당자가 확인 후 <strong>영업일 기준 1-2일 내</strong>에 답변드리겠습니다.</p>
-
-            <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h2 style="margin-top: 0;">📋 접수된 문의 내용</h2>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 8px; font-weight: bold; width: 120px;">문의 유형:</td>
-                  <td style="padding: 8px;">${inquiryTypeLabels[sanitizedData.inquiry_type]}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px; font-weight: bold;">회사명:</td>
-                  <td style="padding: 8px;">${sanitizedData.company_name}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px; font-weight: bold;">이메일:</td>
-                  <td style="padding: 8px;">${sanitizedData.email}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px; font-weight: bold;">전화번호:</td>
-                  <td style="padding: 8px;">${sanitizedData.phone}</td>
-                </tr>
-              </table>
-            </div>
-
-            <div style="background-color: #e8f4ff; padding: 15px; border-left: 4px solid #0600f7; margin: 20px 0;">
-              <p style="margin: 0; font-size: 14px;">
-                <strong>💡 빠른 답변을 원하시나요?</strong><br>
-                긴급한 사항은 <a href="tel:02-1234-5678" style="color: #0600f7;">02-1234-5678</a>로 연락해 주세요.
-              </p>
-            </div>
-
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; font-size: 12px; color: #999;">
-              <p>GLEC - ISO-14083 국제표준 물류 탄소배출 측정</p>
-              <p>웹사이트: <a href="https://glec-website.vercel.app" style="color: #0600f7;">https://glec-website.vercel.app</a></p>
-              <p style="margin-top: 15px;">
-                이 이메일은 발신 전용입니다. 문의사항은 이메일 답장 또는 웹사이트 Contact Form을 이용해 주세요.
-              </p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
-
+      // Send user auto-response email
       await resend.emails.send({
         from: `GLEC <${FROM_EMAIL}>`,
         to: sanitizedData.email,
         subject: '[GLEC] 문의 접수 확인 - 영업일 기준 1-2일 내 답변드리겠습니다',
-        html: userEmailHtml,
+        html: renderContactUserAutoResponse(userEmailData),
       });
 
       console.log('[Contact Form] Auto-response email sent to:', sanitizedData.email);
