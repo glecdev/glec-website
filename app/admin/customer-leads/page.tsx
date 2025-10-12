@@ -16,7 +16,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
 
 // ====================================================================
@@ -165,7 +164,8 @@ export default function CustomerLeadsPage() {
           {/* Lead Status */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">리드 상태</label>
-            <Select
+            <select
+              className="w-full px-4 py-2 text-base text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               value={leadStatus}
               onChange={(e) => {
                 setLeadStatus(e.target.value);
@@ -180,13 +180,14 @@ export default function CustomerLeadsPage() {
               <option value="WON">성공</option>
               <option value="LOST">실패</option>
               <option value="NURTURING">육성중</option>
-            </Select>
+            </select>
           </div>
 
           {/* Library Item */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">자료</label>
-            <Select
+            <select
+              className="w-full px-4 py-2 text-base text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               value={libraryItemId}
               onChange={(e) => {
                 setLibraryItemId(e.target.value);
@@ -199,7 +200,7 @@ export default function CustomerLeadsPage() {
                   {item.title}
                 </option>
               ))}
-            </Select>
+            </select>
           </div>
         </div>
       </div>
