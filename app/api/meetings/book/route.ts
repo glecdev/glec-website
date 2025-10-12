@@ -20,6 +20,7 @@ import { neon } from '@neondatabase/serverless';
 import { Resend } from 'resend';
 import { isValidTokenFormat } from '@/lib/meeting-tokens';
 import { renderMeetingConfirmation, MeetingConfirmationData } from '@/lib/email-templates/meeting-confirmation';
+import { createZoomMeeting } from '@/lib/zoom';
 
 const sql = neon(process.env.DATABASE_URL!);
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -207,23 +208,70 @@ export async function POST(req: NextRequest) {
     `;
     
     const booking = bookingResults[0];
-    
-    // 6. Mark token as used
+
+    // 6. Create Zoom meeting
+    let zoomMeetingId: string | null = null;
+    let zoomJoinLink: string | null = null;
+    let zoomStartLink: string | null = null;
+    let calendarSyncStatus = 'PENDING';
+
+    try {
+      const zoomMeeting = await createZoomMeeting({
+        topic: `${slot.title} - ${lead.company_name || lead.contact_name}`,
+        type: 2, // Scheduled meeting
+        start_time: new Date(slot.start_time).toISOString().slice(0, 19), // Remove milliseconds and timezone
+        duration: slot.duration_minutes || 60,
+        timezone: 'Asia/Seoul',
+        agenda: `회사: ${lead.company_name || 'N/A'}\n담당자: ${lead.contact_name}\n이메일: ${lead.email}\n전화: ${lead.phone || 'N/A'}\n\n요청 안건:\n${body.requested_agenda || '없음'}`,
+        settings: {
+          host_video: true,
+          participant_video: true,
+          waiting_room: true,
+          mute_upon_entry: true,
+          auto_recording: 'none',
+        },
+      });
+
+      zoomMeetingId = zoomMeeting.id.toString();
+      zoomJoinLink = zoomMeeting.join_url;
+      zoomStartLink = zoomMeeting.start_url;
+      calendarSyncStatus = 'SYNCED';
+
+      console.log(`[Meeting Booking] Zoom meeting created: ${zoomMeetingId}`);
+    } catch (zoomError: any) {
+      console.error('[Meeting Booking] Zoom API error:', zoomError);
+      calendarSyncStatus = 'ERROR';
+      // Don't fail the booking if Zoom API fails
+    }
+
+    // 7. Update booking with Zoom meeting info
+    // Re-using google_* columns for Zoom data (no database migration needed)
+    await sql`
+      UPDATE meeting_bookings
+      SET
+        google_event_id = ${zoomMeetingId},
+        google_meet_link = ${zoomJoinLink},
+        google_calendar_link = ${zoomStartLink},
+        calendar_sync_status = ${calendarSyncStatus}
+      WHERE id = ${booking.id}
+    `;
+
+    // 8. Mark token as used
     await sql`
       UPDATE meeting_proposal_tokens
       SET used = TRUE, used_at = NOW()
       WHERE id = ${tokenData.id}
     `;
-    
-    // 7. Update slot current_bookings (trigger will handle this automatically)
+
+    // 9. Update slot current_bookings (trigger will handle this automatically)
     // But we manually update for immediate consistency
     await sql`
       UPDATE meeting_slots
       SET current_bookings = current_bookings + 1
       WHERE id = ${body.meeting_slot_id}
     `;
-    
-    // 8. Log activity
+
+    // 10. Log activity
     await sql`
       INSERT INTO lead_activities (
         lead_type,
@@ -245,7 +293,7 @@ export async function POST(req: NextRequest) {
       )
     `;
     
-    // 9. Send confirmation email
+    // 11. Send confirmation email
     let emailSent = false;
     let emailId: string | undefined;
 
@@ -276,7 +324,9 @@ export async function POST(req: NextRequest) {
         startTime: slot.start_time,
         endTime: slot.end_time,
         duration: durationLabel,
-        meetingUrl: slot.meeting_url || undefined,
+        meetingUrl: zoomJoinLink || slot.meeting_url || undefined, // Prioritize Zoom join link
+        googleMeetLink: zoomJoinLink || undefined, // Re-using for Zoom join link
+        googleCalendarLink: zoomStartLink || undefined, // Re-using for Zoom start link (host)
         meetingLocation: slot.meeting_location || 'ONLINE',
         officeAddress: slot.office_address || undefined,
         adminName,
@@ -335,8 +385,12 @@ export async function POST(req: NextRequest) {
           title: slot.title,
           start_time: slot.start_time,
           end_time: slot.end_time,
-          meeting_url: slot.meeting_url,
+          meeting_url: zoomJoinLink || slot.meeting_url, // Return Zoom join link
         },
+        zoom_join_link: zoomJoinLink, // Participant join link
+        zoom_start_link: zoomStartLink, // Host start link
+        zoom_meeting_id: zoomMeetingId,
+        calendar_sync_status: calendarSyncStatus,
         booking_status: 'CONFIRMED',
         confirmation_sent: emailSent,
         email_id: emailId,
