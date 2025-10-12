@@ -1,22 +1,28 @@
 /**
  * Meeting Booking API
  * POST /api/meetings/book
- * 
+ *
  * Purpose: 고객이 미팅 시간 예약
  * Workflow:
- * 1. 토큰 검증
- * 2. 슬롯 가용성 확인
- * 3. 예약 생성
- * 4. 토큰 사용 처리
- * 5. 예약 확인 이메일 발송 (TODO: Phase 3.5)
- * 6. 리드 활동 로그
+ * 1. 토큰 검증 (format, expiry, used)
+ * 2. 리드 정보 조회
+ * 3. 슬롯 가용성 확인
+ * 4. 예약 생성 (booking_status=CONFIRMED)
+ * 5. 토큰 사용 처리 (used=TRUE, used_at=NOW)
+ * 6. 슬롯 current_bookings 증가
+ * 7. 리드 활동 로그 (MEETING_BOOKED)
+ * 8. 예약 확인 이메일 발송 (Resend)
+ * 9. 이메일 활동 로그 (EMAIL_SENT)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
+import { Resend } from 'resend';
 import { isValidTokenFormat } from '@/lib/meeting-tokens';
+import { renderMeetingConfirmation, MeetingConfirmationData } from '@/lib/email-templates/meeting-confirmation';
 
 const sql = neon(process.env.DATABASE_URL!);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface BookMeetingRequest {
   token: string;
@@ -143,9 +149,12 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // 4. Check slot availability
+    // 4. Check slot availability and get admin info
     const slotResults = await sql`
-      SELECT id, title, start_time, end_time, meeting_url, is_available, current_bookings, max_bookings
+      SELECT
+        id, title, meeting_type, duration_minutes, start_time, end_time,
+        meeting_url, meeting_location, office_address, is_available, current_bookings, max_bookings,
+        assigned_to
       FROM meeting_slots
       WHERE id = ${body.meeting_slot_id}
       AND is_available = TRUE
@@ -236,8 +245,88 @@ export async function POST(req: NextRequest) {
       )
     `;
     
-    // TODO: Send confirmation email (Phase 3.5)
-    
+    // 9. Send confirmation email
+    let emailSent = false;
+    let emailId: string | undefined;
+
+    try {
+      // Calculate duration
+      const startTime = new Date(slot.start_time);
+      const endTime = new Date(slot.end_time);
+      const durationMinutes = slot.duration_minutes || Math.round((endTime.getTime() - startTime.getTime()) / 60000);
+      const durationHours = Math.floor(durationMinutes / 60);
+      const durationRemainingMinutes = durationMinutes % 60;
+      const durationLabel =
+        durationHours > 0
+          ? `${durationHours}시간${durationRemainingMinutes > 0 ? ` ${durationRemainingMinutes}분` : ''}`
+          : `${durationMinutes}분`;
+
+      // Default admin info (replace with actual admin lookup if assigned_to is set)
+      const adminName = process.env.DEFAULT_ADMIN_NAME || 'GLEC 담당자';
+      const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'contact@glec.io';
+      const adminPhone = process.env.DEFAULT_ADMIN_PHONE || '02-1234-5678';
+
+      const emailData: MeetingConfirmationData = {
+        contactName: lead.contact_name,
+        companyName: lead.company_name,
+        email: lead.email,
+        phone: lead.phone || undefined,
+        meetingTitle: slot.title,
+        meetingType: slot.meeting_type,
+        startTime: slot.start_time,
+        endTime: slot.end_time,
+        duration: durationLabel,
+        meetingUrl: slot.meeting_url || undefined,
+        meetingLocation: slot.meeting_location || 'ONLINE',
+        officeAddress: slot.office_address || undefined,
+        adminName,
+        adminEmail,
+        adminPhone,
+        bookingId: booking.id,
+        requestedAgenda: body.requested_agenda || undefined,
+      };
+
+      const emailHtml = renderMeetingConfirmation(emailData);
+
+      const emailResult = await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL!,
+        to: lead.email,
+        subject: `[GLEC] 미팅 예약이 확정되었습니다 - ${slot.title}`,
+        html: emailHtml,
+      });
+
+      if (emailResult.error) {
+        console.error('[Meeting Booking] Email send failed:', emailResult.error);
+      } else {
+        emailSent = true;
+        emailId = emailResult.data?.id;
+
+        // Log email activity
+        await sql`
+          INSERT INTO lead_activities (
+            lead_type,
+            lead_id,
+            activity_type,
+            activity_description,
+            metadata
+          ) VALUES (
+            ${tokenData.lead_type},
+            ${tokenData.lead_id}::UUID,
+            'EMAIL_SENT',
+            '미팅 확인 이메일 발송',
+            ${JSON.stringify({
+              email_id: emailId,
+              email_type: 'MEETING_CONFIRMATION',
+              booking_id: booking.id,
+            })}
+          )
+        `;
+      }
+    } catch (emailError: any) {
+      console.error('[Meeting Booking] Email error:', emailError);
+      // Don't fail the booking if email fails
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -249,7 +338,8 @@ export async function POST(req: NextRequest) {
           meeting_url: slot.meeting_url,
         },
         booking_status: 'CONFIRMED',
-        confirmation_sent: false, // TODO: true when email sent
+        confirmation_sent: emailSent,
+        email_id: emailId,
       },
     }, { status: 201 });
   } catch (error: any) {
