@@ -221,19 +221,19 @@ export default function UnifiedLeadsPage() {
       {/* Stats Summary Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-4">
+          <Card className="p-4" data-testid="summary-card">
             <div className="text-sm text-gray-600">전체 리드</div>
             <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total_leads}</div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4" data-testid="summary-card">
             <div className="text-sm text-gray-600">평균 스코어</div>
             <div className="text-2xl font-bold text-primary-600 mt-1">{stats.avg_score}</div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4" data-testid="summary-card">
             <div className="text-sm text-gray-600">신규</div>
             <div className="text-2xl font-bold text-blue-600 mt-1">{stats.by_status.NEW || 0}</div>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4" data-testid="summary-card">
             <div className="text-sm text-gray-600">성공</div>
             <div className="text-2xl font-bold text-green-600 mt-1">{stats.by_status.WON || 0}</div>
           </Card>
@@ -257,6 +257,7 @@ export default function UnifiedLeadsPage() {
                     setPage(1);
                   }}
                   placeholder="회사명, 담당자, 이메일..."
+                  data-testid="search-input"
                 />
               </div>
 
@@ -270,9 +271,10 @@ export default function UnifiedLeadsPage() {
                     setSourceType(e.target.value);
                     setPage(1);
                   }}
+                  data-testid="source-filter"
                 >
                   <option value="ALL">전체</option>
-                  <option value="LIBRARY_LEAD">라이브러리</option>
+                  <option value="LIBRARY_LEAD">라이브러리 리드</option>
                   <option value="CONTACT_FORM">문의폼</option>
                   <option value="DEMO_REQUEST">데모신청</option>
                   <option value="EVENT_REGISTRATION">이벤트</option>
@@ -289,6 +291,7 @@ export default function UnifiedLeadsPage() {
                     setStatus(e.target.value);
                     setPage(1);
                   }}
+                  data-testid="status-filter"
                 >
                   <option value="ALL">전체</option>
                   <option value="NEW">신규</option>
@@ -311,6 +314,7 @@ export default function UnifiedLeadsPage() {
                     value={scoreMin}
                     onChange={(e) => setScoreMin(parseInt(e.target.value))}
                     className="flex-1"
+                    data-testid="score-min-slider"
                   />
                   <input
                     type="range"
@@ -319,6 +323,7 @@ export default function UnifiedLeadsPage() {
                     value={scoreMax}
                     onChange={(e) => setScoreMax(parseInt(e.target.value))}
                     className="flex-1"
+                    data-testid="score-max-slider"
                   />
                 </div>
               </div>
@@ -346,7 +351,7 @@ export default function UnifiedLeadsPage() {
                 const sourceColor = getSourceColor(lead.lead_source_type);
 
                 return (
-                  <Card key={lead.lead_id} className="p-6 hover:shadow-lg transition-shadow">
+                  <Card key={lead.lead_id} className="p-6 hover:shadow-lg transition-shadow" data-testid="lead-card">
                     <div className="flex items-start justify-between">
                       {/* Lead Info */}
                       <div className="flex-1">
@@ -354,18 +359,25 @@ export default function UnifiedLeadsPage() {
                           {/* Source Badge */}
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold ${sourceColor.bg} ${sourceColor.text}`}
+                            data-testid="source-badge"
                           >
                             {getSourceLabel(lead.lead_source_type)}
                           </span>
 
                           {/* Score Badge */}
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getScoreColor(lead.lead_score)}`}>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getScoreColor(lead.lead_score)}`}
+                            data-testid="lead-score"
+                          >
                             ⭐ {lead.lead_score}
                           </span>
 
                           {/* Status Badge */}
-                          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
-                            {lead.lead_status}
+                          <span
+                            className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700"
+                            data-testid="status-badge"
+                          >
+                            {lead.lead_status === 'NEW' ? '신규' : lead.lead_status}
                           </span>
                         </div>
 
