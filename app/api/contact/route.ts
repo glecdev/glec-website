@@ -192,6 +192,10 @@ export async function POST(request: NextRequest) {
       };
 
       // Prepare admin notification email data
+      const now = new Date();
+      const koreaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+      const timestamp = koreaTime.toISOString().replace('T', ' ').substring(0, 19);
+
       const adminEmailData: ContactAdminNotificationData = {
         inquiryType: sanitizedData.inquiry_type,
         inquiryTypeLabel: inquiryTypeLabels[sanitizedData.inquiry_type],
@@ -201,7 +205,7 @@ export async function POST(request: NextRequest) {
         phone: sanitizedData.phone,
         message: sanitizedData.message,
         contactId: contact.id,
-        timestamp: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+        timestamp,
         ipAddress,
       };
 
@@ -222,7 +226,7 @@ export async function POST(request: NextRequest) {
         companyName: sanitizedData.company_name,
         inquiryTypeLabel: inquiryTypeLabels[sanitizedData.inquiry_type],
         contactId: contact.id,
-        timestamp: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+        timestamp,
       };
 
       // Send user auto-response email
@@ -237,28 +241,8 @@ export async function POST(request: NextRequest) {
 
     } catch (emailError) {
       console.error('[Contact Form] Email sending failed:', emailError);
-      console.error('[Contact Form] Error details:', {
-        name: emailError instanceof Error ? emailError.name : 'Unknown',
-        message: emailError instanceof Error ? emailError.message : String(emailError),
-        stack: emailError instanceof Error ? emailError.stack : 'No stack trace'
-      });
-
-      // TEMPORARY: Return error to debug production issue
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'EMAIL_SEND_FAILED',
-            message: 'Email sending failed',
-            details: emailError instanceof Error ? {
-              name: emailError.name,
-              message: emailError.message,
-              cause: emailError.cause
-            } : { error: String(emailError) }
-          },
-        },
-        { status: 500 }
-      );
+      // Don't fail the API call even if email fails
+      // Contact is already saved to database
     }
 
     // Success response
