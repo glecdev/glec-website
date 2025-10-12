@@ -23,6 +23,9 @@ export function getTokenExpiry(daysFromNow: number = 7): Date {
 
 /**
  * 미팅 예약 URL 생성
+ * - 우선순위: baseUrl > NEXT_PUBLIC_SITE_URL > https://glec.io
+ * - 개발 환경: .env.local에서 NEXT_PUBLIC_SITE_URL=http://localhost:3006 설정
+ * - 프로덕션: Vercel에서 NEXT_PUBLIC_SITE_URL=https://glec-website.vercel.app 설정
  */
 export function generateBookingUrl(token: string, baseUrl?: string): string {
   const base = baseUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://glec.io';

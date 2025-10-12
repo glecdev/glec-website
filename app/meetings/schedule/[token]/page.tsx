@@ -80,6 +80,7 @@ export default function MeetingSchedulePage({
   const [error, setError] = useState<string | null>(null);
   const [leadInfo, setLeadInfo] = useState<LeadInfo | null>(null);
   const [slotsByDate, setSlotsByDate] = useState<SlotsByDate>({});
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [requestedAgenda, setRequestedAgenda] = useState('');
   const [booking, setBooking] = useState(false);
@@ -274,6 +275,47 @@ export default function MeetingSchedulePage({
   // Main booking form
   const sortedDates = Object.keys(slotsByDate).sort();
 
+  // Generate calendar for current month
+  const generateCalendar = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    // Get first day of month and last day of month
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    // Get day of week for first day (0 = Sunday)
+    const firstDayOfWeek = firstDay.getDay();
+
+    // Generate calendar grid
+    const days: (Date | null)[] = [];
+
+    // Add empty cells for days before month starts
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      days.push(null);
+    }
+
+    // Add all days of month
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      days.push(new Date(year, month, day));
+    }
+
+    return { days, month, year };
+  };
+
+  const calendar = generateCalendar();
+  const monthName = new Date(calendar.year, calendar.month, 1).toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+  });
+
+  // Get available dates as Set for quick lookup
+  const availableDates = new Set(sortedDates);
+
+  // Get time slots for selected date
+  const selectedDateSlots = selectedDate ? (slotsByDate[selectedDate] || []) : [];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -289,7 +331,7 @@ export default function MeetingSchedulePage({
           </p>
         </div>
 
-        {/* Available Slots */}
+        {/* Calendar */}
         {sortedDates.length === 0 ? (
           <Card className="p-8 text-center">
             <div className="text-6xl mb-4">😕</div>
@@ -298,21 +340,88 @@ export default function MeetingSchedulePage({
           </Card>
         ) : (
           <div className="space-y-6">
-            {sortedDates.map((date) => {
-              const dateObj = new Date(date);
-              const formattedDate = dateObj.toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                weekday: 'long',
-              });
+            {/* Monthly Calendar */}
+            <Card className="p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">{monthName}</h2>
 
-              return (
-                <Card key={date} className="p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">{formattedDate}</h2>
+              {/* Day of week headers */}
+              <div className="grid grid-cols-7 gap-2 mb-2">
+                {['일', '월', '화', '수', '목', '금', '토'].map((day, idx) => (
+                  <div
+                    key={day}
+                    className={`text-center font-semibold py-2 ${
+                      idx === 0 ? 'text-red-500' : idx === 6 ? 'text-blue-500' : 'text-gray-700'
+                    }`}
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
 
+              {/* Calendar grid */}
+              <div className="grid grid-cols-7 gap-2">
+                {calendar.days.map((day, idx) => {
+                  if (!day) {
+                    return <div key={`empty-${idx}`} className="aspect-square" />;
+                  }
+
+                  const dateStr = day.toISOString().split('T')[0];
+                  const hasSlots = availableDates.has(dateStr);
+                  const isSelected = selectedDate === dateStr;
+                  const isPast = day < new Date(new Date().setHours(0, 0, 0, 0));
+                  const dayOfWeek = day.getDay();
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => hasSlots && !isPast && setSelectedDate(dateStr)}
+                      disabled={!hasSlots || isPast}
+                      className={`
+                        aspect-square rounded-lg border-2 flex items-center justify-center
+                        text-lg font-semibold transition-all
+                        ${
+                          isSelected
+                            ? 'bg-primary-500 border-primary-600 text-white shadow-lg scale-105'
+                            : hasSlots && !isPast
+                            ? 'bg-white border-primary-300 text-gray-900 hover:border-primary-500 hover:bg-primary-50 cursor-pointer'
+                            : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                        }
+                        ${dayOfWeek === 0 && !isSelected ? 'text-red-500' : ''}
+                        ${dayOfWeek === 6 && !isSelected ? 'text-blue-500' : ''}
+                      `}
+                    >
+                      {day.getDate()}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {!selectedDate && (
+                <p className="text-center text-gray-500 mt-4 text-sm">
+                  캘린더에서 날짜를 선택해 주세요
+                </p>
+              )}
+            </Card>
+
+            {/* Time Slots for Selected Date */}
+            {selectedDate && (
+              <Card className="p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  {new Date(selectedDate).toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long',
+                  })}
+                </h2>
+
+                {selectedDateSlots.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">
+                    이 날짜에 예약 가능한 시간이 없습니다.
+                  </p>
+                ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {slotsByDate[date].map((slot) => {
+                    {selectedDateSlots.map((slot) => {
                       const slotTime = new Date(slot.start_time);
                       const formattedTime = slotTime.toLocaleTimeString('ko-KR', {
                         hour: '2-digit',
@@ -342,9 +451,9 @@ export default function MeetingSchedulePage({
                       );
                     })}
                   </div>
-                </Card>
-              );
-            })}
+                )}
+              </Card>
+            )}
 
             {/* Requested Agenda */}
             <Card className="p-6">
