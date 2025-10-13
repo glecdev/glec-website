@@ -155,3 +155,50 @@ export function hasPermission(
 
   return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
 }
+
+/**
+ * Verify admin authentication from request
+ *
+ * @param request - Next.js request object
+ * @returns Auth result with user info or error
+ */
+export async function verifyAdminAuth(
+  request: Request
+): Promise<
+  | { isValid: true; user: JWTPayload }
+  | { isValid: false; error: string }
+> {
+  // Extract Authorization header
+  const authHeader = request.headers.get('Authorization');
+  const token = extractTokenFromHeader(authHeader);
+
+  if (!token) {
+    return {
+      isValid: false,
+      error: 'No authentication token provided',
+    };
+  }
+
+  // Verify token
+  const decoded = verifyToken(token);
+
+  if (!decoded) {
+    return {
+      isValid: false,
+      error: 'Invalid or expired authentication token',
+    };
+  }
+
+  // Check if user has admin permission (CONTENT_MANAGER or higher)
+  if (!hasPermission(decoded.role, 'CONTENT_MANAGER')) {
+    return {
+      isValid: false,
+      error: 'Insufficient permissions - admin access required',
+    };
+  }
+
+  return {
+    isValid: true,
+    user: decoded,
+  };
+}
