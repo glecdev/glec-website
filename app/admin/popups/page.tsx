@@ -15,6 +15,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { showSuccess, showError, showConfirm, logError } from '@/lib/admin-notifications';
 import TabLayout, { TabType } from '@/components/admin/TabLayout';
 import {
   OverviewCards,
@@ -245,7 +246,7 @@ export default function AdminPopupsPage() {
     e.preventDefault();
 
     if (!formData.title || !formData.content) {
-      alert('제목과 내용은 필수 항목입니다.');
+      showError('제목과 내용은 필수 항목입니다.');
       return;
     }
 
@@ -288,19 +289,19 @@ export default function AdminPopupsPage() {
         throw new Error(result.error?.message || 'Failed to save popup');
       }
 
-      alert(editingPopup ? '팝업이 수정되었습니다.' : '팝업이 추가되었습니다.');
+      showSuccess(editingPopup ? '팝업이 수정되었습니다.' : '팝업이 추가되었습니다.');
       setIsModalOpen(false);
       fetchPopups(); // Refresh list (지식센터 패턴) - CRITICAL AUTO-REFRESH
     } catch (err) {
       console.error('[Save Popup] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to save popup');
+      showError(err instanceof Error ? err.message : 'Failed to save popup');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('이 팝업을 삭제하시겠습니까?')) return;
+    if (!(await showConfirm({ message: '이 팝업을 삭제하시겠습니까?', isDangerous: true }))) return;
 
     try {
       const token = localStorage.getItem('admin_token');
@@ -311,12 +312,12 @@ export default function AdminPopupsPage() {
 
       const data = await response.json();
       if (data.success) {
-        alert('팝업이 삭제되었습니다.');
+        showSuccess('팝업이 삭제되었습니다.');
         fetchPopups();
       }
     } catch (error) {
       console.error('[Popups] Delete error:', error);
-      alert('삭제에 실패했습니다.');
+      showError('삭제에 실패했습니다.');
     }
   };
 

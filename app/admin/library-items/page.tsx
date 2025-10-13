@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { LibraryItemForm } from './LibraryItemForm';
+import { showSuccess, showError, showConfirm, logError } from '@/lib/admin-notifications';
 
 // ====================================================================
 // Types
@@ -140,7 +141,7 @@ export default function AdminLibraryItemsPage() {
   }
 
   async function handleDelete(item: LibraryItem) {
-    if (!confirm(`"${item.title}"을(를) 정말 삭제하시겠습니까?`)) {
+    if (!(await showConfirm({ message: `"${item.title}"을(를) 정말 삭제하시겠습니까?`, isDangerous: true }))) {
       return;
     }
 

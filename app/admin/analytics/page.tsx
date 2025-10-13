@@ -54,6 +54,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { AnalyticsDashboardData, TimeRangeFilter } from '@/lib/types/analytics';
+import { showSuccess, showError, showWarning } from '@/lib/admin-notifications';
 
 // ============================================================================
 // Type Definitions
@@ -155,7 +156,7 @@ function exportToCSV(data: AnalyticsDashboardData, timeRange: string) {
     window.URL.revokeObjectURL(url);
   } catch (err) {
     console.error('[Analytics] Failed to export CSV:', err);
-    alert('CSV 내보내기에 실패했습니다.');
+    showError('CSV 내보내기에 실패했습니다.');
   }
 }
 

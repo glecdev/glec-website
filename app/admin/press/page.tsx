@@ -15,6 +15,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { showSuccess, showError, showConfirm, logError } from '@/lib/admin-notifications';
 import toast, { Toaster } from 'react-hot-toast';
 import TabLayout, { TabType } from '@/components/admin/TabLayout';
 import {
@@ -290,7 +291,7 @@ export default function AdminPressPage() {
     e.preventDefault();
 
     if (!formData.title || !formData.content) {
-      alert('필수 항목을 모두 입력해주세요.');
+      showError('필수 항목을 모두 입력해주세요.');
       return;
     }
 
@@ -337,12 +338,12 @@ export default function AdminPressPage() {
         throw new Error(result.error?.message || 'Failed to save press');
       }
 
-      alert(editingPress ? '보도자료가 수정되었습니다.' : '보도자료가 추가되었습니다.');
+      showSuccess(editingPress ? '보도자료가 수정되었습니다.' : '보도자료가 추가되었습니다.');
       setIsModalOpen(false);
       fetchPressReleases(); // Refresh list (지식센터 패턴)
     } catch (err) {
       console.error('[Save Press] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to save press');
+      showError(err instanceof Error ? err.message : 'Failed to save press');
     } finally {
       setIsSaving(false);
     }
@@ -352,7 +353,7 @@ export default function AdminPressPage() {
    * Handle delete (confirmation)
    */
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`"${title}" 보도자료를 삭제하시겠습니까?\n\n(Soft Delete - 복구 가능)`)) {
+    if (!(await showConfirm({ message: `"${title}" 보도자료를 삭제하시겠습니까?\n\n(Soft Delete - 복구 가능)`, isDangerous: true }))) {
       return;
     }
 
@@ -368,14 +369,14 @@ export default function AdminPressPage() {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        alert('보도자료가 삭제되었습니다.');
+        showSuccess('보도자료가 삭제되었습니다.');
         fetchPressReleases(); // Refresh list
       } else {
         throw new Error(result.error?.message || 'Delete failed');
       }
     } catch (err) {
-      console.error('[Delete Press] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete press');
+      logError('Delete press error', err, { context: '[Delete Press]' });
+      showError(err instanceof Error ? err.message : 'Failed to delete press');
     }
   };
 

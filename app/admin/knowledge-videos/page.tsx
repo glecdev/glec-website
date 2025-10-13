@@ -15,6 +15,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { showSuccess, showError, showConfirm, logError } from '@/lib/admin-notifications';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   KnowledgeVideo,
@@ -275,13 +276,13 @@ export default function AdminKnowledgeVideosPage() {
     e.preventDefault();
 
     if (!formData.title || !formData.description || !formData.videoUrl || !formData.duration) {
-      alert('필수 항목을 모두 입력해주세요.');
+      showError('필수 항목을 모두 입력해주세요.');
       return;
     }
 
     // Validate duration format (MM:SS)
     if (!/^\d+:\d{2}$/.test(formData.duration)) {
-      alert('재생 시간은 MM:SS 형식이어야 합니다 (예: 15:30).');
+      showError('재생 시간은 MM:SS 형식이어야 합니다 (예: 15:30).');
       return;
     }
 
@@ -295,7 +296,7 @@ export default function AdminKnowledgeVideosPage() {
         .filter((t) => t.length > 0);
 
       if (tagsArray.length === 0) {
-        alert('최소 1개의 태그를 입력해주세요.');
+        showError('최소 1개의 태그를 입력해주세요.');
         setIsSaving(false);
         return;
       }
@@ -339,12 +340,12 @@ export default function AdminKnowledgeVideosPage() {
         throw new Error(result.error?.message || 'Failed to save video');
       }
 
-      alert(editingVideo ? '영상이 수정되었습니다.' : '영상이 추가되었습니다.');
+      showSuccess(editingVideo ? '영상이 수정되었습니다.' : '영상이 추가되었습니다.');
       setIsModalOpen(false);
       fetchVideos(); // Refresh list
     } catch (err) {
       console.error('[Save Video] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to save video');
+      showError(err instanceof Error ? err.message : 'Failed to save video');
     } finally {
       setIsSaving(false);
     }
@@ -354,7 +355,7 @@ export default function AdminKnowledgeVideosPage() {
    * Handle delete (confirmation)
    */
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`"${title}" 영상을 삭제하시겠습니까?`)) {
+    if (!(await showConfirm({ message: `"${title}" 영상을 삭제하시겠습니까?`, isDangerous: true }))) {
       return;
     }
 
@@ -368,15 +369,15 @@ export default function AdminKnowledgeVideosPage() {
       });
 
       if (response.status === 204) {
-        alert('영상이 삭제되었습니다.');
+        showSuccess('영상이 삭제되었습니다.');
         fetchVideos(); // Refresh list
       } else {
         const result = await response.json();
         throw new Error(result.error?.message || 'Delete failed');
       }
     } catch (err) {
-      console.error('[Delete Video] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete video');
+      logError('Delete video error', err, { context: '[Delete Video]' });
+      showError(err instanceof Error ? err.message : 'Failed to delete video');
     }
   };
 

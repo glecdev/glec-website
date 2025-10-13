@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Admin Events List Page - Modal-Based CRUD
  *
@@ -15,23 +17,11 @@
  * - Auto-refresh after CRUD operations
  */
 
-
-
-
-
-
-
-
-
-
-
-
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import toast, { Toaster } from 'react-hot-toast';
+import { showSuccess, showError, showConfirm, logError } from '@/lib/admin-notifications';
 import TabLayout, { TabType } from '@/components/admin/TabLayout';
 import {
   OverviewCards,
@@ -161,7 +151,7 @@ export default function AdminEventsPage() {
       setEvents(result.data);
       setMeta(result.meta);
     } catch (err) {
-      console.error('[Events List] Fetch error:', err);
+      logError('Fetch error', err, { context: '[Events List]' });
 
       // Check if error message contains token-related keywords
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -207,7 +197,7 @@ export default function AdminEventsPage() {
       setAllEvents(result.data);
       calculateStats(result.data);
     } catch (err) {
-      console.error('[Events Insights] Fetch error:', err);
+      logError('Fetch error', err, { context: '[Events Insights]' });
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setIsLoading(false);
@@ -256,7 +246,7 @@ export default function AdminEventsPage() {
    * Handle delete (confirmation)
    */
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`"${title}" 이벤트를 삭제하시겠습니까?\n\n모든 참가 신청도 함께 삭제됩니다.`)) {
+    if (!(await showConfirm({ message: `"${title}" 이벤트를 삭제하시겠습니까?\n\n모든 참가 신청도 함께 삭제됩니다.`, isDangerous: true }))) {
       return;
     }
 
@@ -270,15 +260,15 @@ export default function AdminEventsPage() {
       });
 
       if (response.status === 204) {
-        alert('이벤트가 삭제되었습니다.');
+        showSuccess('이벤트가 삭제되었습니다.');
         fetchEvents(); // Refresh list
       } else {
         const result = await response.json();
         throw new Error(result.error?.message || 'Delete failed');
       }
     } catch (err) {
-      console.error('[Delete Event] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete event');
+      logError('Delete event error', err, { context: '[Delete Event]' });
+      showError(err instanceof Error ? err.message : 'Failed to delete event');
     }
   };
 
@@ -438,7 +428,7 @@ export default function AdminEventsPage() {
         icon: '📥',
       });
     } catch (err) {
-      console.error('[Events CSV Export] Error:', err);
+      logError('CSV export failed', err, { context: '[Events]' });
       toast.error('CSV 내보내기 실패', {
         duration: 3000,
         icon: '❌',

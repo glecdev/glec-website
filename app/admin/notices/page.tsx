@@ -15,6 +15,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
+import { showSuccess, showError, showConfirm, logError } from '@/lib/admin-notifications';
 import TabLayout, { TabType } from '@/components/admin/TabLayout';
 import {
   OverviewCards,
@@ -159,7 +160,7 @@ export default function AdminNoticesPage() {
       setNotices(result.data);
       setMeta(result.meta);
     } catch (err) {
-      console.error('[Notices List] Fetch error:', err);
+      logError('Fetch error', err, { context: '[Notices List]' });
 
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       if (errorMessage.toLowerCase().includes('token') || errorMessage.toLowerCase().includes('unauthorized')) {
@@ -204,7 +205,7 @@ export default function AdminNoticesPage() {
       setAllNotices(result.data);
       calculateStats(result.data);
     } catch (err) {
-      console.error('[Notices Insights] Fetch error:', err);
+      logError('Fetch error', err, { context: '[Notices Insights]' });
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setIsLoading(false);
@@ -292,7 +293,7 @@ export default function AdminNoticesPage() {
     e.preventDefault();
 
     if (!formData.title || !formData.slug || !formData.content) {
-      alert('필수 항목을 모두 입력해주세요.');
+      showError('필수 항목을 모두 입력해주세요.');
       return;
     }
 
@@ -339,12 +340,12 @@ export default function AdminNoticesPage() {
         throw new Error(result.error?.message || 'Failed to save notice');
       }
 
-      alert(editingNotice ? '공지사항이 수정되었습니다.' : '공지사항이 추가되었습니다.');
+      showSuccess(editingNotice ? '공지사항이 수정되었습니다.' : '공지사항이 추가되었습니다.');
       setIsModalOpen(false);
       fetchNotices(); // Refresh list
     } catch (err) {
-      console.error('[Save Notice] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to save notice');
+      logError('Save notice error', err, { context: '[Save Notice]' });
+      showError(err instanceof Error ? err.message : 'Failed to save notice');
     } finally {
       setIsSaving(false);
     }
@@ -354,7 +355,7 @@ export default function AdminNoticesPage() {
    * Handle delete (confirmation)
    */
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`"${title}" 공지사항을 삭제하시겠습니까?\n\n(Soft Delete - 복구 가능)`)) {
+    if (!(await showConfirm({ message: `"${title}" 공지사항을 삭제하시겠습니까?\n\n(Soft Delete - 복구 가능)`, isDangerous: true }))) {
       return;
     }
 
@@ -368,15 +369,15 @@ export default function AdminNoticesPage() {
       });
 
       if (response.status === 204 || response.ok) {
-        alert('공지사항이 삭제되었습니다.');
+        showSuccess('공지사항이 삭제되었습니다.');
         fetchNotices(); // Refresh list
       } else {
         const result = await response.json();
         throw new Error(result.error?.message || 'Delete failed');
       }
     } catch (err) {
-      console.error('[Delete Notice] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete notice');
+      logError('Delete notice error', err, { context: '[Delete Notice]' });
+      showError(err instanceof Error ? err.message : 'Failed to delete notice');
     }
   };
 
@@ -542,7 +543,7 @@ export default function AdminNoticesPage() {
         icon: '📥',
       });
     } catch (err) {
-      console.error('[Notices] Failed to export CSV:', err);
+      logError('CSV export failed', err, { context: '[Notices]' });
       toast.error('CSV 내보내기 실패', {
         duration: 3000,
         icon: '❌',

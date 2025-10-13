@@ -15,6 +15,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { showSuccess, showError, showConfirm, logError } from '@/lib/admin-notifications';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 import {
@@ -275,12 +276,12 @@ export default function AdminKnowledgeBlogPage() {
     e.preventDefault();
 
     if (!formData.title || !formData.content || !formData.excerpt || !formData.author) {
-      alert('필수 항목을 모두 입력해주세요.');
+      showError('필수 항목을 모두 입력해주세요.');
       return;
     }
 
     if (formData.excerpt.length > 300) {
-      alert('요약은 300자를 초과할 수 없습니다.');
+      showError('요약은 300자를 초과할 수 없습니다.');
       return;
     }
 
@@ -294,7 +295,7 @@ export default function AdminKnowledgeBlogPage() {
         .filter((t) => t.length > 0);
 
       if (tagsArray.length === 0) {
-        alert('최소 1개의 태그를 입력해주세요.');
+        showError('최소 1개의 태그를 입력해주세요.');
         setIsSaving(false);
         return;
       }
@@ -338,12 +339,12 @@ export default function AdminKnowledgeBlogPage() {
         throw new Error(result.error?.message || 'Failed to save blog post');
       }
 
-      alert(editingPost ? '블로그 글이 수정되었습니다.' : '블로그 글이 추가되었습니다.');
+      showSuccess(editingPost ? '블로그 글이 수정되었습니다.' : '블로그 글이 추가되었습니다.');
       setIsModalOpen(false);
       fetchPosts(); // Refresh list
     } catch (err) {
       console.error('[Save Blog Post] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to save blog post');
+      showError(err instanceof Error ? err.message : 'Failed to save blog post');
     } finally {
       setIsSaving(false);
     }
@@ -353,7 +354,7 @@ export default function AdminKnowledgeBlogPage() {
    * Handle delete (confirmation)
    */
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`"${title}" 블로그 글을 삭제하시겠습니까?`)) {
+    if (!(await showConfirm({ message: `"${title}" 블로그 글을 삭제하시겠습니까?`, isDangerous: true }))) {
       return;
     }
 
@@ -367,7 +368,7 @@ export default function AdminKnowledgeBlogPage() {
       });
 
       if (response.status === 204) {
-        alert('블로그 글이 삭제되었습니다.');
+        showSuccess('블로그 글이 삭제되었습니다.');
         fetchPosts(); // Refresh list
       } else {
         const result = await response.json();
@@ -375,7 +376,7 @@ export default function AdminKnowledgeBlogPage() {
       }
     } catch (err) {
       console.error('[Delete Blog Post] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete blog post');
+      showError(err instanceof Error ? err.message : 'Failed to delete blog post');
     }
   };
 

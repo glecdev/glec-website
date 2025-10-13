@@ -15,6 +15,7 @@
 
 'use client';
 
+import { showSuccess, showError, showConfirm, logError } from '@/lib/admin-notifications';
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
@@ -288,7 +289,7 @@ export default function AdminKnowledgeLibraryPage() {
     e.preventDefault();
 
     if (!formData.title || !formData.description || !formData.fileUrl || !formData.fileSize) {
-      alert('필수 항목을 모두 입력해주세요.');
+      showError('필수 항목을 모두 입력해주세요.');
       return;
     }
 
@@ -302,7 +303,7 @@ export default function AdminKnowledgeLibraryPage() {
         .filter((t) => t.length > 0);
 
       if (tagsArray.length === 0) {
-        alert('최소 1개의 태그를 입력해주세요.');
+        showError('최소 1개의 태그를 입력해주세요.');
         setIsSaving(false);
         return;
       }
@@ -347,12 +348,12 @@ export default function AdminKnowledgeLibraryPage() {
         throw new Error(result.error?.message || 'Failed to save library item');
       }
 
-      alert(editingItem ? '자료가 수정되었습니다.' : '자료가 추가되었습니다.');
+      showSuccess(editingItem ? '자료가 수정되었습니다.' : '자료가 추가되었습니다.');
       setIsModalOpen(false);
       fetchItems(); // Refresh list
     } catch (err) {
       console.error('[Save Library Item] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to save library item');
+      showError(err instanceof Error ? err.message : 'Failed to save library item');
     } finally {
       setIsSaving(false);
     }
@@ -362,7 +363,7 @@ export default function AdminKnowledgeLibraryPage() {
    * Handle delete (confirmation)
    */
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`"${title}" 자료를 삭제하시겠습니까?`)) {
+    if (!(await showConfirm({ message: `"${title}" 자료를 삭제하시겠습니까?`, isDangerous: true }))) {
       return;
     }
 
@@ -376,7 +377,7 @@ export default function AdminKnowledgeLibraryPage() {
       });
 
       if (response.status === 204) {
-        alert('자료가 삭제되었습니다.');
+        showSuccess('자료가 삭제되었습니다.');
         fetchItems(); // Refresh list
       } else {
         const result = await response.json();
@@ -384,7 +385,7 @@ export default function AdminKnowledgeLibraryPage() {
       }
     } catch (err) {
       console.error('[Delete Library Item] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete library item');
+      showError(err instanceof Error ? err.message : 'Failed to delete library item');
     }
   };
 
