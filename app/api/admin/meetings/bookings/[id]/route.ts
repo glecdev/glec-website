@@ -43,7 +43,6 @@ export async function GET(
         ms.meeting_location,
         ms.meeting_type,
         ms.meeting_url,
-        ms.max_participants,
         ms.status as slot_status,
 
         -- Lead info (CONTACT)
@@ -107,7 +106,6 @@ export async function GET(
         meeting_location: booking.meeting_location,
         meeting_type: booking.meeting_type,
         meeting_url: booking.meeting_url,
-        max_participants: booking.max_participants,
         slot_status: booking.slot_status,
       },
 
