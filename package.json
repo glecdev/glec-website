@@ -20,7 +20,8 @@
     "db:seed": "dotenv -e .env.migration -- npx ts-node prisma/seed.ts",
     "db:studio": "dotenv -e .env.migration -- npx prisma studio",
     "db:reset": "dotenv -e .env.migration -- npx prisma migrate reset",
-    "verify:env": "node scripts/verify-vercel-env.js"
+    "verify:env": "node scripts/verify-vercel-env.js",
+    "verify:schema": "node scripts/verify-schema-sync.js"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

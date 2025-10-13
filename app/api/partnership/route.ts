@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { neon } from '@neondatabase/serverless';
+import { sendEmailWithRetry } from '@/lib/email-retry';
 
 // Initialize Resend only if API key is available (prevents build-time errors)
 const resend = process.env.RESEND_API_KEY
@@ -154,15 +155,15 @@ export async function POST(request: NextRequest) {
 
     const createdPartnership = dbResult[0];
 
-    // Send email via Resend (non-blocking - don't fail if email fails)
-    let emailSent = false;
-    try {
-      const emailResult = await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'noreply@glec.io',
-        to: 'partnership@glec.io',
-        replyTo: sanitizedData.email,
-        subject: `[GLEC 파트너십 신청] ${getPartnershipTypeLabel(sanitizedData.partnershipType)} - ${sanitizedData.companyName}`,
-        html: `
+    // Send email via Resend with retry logic (non-blocking - don't fail if email fails)
+    const emailResult = await sendEmailWithRetry(
+      () =>
+        resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || 'noreply@glec.io',
+          to: 'partnership@glec.io',
+          replyTo: sanitizedData.email,
+          subject: `[GLEC 파트너십 신청] ${getPartnershipTypeLabel(sanitizedData.partnershipType)} - ${sanitizedData.companyName}`,
+          html: `
         <!DOCTYPE html>
         <html>
         <head>
@@ -220,16 +221,13 @@ export async function POST(request: NextRequest) {
         </body>
         </html>
       `,
-      });
-
-      if (!emailResult.error) {
-        emailSent = true;
-      } else {
-        console.error('Resend email error (non-fatal):', emailResult.error);
+        }),
+      {
+        maxRetries: 3,
+        initialDelay: 1000, // 1 second
+        maxDelay: 8000, // 8 seconds
       }
-    } catch (emailError: any) {
-      console.error('Email send exception (non-fatal):', emailError.message);
-    }
+    );
 
     // Success response (even if email failed, DB save succeeded)
     return NextResponse.json({
@@ -237,7 +235,8 @@ export async function POST(request: NextRequest) {
       data: {
         id: createdPartnership.id,
         message: '파트너십 신청이 성공적으로 접수되었습니다',
-        emailSent, // Include email status for debugging
+        emailSent: emailResult.success, // Include email status for debugging
+        emailAttempts: emailResult.attempt, // How many attempts were made
       },
     });
   } catch (error) {
