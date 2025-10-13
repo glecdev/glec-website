@@ -49,30 +49,38 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build query
-    let query = 'SELECT * FROM partnerships WHERE 1=1';
-    const params: any[] = [];
-    let paramIndex = 1;
+    // Build WHERE clause
+    const conditions: string[] = [];
 
     if (status && ['NEW', 'IN_PROGRESS', 'ACCEPTED', 'REJECTED'].includes(status)) {
-      query += ` AND status = $${paramIndex}::\"PartnershipStatus\"`;
-      params.push(status);
-      paramIndex++;
+      conditions.push(`status = '${status}'::"PartnershipStatus"`);
     }
 
     if (search) {
-      query += ` AND (company_name ILIKE $${paramIndex} OR contact_name ILIKE $${paramIndex} OR email ILIKE $${paramIndex})`;
-      params.push(`%${search}%`);
-      paramIndex++;
+      const escapedSearch = search.replace(/'/g, "''");
+      conditions.push(`(company_name ILIKE '%${escapedSearch}%' OR contact_name ILIKE '%${escapedSearch}%' OR email ILIKE '%${escapedSearch}%')`);
     }
 
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
     // Count total
-    const countQuery = query.replace('SELECT * FROM', 'SELECT COUNT(*) as total FROM');
-    const countResult = await sql.unsafe(countQuery, params);
-    const total = parseInt(countResult[0].total, 10);
+    const countResult = await sql`
+      SELECT COUNT(*)::int as total
+      FROM partnerships
+      ${sql.unsafe(whereClause)}
+    `;
+
+    const total = countResult && countResult.length > 0 && countResult[0]?.total != null
+      ? parseInt(String(countResult[0].total))
+      : 0;
 
     // Fetch data with pagination
-    query += ` ORDER BY
+    const offset = (page - 1) * per_page;
+
+    const partnerships = await sql`
+      SELECT * FROM partnerships
+      ${sql.unsafe(whereClause)}
+      ORDER BY
         CASE status
           WHEN 'NEW' THEN 1
           WHEN 'IN_PROGRESS' THEN 2
@@ -80,12 +88,8 @@ export async function GET(request: NextRequest) {
           WHEN 'REJECTED' THEN 4
         END,
         created_at DESC
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-
-    const offset = (page - 1) * per_page;
-    params.push(per_page, offset);
-
-    const partnerships = await sql.unsafe(query, params);
+      LIMIT ${per_page} OFFSET ${offset}
+    `;
 
     // Transform to camelCase
     const transformedData = partnerships.map((p: any) => ({

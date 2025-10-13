@@ -7,9 +7,9 @@
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
-// Admin login credentials (from CLAUDE.md)
+// Admin login credentials (from prisma/seed.ts)
 const ADMIN_EMAIL = 'admin@glec.io';
-const ADMIN_PASSWORD = 'admin123';
+const ADMIN_PASSWORD = 'GLEC2025Admin!';
 
 let authToken = '';
 

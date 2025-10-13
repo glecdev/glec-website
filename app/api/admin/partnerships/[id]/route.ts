@@ -165,21 +165,16 @@ export async function PUT(
       );
     }
 
-    // Build update query dynamically
+    // Build SET clause
     const updates: string[] = [];
-    const params: any[] = [];
-    let paramIndex = 1;
 
     if (status) {
-      updates.push(`status = $${paramIndex}::"PartnershipStatus"`);
-      params.push(status);
-      paramIndex++;
+      updates.push(`status = '${status}'::"PartnershipStatus"`);
     }
 
     if (adminNotes !== undefined) {
-      updates.push(`admin_notes = $${paramIndex}`);
-      params.push(adminNotes);
-      paramIndex++;
+      const escapedNotes = adminNotes ? adminNotes.replace(/'/g, "''") : null;
+      updates.push(`admin_notes = ${escapedNotes ? `'${escapedNotes}'` : 'NULL'}`);
     }
 
     if (updates.length === 0) {
@@ -198,18 +193,13 @@ export async function PUT(
     // Add updated_at
     updates.push(`updated_at = NOW()`);
 
-    // Add ID parameter
-    params.push(id);
-
-    // Execute update
-    const query = `
+    // Execute update using template literals
+    const result = await sql`
       UPDATE partnerships
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
+      SET ${sql.unsafe(updates.join(', '))}
+      WHERE id = ${id}
       RETURNING *
     `;
-
-    const result = await sql.unsafe(query, params);
 
     if (result.length === 0) {
       return NextResponse.json(
