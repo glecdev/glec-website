@@ -13,12 +13,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { neon } from '@neondatabase/serverless';
+import { addWebinarRegistrant } from '@/lib/zoom';
+import { Resend } from 'resend';
+import { renderWebinarInvitation, WebinarInvitationData } from '@/lib/email-templates/webinar-invitation';
+import crypto from 'crypto';
 
 // ============================================================
 // Database Connection
 // ============================================================
 
 const sql = neon(process.env.DATABASE_URL!);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ============================================================
 // Validation Schema
@@ -43,10 +48,10 @@ const RegistrationCreateSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const slug = params.slug;
+    const { slug } = await params;
     const body = await request.json();
 
     // Validate
@@ -72,10 +77,9 @@ export async function POST(
     const validated = validationResult.data;
 
     // Get event by slug
-    const eventResult = await sql(
-      'SELECT * FROM events WHERE slug = $1 AND status = $2',
-      [slug, 'PUBLISHED']
-    );
+    const eventResult = await sql`
+      SELECT * FROM events WHERE slug = ${slug} AND status = 'PUBLISHED'
+    `;
 
     if (eventResult.length === 0) {
       return NextResponse.json(
@@ -108,11 +112,10 @@ export async function POST(
 
     // Check if max participants reached
     if (event.max_participants) {
-      const countResult = await sql(
-        `SELECT COUNT(*)::int as count FROM event_registrations
-         WHERE event_id = $1 AND status IN ('PENDING', 'APPROVED')`,
-        [event.id]
-      );
+      const countResult = await sql`
+        SELECT COUNT(*)::int as count FROM event_registrations
+        WHERE event_id = ${event.id} AND status IN ('PENDING', 'APPROVED')
+      `;
 
       const currentCount = countResult[0].count;
 
@@ -131,10 +134,10 @@ export async function POST(
     }
 
     // Check for duplicate registration (same email for same event)
-    const duplicateCheck = await sql(
-      'SELECT id FROM event_registrations WHERE event_id = $1 AND email = $2',
-      [event.id, validated.email]
-    );
+    const duplicateCheck = await sql`
+      SELECT id FROM event_registrations
+      WHERE event_id = ${event.id} AND email = ${validated.email}
+    `;
 
     if (duplicateCheck.length > 0) {
       return NextResponse.json(
@@ -151,31 +154,109 @@ export async function POST(
 
     // Create registration
     const now = new Date();
-    const insertQuery = `
+    const registrationId = crypto.randomUUID();
+
+    const result = await sql`
       INSERT INTO event_registrations (
-        event_id, name, email, phone, company, job_title, message,
+        id, event_id, name, email, phone, company, job_title, message,
         status, privacy_consent, marketing_consent, created_at, updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES (
+        ${registrationId},
+        ${event.id},
+        ${validated.name},
+        ${validated.email},
+        ${validated.phone},
+        ${validated.company || null},
+        ${validated.job_title || null},
+        ${validated.message || null},
+        'PENDING',
+        ${validated.privacy_consent},
+        ${validated.marketing_consent},
+        ${now},
+        ${now}
+      )
       RETURNING *
     `;
 
-    const result = await sql(insertQuery, [
-      event.id,
-      validated.name,
-      validated.email,
-      validated.phone,
-      validated.company || null,
-      validated.job_title || null,
-      validated.message || null,
-      'PENDING', // Default status
-      validated.privacy_consent,
-      validated.marketing_consent,
-      now,
-      now,
-    ]);
-
     const registration = result[0];
+
+    // Zoom Webinar 자동화 (WEBINAR 타입 이벤트만)
+    let webinarJoinUrl: string | null = null;
+    let webinarRegistrantId: string | null = null;
+
+    if (event.meeting_type === 'WEBINAR' && event.zoom_webinar_id) {
+      try {
+        // Zoom Webinar에 참가자 등록
+        const [firstName, ...lastNameParts] = validated.name.split(' ');
+        const lastName = lastNameParts.join(' ') || '';
+
+        const registrant = await addWebinarRegistrant(
+          parseInt(event.zoom_webinar_id),
+          {
+            email: validated.email,
+            first_name: firstName,
+            last_name: lastName,
+            org: validated.company || '',
+            job_title: validated.job_title || '',
+            phone: validated.phone || '',
+          }
+        );
+
+        webinarJoinUrl = registrant.join_url;
+        webinarRegistrantId = registrant.id;
+
+        console.log(`[Webinar Registration] Added to Zoom: ${registrant.email} -> ${webinarJoinUrl}`);
+      } catch (zoomError) {
+        console.error('[Webinar Registration] Zoom API error:', zoomError);
+        // Zoom 실패해도 등록은 계속 진행 (graceful degradation)
+      }
+    }
+
+    // 웨비나 초대장 이메일 발송 (WEBINAR 타입만)
+    let emailSent = false;
+    let emailId: string | undefined;
+
+    if (event.meeting_type === 'WEBINAR' && webinarJoinUrl) {
+      try {
+        const emailData: WebinarInvitationData = {
+          participantName: validated.name,
+          eventTitle: event.title,
+          eventDescription: event.description,
+          startTime: event.start_date,
+          endTime: event.end_date,
+          location: event.location,
+          webinarJoinUrl: webinarJoinUrl,
+          thumbnailUrl: event.thumbnail_url || undefined,
+        };
+
+        const emailHtml = renderWebinarInvitation(emailData);
+
+        const emailResult = await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL!,
+          to: validated.email,
+          subject: `[GLEC] ${event.title} 웨비나 초대장`,
+          html: emailHtml,
+        });
+
+        if (emailResult.error) {
+          console.error('[Webinar Registration] Email send failed:', emailResult.error);
+        } else {
+          emailSent = true;
+          emailId = emailResult.data?.id;
+          console.log(`[Webinar Registration] Invitation email sent: ${emailId}`);
+        }
+      } catch (emailError) {
+        console.error('[Webinar Registration] Email error:', emailError);
+      }
+    }
+
+    // Note: Event registrations are stored in event_registrations table
+    // Marketing consent is tracked there for future campaigns
+    // library_leads are only for document download requests (require library_item_id)
+    if (validated.marketing_consent) {
+      console.log(`[Event Registration] Marketing consent given: ${validated.email}`);
+    }
 
     // Transform to camelCase
     const transformedRegistration = {
@@ -187,19 +268,27 @@ export async function POST(
       jobTitle: registration.job_title,
       status: registration.status,
       createdAt: registration.created_at,
+      webinarJoinUrl: webinarJoinUrl, // 웨비나 참가 URL
+      emailSent: emailSent, // 이메일 발송 여부
     };
 
     console.log('[POST /api/events/[slug]/register] Created registration:', {
       eventId: event.id,
       email: registration.email,
       status: registration.status,
+      meetingType: event.meeting_type,
+      webinarRegistered: !!webinarJoinUrl,
     });
+
+    const successMessage = event.meeting_type === 'WEBINAR' && emailSent
+      ? '참가 신청이 완료되었습니다. 웨비나 초대장을 이메일로 발송했습니다.'
+      : '참가 신청이 완료되었습니다. 관리자 승인 후 이메일로 안내드리겠습니다.';
 
     return NextResponse.json(
       {
         success: true,
         data: transformedRegistration,
-        message: '참가 신청이 완료되었습니다. 관리자 승인 후 이메일로 안내드리겠습니다.',
+        message: successMessage,
       },
       {
         status: 201,

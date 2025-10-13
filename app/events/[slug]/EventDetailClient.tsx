@@ -16,6 +16,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { EventRegistrationForm } from '@/components/ui/EventRegistrationForm';
 
 interface EventDetailClientProps {
   event: {
@@ -53,6 +54,8 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
     seconds: 0,
     expired: false,
   });
+
+  const [isRegistrationFormOpen, setIsRegistrationFormOpen] = useState(false);
 
   // Countdown timer
   useEffect(() => {
@@ -265,11 +268,9 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
             {/* CTA Button */}
             {event.status !== 'CLOSED' && !timeLeft.expired && (
               <div className="animate-fade-in-up delay-500">
-                <Link href={`/contact?event=${event.slug}`}>
-                  <Button variant="primary" size="lg">
-                    참가 신청하기
-                  </Button>
-                </Link>
+                <Button variant="primary" size="lg" onClick={() => setIsRegistrationFormOpen(true)}>
+                  참가 신청하기
+                </Button>
               </div>
             )}
           </div>
@@ -295,17 +296,23 @@ export function EventDetailClient({ event }: EventDetailClientProps) {
               {event.status !== 'CLOSED' && !timeLeft.expired && (
                 <div className="mt-8 pt-8 border-t border-gray-200 text-center">
                   <p className="text-gray-700 mb-4">지금 바로 참가 신청하고 특별 혜택을 받으세요!</p>
-                  <Link href={`/contact?event=${event.slug}`}>
-                    <Button variant="primary" size="lg">
-                      참가 신청하기
-                    </Button>
-                  </Link>
+                  <Button variant="primary" size="lg" onClick={() => setIsRegistrationFormOpen(true)}>
+                    참가 신청하기
+                  </Button>
                 </div>
               )}
             </Card>
           </div>
         </div>
       </section>
+
+      {/* Registration Form Modal */}
+      <EventRegistrationForm
+        isOpen={isRegistrationFormOpen}
+        onClose={() => setIsRegistrationFormOpen(false)}
+        eventSlug={event.slug}
+        eventTitle={event.title}
+      />
     </div>
   );
 }

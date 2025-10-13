@@ -73,6 +73,7 @@ export default function AdminMeetingBookingsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   // Fetch bookings for list view (paginated)
   useEffect(() => {
@@ -555,61 +556,64 @@ export default function AdminMeetingBookingsPage() {
 
       {/* CALENDAR VIEW */}
       {!loading && viewMode === 'calendar' && (
-        <div className="space-y-6">
-          {/* Calendar Controls */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const newMonth = new Date(calendarMonth);
-                newMonth.setMonth(newMonth.getMonth() - 1);
-                setCalendarMonth(newMonth);
-              }}
-            >
-              ← 이전 달
-            </Button>
+        <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+          {/* Left Column: Calendar (7 columns on lg+) */}
+          <div className="lg:col-span-7 mb-8 lg:mb-0">
+            <div className="space-y-6">
+              {/* Calendar Controls */}
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newMonth = new Date(calendarMonth);
+                    newMonth.setMonth(newMonth.getMonth() - 1);
+                    setCalendarMonth(newMonth);
+                  }}
+                >
+                  ← 이전 달
+                </Button>
 
-            <h2 className="text-2xl font-bold text-gray-900">{monthName}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{monthName}</h2>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const newMonth = new Date(calendarMonth);
-                newMonth.setMonth(newMonth.getMonth() + 1);
-                setCalendarMonth(newMonth);
-              }}
-            >
-              다음 달 →
-            </Button>
-          </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newMonth = new Date(calendarMonth);
+                    newMonth.setMonth(newMonth.getMonth() + 1);
+                    setCalendarMonth(newMonth);
+                  }}
+                >
+                  다음 달 →
+                </Button>
+              </div>
 
-          {/* Legend */}
-          <Card className="p-4">
-            <div className="flex flex-wrap items-center gap-4 text-sm">
-              <span className="font-semibold text-gray-700">범례:</span>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
-                <span>대기중</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                <span>확정</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                <span>취소됨</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-gray-400"></span>
-                <span>완료</span>
-              </div>
-            </div>
-          </Card>
+              {/* Legend */}
+              <Card className="p-4 bg-white shadow-sm">
+                <div className="flex flex-wrap items-center gap-4 text-sm">
+                  <span className="font-semibold text-gray-700">범례:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+                    <span>대기중</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                    <span>확정</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                    <span>취소됨</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-gray-400"></span>
+                    <span>완료</span>
+                  </div>
+                </div>
+              </Card>
 
-          {/* Calendar Grid */}
-          <Card className="p-6">
+              {/* Calendar Grid */}
+              <Card className="p-6 bg-white shadow-sm">
             {/* Day Headers */}
             <div className="grid grid-cols-7 gap-2 mb-2">
               {['일', '월', '화', '수', '목', '금', '토'].map((day, idx) => (
@@ -635,14 +639,17 @@ export default function AdminMeetingBookingsPage() {
                 const dayOfWeek = day.getDay();
                 const isToday =
                   day.toDateString() === new Date().toDateString();
+                const isSelected = selectedDate && selectedDate.toDateString() === day.toDateString();
 
                 return (
-                  <div
+                  <button
                     key={idx}
+                    onClick={() => setSelectedDate(day)}
                     className={`
-                      aspect-square border-2 rounded-lg p-2 flex flex-col
-                      ${isToday ? 'border-primary-500 bg-primary-50' : 'border-gray-200 bg-white'}
+                      aspect-square border-2 rounded-lg p-2 flex flex-col transition-all duration-200
+                      ${isSelected ? 'border-primary-600 bg-primary-100 shadow-lg transform scale-105' : isToday ? 'border-primary-500 bg-primary-50' : 'border-gray-200 bg-white'}
                       ${dayOfWeek === 0 ? 'text-red-600' : dayOfWeek === 6 ? 'text-blue-600' : 'text-gray-900'}
+                      ${dayBookings.length > 0 ? 'hover:border-primary-400 hover:shadow-md cursor-pointer' : 'cursor-default'}
                     `}
                   >
                     <div className="font-semibold text-sm mb-1">{day.getDate()}</div>
@@ -679,20 +686,166 @@ export default function AdminMeetingBookingsPage() {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>
-          </Card>
+              </Card>
+            </div>
+          </div>
 
-          {/* Empty state */}
-          {allBookings.length === 0 && (
-            <Card className="p-8 text-center">
-              <div className="text-6xl mb-4">📭</div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">예약이 없습니다</h2>
-              <p className="text-gray-600">조건에 맞는 미팅 예약이 없습니다.</p>
-            </Card>
-          )}
+          {/* Right Column: Selected Date Bookings (5 columns on lg+) */}
+          <div className="lg:col-span-5">
+            <div className="lg:sticky lg:top-24 space-y-6">
+              {!selectedDate ? (
+                <Card className="p-8 text-center bg-white shadow-sm">
+                  <div className="text-6xl mb-4">📅</div>
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">날짜를 선택하세요</h2>
+                  <p className="text-gray-600">캘린더에서 날짜를 클릭하면 예약 정보가 표시됩니다.</p>
+                </Card>
+              ) : (
+                <>
+                  {/* Selected Date Header */}
+                  <Card className="p-6 bg-white shadow-sm">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      {selectedDate.toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        weekday: 'long',
+                      })}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      총 <strong>{getBookingsForDate(selectedDate).length}개</strong>의 예약
+                    </p>
+                  </Card>
+
+                  {/* Bookings List for Selected Date */}
+                  {getBookingsForDate(selectedDate).length === 0 ? (
+                    <Card className="p-8 text-center bg-white shadow-sm">
+                      <div className="text-6xl mb-4">📭</div>
+                      <h2 className="text-xl font-bold text-gray-900 mb-2">예약이 없습니다</h2>
+                      <p className="text-gray-600">이 날짜에는 미팅 예약이 없습니다.</p>
+                    </Card>
+                  ) : (
+                    <div className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto pr-2">
+                      {getBookingsForDate(selectedDate).map((booking) => {
+                        const startTime = new Date(booking.meeting.start_time);
+                        const formattedTime = startTime.toLocaleTimeString('ko-KR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false,
+                        });
+
+                        return (
+                          <Card key={booking.id} className="p-5 hover:shadow-lg transition-shadow bg-white">
+                            {/* Status Badge */}
+                            <div className="flex items-center gap-2 mb-3">
+                              <span
+                                className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(
+                                  booking.booking_status
+                                )}`}
+                              >
+                                {getStatusLabel(booking.booking_status)}
+                              </span>
+                              <span className="text-sm font-bold text-gray-900">{formattedTime}</span>
+                            </div>
+
+                            {/* Meeting Title */}
+                            <h4 className="text-lg font-bold text-gray-900 mb-2">
+                              {booking.meeting.title}
+                            </h4>
+
+                            {/* Meeting Info */}
+                            <div className="space-y-1 text-sm text-gray-600 mb-3">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold">⏱️</span>
+                                <span>{booking.meeting.duration_minutes}분</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold">📍</span>
+                                <span>{getLocationLabel(booking.meeting.meeting_location)}</span>
+                              </div>
+                            </div>
+
+                            {/* Customer Info */}
+                            <div className="border-t border-gray-200 pt-3 mt-3">
+                              <h5 className="text-sm font-semibold text-gray-700 mb-2">고객 정보</h5>
+                              <div className="space-y-1 text-sm">
+                                <div>
+                                  <span className="font-semibold text-gray-700">회사:</span>{' '}
+                                  <span className="text-gray-900">{booking.customer.company_name}</span>
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-gray-700">담당자:</span>{' '}
+                                  <span className="text-gray-900">{booking.customer.contact_name}</span>
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-gray-700">이메일:</span>{' '}
+                                  <a
+                                    href={`mailto:${booking.customer.email}`}
+                                    className="text-primary-600 hover:underline"
+                                  >
+                                    {booking.customer.email}
+                                  </a>
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-gray-700">전화:</span>{' '}
+                                  <a
+                                    href={`tel:${booking.customer.phone}`}
+                                    className="text-primary-600 hover:underline"
+                                  >
+                                    {booking.customer.phone}
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Requested Agenda */}
+                            {booking.requested_agenda && (
+                              <div className="border-t border-gray-200 pt-3 mt-3">
+                                <h5 className="text-sm font-semibold text-gray-700 mb-1">요청 안건</h5>
+                                <p className="text-sm text-gray-600 whitespace-pre-wrap line-clamp-3">
+                                  {booking.requested_agenda}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Actions */}
+                            <div className="border-t border-gray-200 pt-3 mt-3 flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => {
+                                  alert('상세보기 기능은 향후 구현 예정입니다.');
+                                }}
+                              >
+                                상세보기
+                              </Button>
+
+                              {booking.booking_status === 'PENDING' && (
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  className="flex-1"
+                                  onClick={() => {
+                                    alert('확정 기능은 향후 구현 예정입니다.');
+                                  }}
+                                >
+                                  확정
+                                </Button>
+                              )}
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

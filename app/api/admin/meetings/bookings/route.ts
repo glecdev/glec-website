@@ -27,46 +27,44 @@ export async function GET(req: NextRequest) {
 
     const offset = (page - 1) * perPage;
 
-    // Build WHERE clause
-    let whereConditions: string[] = [];
-    let queryParams: any[] = [];
-    let paramIndex = 1;
+    // Build WHERE clause using template literals (safe for Neon tagged templates)
+    const conditions: string[] = [];
 
     if (status && ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'].includes(status)) {
-      whereConditions.push(`mb.booking_status = $${paramIndex}`);
-      queryParams.push(status);
-      paramIndex++;
+      conditions.push(`mb.booking_status = '${status}'`);
     }
 
     if (searchQuery) {
-      whereConditions.push(`(
-        c.company_name ILIKE $${paramIndex} OR
-        c.contact_name ILIKE $${paramIndex} OR
-        ll.company_name ILIKE $${paramIndex} OR
-        ll.contact_name ILIKE $${paramIndex}
+      const escapedSearch = searchQuery.replace(/'/g, "''");
+      conditions.push(`(
+        c.company_name ILIKE '%${escapedSearch}%' OR
+        c.contact_name ILIKE '%${escapedSearch}%' OR
+        ll.company_name ILIKE '%${escapedSearch}%' OR
+        ll.contact_name ILIKE '%${escapedSearch}%'
       )`);
-      queryParams.push(`%${searchQuery}%`);
-      paramIndex++;
     }
 
-    const whereClause = whereConditions.length > 0
-      ? `WHERE ${whereConditions.join(' AND ')}`
+    const whereClause = conditions.length > 0
+      ? `WHERE ${conditions.join(' AND ')}`
       : '';
 
     // Count total bookings
-    const countQuery = `
-      SELECT COUNT(*) as total
+    // Note: contacts.id is TEXT, meeting_bookings.lead_id is UUID, so we need to cast
+    const countResult = await sql`
+      SELECT COUNT(*)::int as total
       FROM meeting_bookings mb
-      LEFT JOIN contacts c ON mb.lead_type = 'CONTACT' AND mb.lead_id::text = c.id::text
+      LEFT JOIN contacts c ON mb.lead_type = 'CONTACT' AND mb.lead_id::text = c.id
       LEFT JOIN library_leads ll ON mb.lead_type = 'LIBRARY_LEAD' AND mb.lead_id = ll.id
-      ${whereClause}
+      ${sql.unsafe(whereClause)}
     `;
 
-    const countResult = await sql.query(countQuery, queryParams);
-    const totalCount = parseInt(countResult[0]?.total || '0');
+    const totalCount = countResult && countResult.length > 0 && countResult[0]?.total != null
+      ? parseInt(String(countResult[0].total))
+      : 0;
 
     // Fetch bookings
-    const dataQuery = `
+    // Note: contacts.id is TEXT, meeting_bookings.lead_id is UUID, so we need to cast
+    const bookings = await sql`
       SELECT
         mb.id,
         mb.meeting_slot_id,
@@ -100,15 +98,12 @@ export async function GET(req: NextRequest) {
         ll.phone as library_phone
       FROM meeting_bookings mb
       INNER JOIN meeting_slots ms ON mb.meeting_slot_id = ms.id
-      LEFT JOIN contacts c ON mb.lead_type = 'CONTACT' AND mb.lead_id::text = c.id::text
+      LEFT JOIN contacts c ON mb.lead_type = 'CONTACT' AND mb.lead_id::text = c.id
       LEFT JOIN library_leads ll ON mb.lead_type = 'LIBRARY_LEAD' AND mb.lead_id = ll.id
-      ${whereClause}
+      ${sql.unsafe(whereClause)}
       ORDER BY ms.start_time DESC
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      LIMIT ${perPage} OFFSET ${offset}
     `;
-
-    queryParams.push(perPage, offset);
-    const bookings = await sql.query(dataQuery, queryParams);
 
     // Transform data
     const transformedBookings = bookings.map((booking: any) => ({
