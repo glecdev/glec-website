@@ -56,7 +56,6 @@ export async function GET(
         ll.contact_name as library_contact,
         ll.email as library_email,
         ll.phone as library_phone,
-        ll.job_title as library_position,
         ll.created_at as library_created_at,
         ll.library_item_id as library_item_id,
 
