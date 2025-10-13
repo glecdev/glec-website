@@ -1,44 +1,31 @@
 /**
- * Meeting Confirmation Email Template
+ * Webinar Invitation Email Template
  *
- * Purpose: 고객이 미팅 예약 완료 후 받는 확인 이메일
+ * Purpose: 고객이 웨비나 이벤트 참가 신청 완료 후 받는 Zoom 초대장 이메일
  * Design: GLEC branding with gradient (#0600f7, #000a42)
  */
 
-export interface MeetingConfirmationData {
-  // Lead Info
-  contactName: string;
-  companyName: string;
-  email: string;
-  phone?: string;
+export interface WebinarInvitationData {
+  // Participant Info
+  participantName: string;
 
-  // Meeting Details
-  meetingTitle: string;
-  meetingType: string; // DEMO, CONSULTATION, ONBOARDING, FOLLOWUP, OTHER
+  // Event Details
+  eventTitle: string;
+  eventDescription: string;
   startTime: string; // ISO 8601 datetime
   endTime: string; // ISO 8601 datetime
-  duration: string; // e.g. "1시간"
-  meetingUrl?: string; // Google Meet, Zoom, etc.
-  googleMeetLink?: string; // Google Meet link (from Google Calendar API)
-  googleCalendarLink?: string; // Google Calendar event link (HTML link)
-  meetingLocation?: string; // ONLINE, OFFICE, CLIENT_OFFICE
-  officeAddress?: string;
+  location: string; // e.g. "ONLINE", "서울시 강남구..."
+  thumbnailUrl?: string;
 
-  // Admin Info
-  adminName: string;
-  adminEmail: string;
-  adminPhone: string;
-
-  // Booking Info
-  bookingId: string;
-  requestedAgenda?: string;
+  // Zoom Webinar Info
+  webinarJoinUrl: string; // Zoom webinar join URL (Primary CTA)
 
   // Calendar Files
   icsDownloadUrl?: string; // ICS calendar file
   googleCalendarUrl?: string; // Google Calendar add event link
 }
 
-export function renderMeetingConfirmation(data: MeetingConfirmationData): string {
+export function renderWebinarInvitation(data: WebinarInvitationData): string {
   const startDate = new Date(data.startTime);
   const endDate = new Date(data.endTime);
 
@@ -61,13 +48,14 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
     hour12: false,
   });
 
-  const meetingTypeLabel = {
-    DEMO: '제품 데모',
-    CONSULTATION: '상담',
-    ONBOARDING: '온보딩',
-    FOLLOWUP: '후속 미팅',
-    OTHER: '미팅',
-  }[data.meetingType] || '미팅';
+  // Calculate duration in minutes
+  const durationMinutes = Math.round((endDate.getTime() - startDate.getTime()) / 60000);
+  const durationHours = Math.floor(durationMinutes / 60);
+  const durationRemainingMinutes = durationMinutes % 60;
+  const durationLabel =
+    durationHours > 0
+      ? `${durationHours}시간${durationRemainingMinutes > 0 ? ` ${durationRemainingMinutes}분` : ''}`
+      : `${durationMinutes}분`;
 
   return `
 <!DOCTYPE html>
@@ -75,7 +63,7 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GLEC 미팅 예약 확인</title>
+  <title>GLEC 웨비나 초대장</title>
 </head>
 <body style="
   margin: 0;
@@ -98,14 +86,32 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
         font-weight: 800;
         color: #ffffff;
         letter-spacing: -0.5px;
-      ">✅ 미팅 예약이 확정되었습니다</h1>
+      ">🎉 웨비나 초대장이 도착했습니다</h1>
 
       <p style="
         margin: 0;
         font-size: 16px;
         color: rgba(255, 255, 255, 0.9);
-      ">Meeting Booking Confirmed</p>
+      ">GLEC Webinar Invitation</p>
     </div>
+
+    <!-- Event Thumbnail (if available) -->
+    ${
+      data.thumbnailUrl
+        ? `
+    <div style="
+      width: 100%;
+      overflow: hidden;
+    ">
+      <img src="${data.thumbnailUrl}" alt="${data.eventTitle}" style="
+        width: 100%;
+        height: auto;
+        display: block;
+      " />
+    </div>
+    `
+        : ''
+    }
 
     <!-- Content -->
     <div style="padding: 40px 30px;">
@@ -117,7 +123,7 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
         line-height: 1.6;
         color: #1f2937;
       ">
-        안녕하세요, <strong style="color: #0600f7;">${data.companyName}</strong> <strong style="color: #0600f7;">${data.contactName}</strong>님
+        안녕하세요, <strong style="color: #0600f7;">${data.participantName}</strong>님
       </p>
 
       <p style="
@@ -126,10 +132,10 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
         line-height: 1.6;
         color: #4b5563;
       ">
-        GLEC ${meetingTypeLabel} 일정이 확정되었습니다. 아래 일정을 확인해 주세요.
+        GLEC 웨비나 참가 신청이 완료되었습니다. 아래 일정과 참여 방법을 확인해 주세요.
       </p>
 
-      <!-- Meeting Details Card -->
+      <!-- Webinar Details Card -->
       <div style="
         background-color: #f9fafb;
         border: 2px solid #e5e7eb;
@@ -142,7 +148,7 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
           font-size: 20px;
           font-weight: 700;
           color: #0600f7;
-        ">📅 미팅 일정</h2>
+        ">📅 웨비나 일정</h2>
 
         <table style="
           width: 100%;
@@ -156,14 +162,14 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
               font-weight: 600;
               color: #6b7280;
               width: 30%;
-            ">미팅 제목</td>
+            ">웨비나 제목</td>
             <td style="
               padding: 12px 0;
               border-bottom: 1px solid #e5e7eb;
               font-size: 15px;
               font-weight: 600;
               color: #1f2937;
-            ">${data.meetingTitle}</td>
+            ">${data.eventTitle}</td>
           </tr>
 
           <tr>
@@ -195,39 +201,9 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
               border-bottom: 1px solid #e5e7eb;
               font-size: 15px;
               color: #1f2937;
-            ">${formattedStartTime} - ${formattedEndTime} (${data.duration})</td>
+            ">${formattedStartTime} - ${formattedEndTime} (${durationLabel})</td>
           </tr>
 
-          ${
-            data.meetingUrl
-              ? `
-          <tr>
-            <td style="
-              padding: 12px 0;
-              border-bottom: 1px solid #e5e7eb;
-              font-size: 14px;
-              font-weight: 600;
-              color: #6b7280;
-            ">참여 링크</td>
-            <td style="
-              padding: 12px 0;
-              border-bottom: 1px solid #e5e7eb;
-            ">
-              <a href="${data.meetingUrl}" style="
-                color: #0600f7;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 15px;
-              ">${data.meetingUrl}</a>
-            </td>
-          </tr>
-          `
-              : ''
-          }
-
-          ${
-            data.officeAddress
-              ? `
           <tr>
             <td style="
               padding: 12px 0;
@@ -239,15 +215,12 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
               padding: 12px 0;
               font-size: 15px;
               color: #1f2937;
-            ">${data.officeAddress}</td>
+            ">${data.location === 'ONLINE' ? '온라인 (Zoom 웨비나)' : data.location}</td>
           </tr>
-          `
-              : ''
-          }
         </table>
 
         ${
-          data.requestedAgenda
+          data.eventDescription
             ? `
         <div style="
           margin-top: 20px;
@@ -259,39 +232,36 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
             font-size: 14px;
             font-weight: 600;
             color: #6b7280;
-          ">요청 안건</p>
+          ">웨비나 소개</p>
           <p style="
             margin: 0;
             font-size: 15px;
             color: #1f2937;
             line-height: 1.6;
-          ">${data.requestedAgenda}</p>
+          ">${data.eventDescription}</p>
         </div>
         `
             : ''
         }
       </div>
 
-      <!-- Google Meet Button (Primary CTA) -->
-      ${
-        data.googleMeetLink
-          ? `
+      <!-- Zoom Webinar Join Button (Primary CTA) -->
       <div style="
         text-align: center;
         margin-bottom: 30px;
         padding: 24px;
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
         border-radius: 12px;
-        border: 2px solid #0ea5e9;
+        border: 2px solid #10b981;
       ">
         <p style="
           margin: 0 0 15px 0;
           font-size: 16px;
           font-weight: 600;
           color: #1f2937;
-        ">📹 온라인 미팅 참여</p>
+        ">🎥 웨비나 참여 링크</p>
 
-        <a href="${data.googleMeetLink}" style="
+        <a href="${data.webinarJoinUrl}" style="
           display: inline-block;
           padding: 16px 32px;
           background: linear-gradient(135deg, #0600f7 0%, #0500d0 100%);
@@ -301,21 +271,24 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
           font-size: 16px;
           font-weight: 700;
           box-shadow: 0 4px 12px rgba(6, 0, 247, 0.3);
-        ">🎥 Google Meet 참여하기</a>
+        ">🚀 Zoom 웨비나 참여하기</a>
 
         <p style="
           margin: 15px 0 0 0;
           font-size: 13px;
           color: #6b7280;
-        ">미팅 시간에 위 버튼을 클릭하여 참여해 주세요</p>
+        ">웨비나 시작 시간에 위 버튼을 클릭하여 참여해 주세요</p>
+
+        <p style="
+          margin: 10px 0 0 0;
+          font-size: 12px;
+          color: #9ca3af;
+        ">⚠️ 이 링크는 본인만 사용할 수 있습니다. 타인과 공유하지 마세요.</p>
       </div>
-      `
-          : ''
-      }
 
       <!-- Calendar Actions -->
       ${
-        data.googleCalendarLink || data.googleCalendarUrl || data.icsDownloadUrl
+        data.googleCalendarUrl || data.icsDownloadUrl
           ? `
       <div style="
         text-align: center;
@@ -329,9 +302,9 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
 
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
           ${
-            data.googleCalendarLink
+            data.googleCalendarUrl
               ? `
-          <a href="${data.googleCalendarLink}" style="
+          <a href="${data.googleCalendarUrl}" style="
             display: inline-block;
             padding: 12px 24px;
             background-color: #ffffff;
@@ -341,7 +314,7 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
             border-radius: 8px;
             font-size: 14px;
             font-weight: 600;
-          ">📅 Google Calendar에서 보기</a>
+          ">📅 Google Calendar 추가</a>
           `
               : ''
           }
@@ -369,36 +342,7 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
           : ''
       }
 
-      <!--담당자 정보 -->
-      <div style="
-        background-color: #f0f9ff;
-        border-left: 4px solid #0600f7;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 30px;
-      ">
-        <h3 style="
-          margin: 0 0 15px 0;
-          font-size: 16px;
-          font-weight: 700;
-          color: #1f2937;
-        ">👤 담당자 정보</h3>
-
-        <div style="font-size: 14px; line-height: 1.8; color: #4b5563;">
-          <p style="margin: 0 0 8px 0;">
-            <strong style="color: #1f2937;">이름:</strong> ${data.adminName}
-          </p>
-          <p style="margin: 0 0 8px 0;">
-            <strong style="color: #1f2937;">이메일:</strong>
-            <a href="mailto:${data.adminEmail}" style="color: #0600f7; text-decoration: none;">${data.adminEmail}</a>
-          </p>
-          <p style="margin: 0;">
-            <strong style="color: #1f2937;">전화:</strong> ${data.adminPhone}
-          </p>
-        </div>
-      </div>
-
-      <!-- 안내사항 -->
+      <!-- 참여 안내 -->
       <div style="
         background-color: #fffbeb;
         border-left: 4px solid #f59e0b;
@@ -411,7 +355,7 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
           font-size: 16px;
           font-weight: 700;
           color: #1f2937;
-        ">⚠️ 안내사항</h3>
+        ">⚠️ 참여 전 확인사항</h3>
 
         <ul style="
           margin: 0;
@@ -420,15 +364,43 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
           line-height: 1.8;
           color: #4b5563;
         ">
-          <li>미팅 시작 5분 전까지 접속 부탁드립니다.</li>
-          <li>일정 변경이 필요한 경우, 최소 24시간 전에 담당자에게 연락 부탁드립니다.</li>
-          <li>준비하실 자료나 질문사항이 있으시면 미리 공유해 주세요.</li>
-          ${
-            data.meetingUrl
-              ? '<li>온라인 미팅은 안정적인 인터넷 환경에서 접속해 주세요.</li>'
-              : ''
-          }
+          <li>웨비나 시작 5분 전부터 입장이 가능합니다.</li>
+          <li>안정적인 인터넷 환경에서 접속해 주세요.</li>
+          <li>Zoom 앱을 미리 설치하시면 더욱 원활하게 참여하실 수 있습니다.</li>
+          <li>웨비나 참여 링크는 본인만 사용할 수 있으며, 타인과 공유할 수 없습니다.</li>
+          <li>질문이 있으시면 웨비나 중 Q&A 세션을 이용해 주세요.</li>
         </ul>
+      </div>
+
+      <!-- Technical Requirements -->
+      <div style="
+        background-color: #f0f9ff;
+        border-left: 4px solid #0600f7;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+      ">
+        <h3 style="
+          margin: 0 0 15px 0;
+          font-size: 16px;
+          font-weight: 700;
+          color: #1f2937;
+        ">💻 권장 환경</h3>
+
+        <div style="font-size: 14px; line-height: 1.8; color: #4b5563;">
+          <p style="margin: 0 0 8px 0;">
+            <strong style="color: #1f2937;">PC/Mac:</strong> Chrome, Firefox, Safari 최신 버전
+          </p>
+          <p style="margin: 0 0 8px 0;">
+            <strong style="color: #1f2937;">모바일:</strong> Zoom 앱 설치 권장
+          </p>
+          <p style="margin: 0 0 8px 0;">
+            <strong style="color: #1f2937;">인터넷:</strong> 다운로드 5Mbps 이상 권장
+          </p>
+          <p style="margin: 0;">
+            <strong style="color: #1f2937;">장비:</strong> 마이크, 스피커 (질문 시 필요)
+          </p>
+        </div>
       </div>
 
       <!-- CTA -->
@@ -439,10 +411,10 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
           color: #4b5563;
           line-height: 1.6;
         ">
-          궁금한 점이 있으시면 언제든지 담당자에게 연락해 주세요.
+          웨비나와 관련하여 궁금한 점이 있으시면 언제든지 문의해 주세요.
         </p>
 
-        <a href="mailto:${data.adminEmail}" style="
+        <a href="mailto:${process.env.RESEND_FROM_EMAIL}" style="
           display: inline-block;
           padding: 16px 40px;
           background: linear-gradient(135deg, #0600f7 0%, #0500d0 100%);
@@ -452,7 +424,7 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
           font-size: 16px;
           font-weight: 700;
           box-shadow: 0 4px 12px rgba(6, 0, 247, 0.3);
-        ">✉️ 담당자에게 문의하기</a>
+        ">✉️ 문의하기</a>
       </div>
 
       <!-- Footer -->
@@ -462,21 +434,13 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
         border-top: 1px solid #e5e7eb;
       ">
         <p style="
-          margin: 0 0 10px 0;
-          font-size: 14px;
-          color: #6b7280;
-        ">
-          예약 번호: <strong style="color: #1f2937;">${data.bookingId}</strong>
-        </p>
-
-        <p style="
           margin: 0 0 20px 0;
           font-size: 13px;
           color: #9ca3af;
           line-height: 1.6;
         ">
-          이 이메일은 ${data.email} 주소로 발송되었습니다.<br>
-          GLEC 미팅 예약 시스템을 통해 자동으로 발송된 이메일입니다.
+          이 이메일은 GLEC 웨비나 참가 신청 시 자동으로 발송됩니다.<br>
+          참가 신청을 하지 않으셨다면 이 이메일을 무시하셔도 됩니다.
         </p>
 
         <div style="
@@ -498,6 +462,14 @@ export function renderMeetingConfirmation(data: MeetingConfirmationData): string
             color: #6b7280;
           ">ISO-14083 국제표준 물류 탄소배출 측정</p>
         </div>
+
+        <p style="
+          margin: 20px 0 0 0;
+          font-size: 12px;
+          color: #9ca3af;
+        ">
+          © ${new Date().getFullYear()} GLEC. All rights reserved.
+        </p>
       </div>
 
     </div>

@@ -69,44 +69,46 @@ export const GET = withAuth(
         );
       }
 
-      // Build WHERE clause
+      // Build WHERE clause (using template literals with SQL escaping)
       const conditions: string[] = [];
-      const params: any[] = [];
 
       if (category) {
-        conditions.push(`category = $${params.length + 1}`);
-        params.push(category);
+        const escapedCategory = category.replace(/'/g, "''");
+        conditions.push(`category = '${escapedCategory}'`);
       }
 
       if (fileType) {
-        conditions.push(`file_type = $${params.length + 1}`);
-        params.push(fileType);
+        const escapedFileType = fileType.replace(/'/g, "''");
+        conditions.push(`file_type = '${escapedFileType}'`);
       }
 
       if (search) {
-        conditions.push(`title ILIKE $${params.length + 1}`);
-        params.push(`%${search}%`);
+        const escapedSearch = search.replace(/'/g, "''");
+        conditions.push(`title ILIKE '%${escapedSearch}%'`);
       }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-      // Count total using sql.query() - returns array directly
-      const countQuery = `SELECT COUNT(*) as total FROM libraries ${whereClause}`;
-      const countResult = await sql.query(countQuery, params);
-      const total = parseInt(countResult[0].total, 10);
+      // Count total
+      const countResult = await sql`
+        SELECT COUNT(*)::int as total
+        FROM libraries
+        ${sql.unsafe(whereClause)}
+      `;
 
-      // Get paginated items using sql.query() - returns array directly
+      const total = countResult && countResult.length > 0 && countResult[0]?.total != null
+        ? parseInt(String(countResult[0].total))
+        : 0;
+
+      // Get paginated items
       const offset = (page - 1) * per_page;
-      const itemsQuery = `
+      const items = await sql`
         SELECT *
         FROM libraries
-        ${whereClause}
+        ${sql.unsafe(whereClause)}
         ORDER BY published_at DESC NULLS LAST, created_at DESC
-        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+        LIMIT ${per_page} OFFSET ${offset}
       `;
-      params.push(per_page, offset);
-
-      const items = await sql.query(itemsQuery, params);
 
       // Transform to camelCase
       const transformedItems = items.map((item: any) => ({
@@ -264,7 +266,9 @@ export const PUT = withAuth(
       const validated = validationResult.data;
 
       // Check if item exists
-      const existing = await sql.query('SELECT id FROM libraries WHERE id = $1', [id]);
+      const existing = await sql`
+        SELECT id FROM libraries WHERE id = ${id}
+      `;
       if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Library item not found' } },
@@ -274,55 +278,62 @@ export const PUT = withAuth(
 
       // Build UPDATE query dynamically
       const updates: string[] = [];
-      const params: any[] = [];
+      const values: any[] = [];
+      let paramIndex = 1;
 
       if (validated.title !== undefined) {
-        updates.push(`title = $${params.length + 1}`);
-        params.push(validated.title);
+        updates.push(`title = $${paramIndex}`);
+        values.push(validated.title);
+        paramIndex++;
         const newSlug = generateSlug(validated.title);
-        updates.push(`slug = $${params.length + 1}`);
-        params.push(newSlug);
+        updates.push(`slug = $${paramIndex}`);
+        values.push(newSlug);
+        paramIndex++;
       }
       if (validated.description !== undefined) {
-        updates.push(`description = $${params.length + 1}`);
-        params.push(validated.description);
+        updates.push(`description = $${paramIndex}`);
+        values.push(validated.description);
+        paramIndex++;
       }
       if (validated.category !== undefined) {
-        updates.push(`category = $${params.length + 1}`);
-        params.push(validated.category);
+        updates.push(`category = $${paramIndex}`);
+        values.push(validated.category);
+        paramIndex++;
       }
       if (validated.fileType !== undefined) {
-        updates.push(`file_type = $${params.length + 1}`);
-        params.push(validated.fileType);
+        updates.push(`file_type = $${paramIndex}`);
+        values.push(validated.fileType);
+        paramIndex++;
       }
       if (validated.fileSize !== undefined) {
-        updates.push(`file_size = $${params.length + 1}`);
-        params.push(validated.fileSize);
+        updates.push(`file_size = $${paramIndex}`);
+        values.push(validated.fileSize);
+        paramIndex++;
       }
       if (validated.fileUrl !== undefined) {
-        updates.push(`file_url = $${params.length + 1}`);
-        params.push(validated.fileUrl);
+        updates.push(`file_url = $${paramIndex}`);
+        values.push(validated.fileUrl);
+        paramIndex++;
       }
       if (validated.thumbnailUrl !== undefined) {
-        updates.push(`thumbnail_url = $${params.length + 1}`);
-        params.push(validated.thumbnailUrl);
+        updates.push(`thumbnail_url = $${paramIndex}`);
+        values.push(validated.thumbnailUrl);
+        paramIndex++;
       }
       if (validated.tags !== undefined) {
-        updates.push(`tags = $${params.length + 1}`);
-        params.push(validated.tags);
+        updates.push(`tags = $${paramIndex}`);
+        values.push(validated.tags);
+        paramIndex++;
       }
 
       updates.push(`updated_at = NOW()`);
 
-      const updateQuery = `
-        UPDATE libraries
-        SET ${updates.join(', ')}
-        WHERE id = $${params.length + 1}
-        RETURNING *
-      `;
-      params.push(id);
+      values.push(id);
 
-      const updated = await sql.query(updateQuery, params);
+      const setClause = updates.join(', ');
+      const updateQuery = `UPDATE libraries SET ${setClause} WHERE id = $${paramIndex} RETURNING *`;
+
+      const updated = await sql.unsafe(updateQuery, values);
       const result = updated[0];
 
       return NextResponse.json({
@@ -372,7 +383,9 @@ export const DELETE = withAuth(
       }
 
       // Check if item exists
-      const existing = await sql.query('SELECT id FROM libraries WHERE id = $1', [id]);
+      const existing = await sql`
+        SELECT id FROM libraries WHERE id = ${id}
+      `;
       if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Library item not found' } },
@@ -381,7 +394,9 @@ export const DELETE = withAuth(
       }
 
       // Delete item
-      await sql.query('DELETE FROM libraries WHERE id = $1', [id]);
+      await sql`
+        DELETE FROM libraries WHERE id = ${id}
+      `;
 
       return new NextResponse(null, { status: 204 });
     } catch (error) {

@@ -92,20 +92,22 @@ export async function PATCH(
       );
     }
 
+    // Build dynamic UPDATE with sql.unsafe for SET clause
+    const setClause = updates
+      .map((update, idx) => {
+        const placeholder = `$${idx + 1}`;
+        return update; // update already contains "$N" placeholders
+      })
+      .join(', ');
+
     // Add slot ID as last parameter
     values.push(slotId);
 
-    // Execute update
-    const query = `
-      UPDATE meeting_slots
-      SET ${updates.join(', ')}, updated_at = NOW()
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
+    // Execute update using tagged template with unsafe for dynamic SET
+    const query = `UPDATE meeting_slots SET ${setClause}, updated_at = NOW() WHERE id = $${paramIndex} RETURNING *`;
+    const result = await sql.unsafe(query, values);
 
-    const result = await sql.query(query, values);
-
-    if (result.length === 0) {
+    if (!result || result.length === 0) {
       return NextResponse.json(
         {
           success: false,

@@ -260,14 +260,11 @@ export const PATCH = withAuth(
       // Add event ID as last parameter
       params.push(eventId);
 
-      const updateQuery = `
-        UPDATE events
-        SET ${updates.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-      `;
+      // Build dynamic UPDATE with sql.unsafe
+      const setClause = updates.join(', ');
+      const updateQuery = `UPDATE events SET ${setClause} WHERE id = $${paramIndex} RETURNING *`;
 
-      const result = await sql.query(updateQuery, params);
+      const result = await sql.unsafe(updateQuery, params);
       const event = result[0];
 
       // Transform to camelCase

@@ -74,12 +74,14 @@ export async function GET(req: NextRequest) {
 
     // Count total
     const countResult = await sql`
-      SELECT COUNT(*) as total
+      SELECT COUNT(*)::int as total
       FROM unified_leads
       ${sql.unsafe(whereClause)}
     `;
 
-    const total = countResult && countResult[0] ? parseInt(countResult[0].total) : 0;
+    const total = countResult && countResult.length > 0 && countResult[0]?.total != null
+      ? parseInt(String(countResult[0].total))
+      : 0;
 
     // Fetch leads with pagination
     const offset = (page - 1) * perPage;

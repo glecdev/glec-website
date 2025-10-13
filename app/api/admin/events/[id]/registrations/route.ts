@@ -25,9 +25,9 @@ const sql = neon(process.env.DATABASE_URL!);
 // ============================================================
 
 export const GET = withAuth(
-  async (request: NextRequest, { params }) => {
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     try {
-      const eventId = params.id;
+      const { id: eventId } = await params;
       const searchParams = request.nextUrl.searchParams;
       const status = searchParams.get('status');
       const search = searchParams.get('search');

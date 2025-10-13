@@ -30,44 +30,46 @@ export async function GET(request: NextRequest) {
 
     // Build WHERE clause (always filter by PUBLISHED status)
     const conditions: string[] = ["status = 'PUBLISHED'"];
-    const params: any[] = [];
 
     if (category) {
-      conditions.push(`category = $${params.length + 1}`);
-      params.push(category);
+      const escapedCategory = category.replace(/'/g, "''");
+      conditions.push(`category = '${escapedCategory}'`);
     }
 
     if (fileType) {
-      conditions.push(`file_type = $${params.length + 1}`);
-      params.push(fileType);
+      const escapedFileType = fileType.replace(/'/g, "''");
+      conditions.push(`file_type = '${escapedFileType}'`);
     }
 
     if (search) {
-      conditions.push(`title ILIKE $${params.length + 1}`);
-      params.push(`%${search}%`);
+      const escapedSearch = search.replace(/'/g, "''");
+      conditions.push(`title ILIKE '%${escapedSearch}%'`);
     }
 
     const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
     // Count total
-    const countQuery = `SELECT COUNT(*) as total FROM libraries ${whereClause}`;
-    const countResult = await sql.query(countQuery, params);
-    const total = parseInt(countResult[0].total, 10);
+    const countResult = await sql`
+      SELECT COUNT(*)::int as total
+      FROM libraries
+      ${sql.unsafe(whereClause)}
+    `;
+
+    const total = countResult && countResult.length > 0 && countResult[0]?.total != null
+      ? parseInt(String(countResult[0].total))
+      : 0;
 
     // Get paginated items
     const offset = (page - 1) * per_page;
-    const itemsQuery = `
+    const items = await sql`
       SELECT
         id, title, description, category, file_type, file_size, file_url,
         thumbnail_url, tags, download_count, published_at, created_at, updated_at
       FROM libraries
-      ${whereClause}
+      ${sql.unsafe(whereClause)}
       ORDER BY published_at DESC NULLS LAST, created_at DESC
-      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+      LIMIT ${per_page} OFFSET ${offset}
     `;
-    params.push(per_page, offset);
-
-    const items = await sql.query(itemsQuery, params);
 
     // Transform to camelCase
     const transformedItems = items.map((item: any) => ({

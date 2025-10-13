@@ -129,39 +129,41 @@ export const GET = withAuth(
         );
       }
 
-      // Build WHERE clause
+      // Build WHERE clause (using template literals with SQL escaping)
       const conditions: string[] = [];
-      const params: any[] = [];
 
       if (category) {
-        conditions.push(`category = $${params.length + 1}`);
-        params.push(category);
+        const escapedCategory = category.replace(/'/g, "''");
+        conditions.push(`category = '${escapedCategory}'`);
       }
 
       if (search) {
-        conditions.push(`title ILIKE $${params.length + 1}`);
-        params.push(`%${search}%`);
+        const escapedSearch = search.replace(/'/g, "''");
+        conditions.push(`title ILIKE '%${escapedSearch}%'`);
       }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
       // Count total
-      const countQuery = `SELECT COUNT(*) as total FROM knowledge_videos ${whereClause}`;
-      const countResult = await sql.query(countQuery, params);
-      const total = parseInt(countResult[0].total, 10);
+      const countResult = await sql`
+        SELECT COUNT(*)::int as total
+        FROM knowledge_videos
+        ${sql.unsafe(whereClause)}
+      `;
+
+      const total = countResult && countResult.length > 0 && countResult[0]?.total != null
+        ? parseInt(String(countResult[0].total))
+        : 0;
 
       // Get paginated items
       const offset = (page - 1) * per_page;
-      const itemsQuery = `
+      const items = await sql`
         SELECT *
         FROM knowledge_videos
-        ${whereClause}
+        ${sql.unsafe(whereClause)}
         ORDER BY published_at DESC, created_at DESC
-        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+        LIMIT ${per_page} OFFSET ${offset}
       `;
-      params.push(per_page, offset);
-
-      const items = await sql.query(itemsQuery, params);
 
       // Transform to API response format
       const transformedItems = items.map((item: any) => ({
@@ -320,7 +322,9 @@ export const PUT = withAuth(
       const validated = validationResult.data;
 
       // Check if item exists
-      const existing = await sql.query('SELECT id FROM knowledge_videos WHERE id = $1', [id]);
+      const existing = await sql`
+        SELECT id FROM knowledge_videos WHERE id = ${id}
+      `;
       if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Video not found' } },
@@ -330,55 +334,61 @@ export const PUT = withAuth(
 
       // Build UPDATE query dynamically
       const updates: string[] = [];
-      const params: any[] = [];
+      const values: any[] = [];
+      let paramIndex = 1;
 
       if (validated.title !== undefined) {
-        updates.push(`title = $${params.length + 1}`);
-        params.push(validated.title);
+        updates.push(`title = $${paramIndex}`);
+        values.push(validated.title);
+        paramIndex++;
       }
       if (validated.description !== undefined) {
-        updates.push(`description = $${params.length + 1}`);
-        params.push(validated.description);
+        updates.push(`description = $${paramIndex}`);
+        values.push(validated.description);
+        paramIndex++;
       }
       if (validated.videoUrl !== undefined) {
-        updates.push(`video_url = $${params.length + 1}`);
-        params.push(validated.videoUrl);
+        updates.push(`video_url = $${paramIndex}`);
+        values.push(validated.videoUrl);
+        paramIndex++;
         // Auto-update thumbnail if not explicitly provided
         if (validated.thumbnailUrl === undefined) {
           const newVideoId = extractYouTubeId(validated.videoUrl);
           const defaultThumbnail = `https://img.youtube.com/vi/${newVideoId}/maxresdefault.jpg`;
-          updates.push(`thumbnail_url = $${params.length + 1}`);
-          params.push(defaultThumbnail);
+          updates.push(`thumbnail_url = $${paramIndex}`);
+          values.push(defaultThumbnail);
+          paramIndex++;
         }
       }
       if (validated.thumbnailUrl !== undefined) {
-        updates.push(`thumbnail_url = $${params.length + 1}`);
-        params.push(validated.thumbnailUrl);
+        updates.push(`thumbnail_url = $${paramIndex}`);
+        values.push(validated.thumbnailUrl);
+        paramIndex++;
       }
       if (validated.duration !== undefined) {
-        updates.push(`duration = $${params.length + 1}`);
-        params.push(validated.duration);
+        updates.push(`duration = $${paramIndex}`);
+        values.push(validated.duration);
+        paramIndex++;
       }
       if (validated.category !== undefined) {
-        updates.push(`category = $${params.length + 1}`);
-        params.push(validated.category);
+        updates.push(`category = $${paramIndex}`);
+        values.push(validated.category);
+        paramIndex++;
       }
       if (validated.tags !== undefined) {
-        updates.push(`tags = $${params.length + 1}`);
-        params.push(validated.tags);
+        updates.push(`tags = $${paramIndex}`);
+        values.push(validated.tags);
+        paramIndex++;
       }
 
       updates.push(`updated_at = NOW()`);
 
-      const updateQuery = `
-        UPDATE knowledge_videos
-        SET ${updates.join(', ')}
-        WHERE id = $${params.length + 1}
-        RETURNING *
-      `;
-      params.push(id);
+      values.push(id);
 
-      const updated = await sql.query(updateQuery, params);
+      const setClause = updates.join(', ');
+      const updateQuery = `UPDATE knowledge_videos SET ${setClause} WHERE id = $${paramIndex} RETURNING *`;
+
+      const updated = await sql.unsafe(updateQuery, values);
       const result = updated[0];
 
       return NextResponse.json({
@@ -427,7 +437,9 @@ export const DELETE = withAuth(
       }
 
       // Check if item exists
-      const existing = await sql.query('SELECT id FROM knowledge_videos WHERE id = $1', [id]);
+      const existing = await sql`
+        SELECT id FROM knowledge_videos WHERE id = ${id}
+      `;
       if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Video not found' } },
@@ -436,7 +448,9 @@ export const DELETE = withAuth(
       }
 
       // Delete item
-      await sql.query('DELETE FROM knowledge_videos WHERE id = $1', [id]);
+      await sql`
+        DELETE FROM knowledge_videos WHERE id = ${id}
+      `;
 
       return new NextResponse(null, { status: 204 });
     } catch (error) {

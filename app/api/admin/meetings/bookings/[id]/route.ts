@@ -43,7 +43,6 @@ export async function GET(
         ms.meeting_location,
         ms.meeting_type,
         ms.meeting_url,
-        ms.status as slot_status,
 
         -- Lead info (CONTACT)
         c.company_name as contact_company,
@@ -106,7 +105,6 @@ export async function GET(
         meeting_location: booking.meeting_location,
         meeting_type: booking.meeting_type,
         meeting_url: booking.meeting_url,
-        slot_status: booking.slot_status,
       },
 
       customer: {

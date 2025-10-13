@@ -1,0 +1,11 @@
+Vercel CLI 47.0.4
+Retrieving project…
+Deploying glecdevs-projects/glec-website
+Uploading [--------------------] (0.0B/14.7KB)
+Uploading [==================--] (13.3KB/14.7KB)
+Uploading [====================] (14.7KB/14.7KB)
+Inspect: https://vercel.com/glecdevs-projects/glec-website/BtyDA1hG8m49gCjkDCCpqfiYM1iN [3s]
+Production: https://glec-website-693nnd47m-glecdevs-projects.vercel.app [3s]
+https://glec-website-693nnd47m-glecdevs-projects.vercel.appQueued
+Building
+Completing

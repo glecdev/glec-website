@@ -275,6 +275,13 @@ export default function MeetingSchedulePage({
   // Main booking form
   const sortedDates = Object.keys(slotsByDate).sort();
 
+  // Auto-select first available date if none selected
+  useEffect(() => {
+    if (sortedDates.length > 0 && !selectedDate) {
+      setSelectedDate(sortedDates[0]);
+    }
+  }, [sortedDates, selectedDate]);
+
   // Generate calendar for current month
   const generateCalendar = () => {
     const now = new Date();
@@ -317,32 +324,34 @@ export default function MeetingSchedulePage({
   const selectedDateSlots = selectedDate ? (slotsByDate[selectedDate] || []) : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-2">📅 미팅 일정 선택</h1>
-          <p className="text-lg text-gray-600">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-extrabold text-gray-900 mb-1">📅 미팅 일정 선택</h1>
+          <p className="text-base text-gray-600">
             안녕하세요, <strong className="text-primary-600">{leadInfo?.company_name}</strong>{' '}
             <strong className="text-primary-600">{leadInfo?.contact_name}</strong>님
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            GLEC 미팅 일정을 선택해 주세요. 편하신 시간을 선택하시면 예약이 확정됩니다.
-          </p>
         </div>
+      </div>
 
-        {/* Calendar */}
-        {sortedDates.length === 0 ? (
+      {/* Calendar */}
+      {sortedDates.length === 0 ? (
+        <div className="max-w-4xl mx-auto py-12 px-4">
           <Card className="p-8 text-center">
             <div className="text-6xl mb-4">😕</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">예약 가능한 시간이 없습니다</h2>
             <p className="text-gray-600">담당자에게 연락하여 새로운 미팅 시간을 요청해 주세요.</p>
           </Card>
-        ) : (
-          <div className="space-y-6">
-            {/* Monthly Calendar */}
-            <Card className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">{monthName}</h2>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+            {/* Left Column: Calendar (7 columns on lg+) */}
+            <div className="lg:col-span-7 mb-8 lg:mb-0">
+              <Card className="p-6 bg-white shadow-sm">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">{monthName}</h2>
 
               {/* Day of week headers */}
               <div className="grid grid-cols-7 gap-2 mb-2">
@@ -378,16 +387,16 @@ export default function MeetingSchedulePage({
                       disabled={!hasSlots || isPast}
                       className={`
                         aspect-square rounded-lg border-2 flex items-center justify-center
-                        text-lg font-semibold transition-all
+                        text-base font-semibold transition-all duration-200
                         ${
                           isSelected
-                            ? 'bg-primary-500 border-primary-600 text-white shadow-lg scale-105'
+                            ? 'bg-primary-500 border-primary-600 text-white shadow-lg transform scale-105'
                             : hasSlots && !isPast
-                            ? 'bg-white border-primary-300 text-gray-900 hover:border-primary-500 hover:bg-primary-50 cursor-pointer'
-                            : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                            ? 'bg-white border-gray-200 text-gray-900 hover:border-primary-500 hover:shadow-sm hover:transform hover:scale-105 cursor-pointer'
+                            : 'bg-gray-50 border-gray-100 text-gray-400 cursor-not-allowed'
                         }
-                        ${dayOfWeek === 0 && !isSelected ? 'text-red-500' : ''}
-                        ${dayOfWeek === 6 && !isSelected ? 'text-blue-500' : ''}
+                        ${dayOfWeek === 0 && !isSelected && hasSlots && !isPast ? 'text-red-500' : ''}
+                        ${dayOfWeek === 6 && !isSelected && hasSlots && !isPast ? 'text-blue-500' : ''}
                       `}
                     >
                       {day.getDate()}
@@ -396,17 +405,21 @@ export default function MeetingSchedulePage({
                 })}
               </div>
 
-              {!selectedDate && (
-                <p className="text-center text-gray-500 mt-4 text-sm">
-                  캘린더에서 날짜를 선택해 주세요
-                </p>
-              )}
-            </Card>
+                {!selectedDate && (
+                  <p className="text-center text-gray-500 mt-4 text-sm">
+                    캘린더에서 날짜를 선택해 주세요
+                  </p>
+                )}
+              </Card>
+            </div>
 
-            {/* Time Slots for Selected Date */}
-            {selectedDate && (
-              <Card className="p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
+            {/* Right Column: Time Slots + Booking Form (5 columns on lg+) */}
+            <div className="lg:col-span-5">
+              <div className="lg:sticky lg:top-24 space-y-6">
+                {/* Time Slots for Selected Date */}
+                {selectedDate && (
+                  <Card className="p-6 bg-white shadow-sm">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">
                   {new Date(selectedDate).toLocaleDateString('ko-KR', {
                     year: 'numeric',
                     month: 'long',
@@ -420,7 +433,7 @@ export default function MeetingSchedulePage({
                     이 날짜에 예약 가능한 시간이 없습니다.
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     {selectedDateSlots.map((slot) => {
                       const slotTime = new Date(slot.start_time);
                       const formattedTime = slotTime.toLocaleTimeString('ko-KR', {
@@ -435,29 +448,32 @@ export default function MeetingSchedulePage({
                           key={slot.id}
                           onClick={() => setSelectedSlotId(slot.id)}
                           className={`
-                            px-4 py-3 rounded-lg border-2 text-center transition-all
+                            px-4 py-4 rounded-lg border-2 text-center transition-all duration-200
                             ${
                               isSelected
-                                ? 'bg-primary-500 border-primary-600 text-white shadow-lg scale-105'
-                                : 'bg-white border-gray-300 text-gray-700 hover:border-primary-400 hover:bg-primary-50'
+                                ? 'bg-primary-500 border-primary-600 text-white shadow-lg transform scale-105'
+                                : 'bg-white border-gray-200 text-gray-900 hover:border-primary-500 hover:shadow-md hover:transform hover:scale-102 active:scale-95'
                             }
                           `}
                         >
-                          <div className="font-bold">{formattedTime}</div>
-                          <div className="text-xs mt-1 opacity-80">
+                          <div className={`text-lg font-semibold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                            {formattedTime}
+                          </div>
+                          <div className={`text-xs mt-1 ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
                             {slot.available_spots}자리 남음
                           </div>
                         </button>
                       );
                     })}
-                  </div>
+                    </div>
+                  )}
+                  </Card>
                 )}
-              </Card>
-            )}
 
-            {/* Requested Agenda */}
-            <Card className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">📝 미팅 안건 (선택사항)</h2>
+                {/* Requested Agenda */}
+                {selectedDate && (
+                  <Card className="p-6 bg-white shadow-sm">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">📝 미팅 안건 (선택사항)</h2>
               <Textarea
                 value={requestedAgenda}
                 onChange={(e) => setRequestedAgenda(e.target.value)}
@@ -465,38 +481,43 @@ export default function MeetingSchedulePage({
                 rows={4}
                 className="w-full"
               />
-              <p className="text-sm text-gray-500 mt-2">
-                사전에 안건을 공유해 주시면 더 효율적인 미팅이 가능합니다.
-              </p>
-            </Card>
-
-            {/* Submit Button */}
-            <div className="flex justify-center">
-              <Button
-                onClick={handleBooking}
-                disabled={!selectedSlotId || booking}
-                size="lg"
-                className="w-full sm:w-auto px-12"
-              >
-                {booking ? (
-                  <span className="flex items-center gap-2">
-                    <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
-                    예약 중...
-                  </span>
-                ) : (
-                  '✅ 미팅 예약하기'
+                    <p className="text-sm text-gray-500 mt-2">
+                      사전에 안건을 공유해 주시면 더 효율적인 미팅이 가능합니다.
+                    </p>
+                  </Card>
                 )}
-              </Button>
-            </div>
 
-            {error && (
-              <div className="bg-error-50 border border-error-300 text-error-700 px-4 py-3 rounded-lg text-center">
-                {error}
+                {/* Submit Button */}
+                {selectedDate && (
+                  <div className="flex justify-center">
+                    <Button
+                      onClick={handleBooking}
+                      disabled={!selectedSlotId || booking}
+                      size="lg"
+                      className="w-full px-12"
+                    >
+                      {booking ? (
+                        <span className="flex items-center gap-2 justify-center">
+                          <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                          예약 중...
+                        </span>
+                      ) : (
+                        '✅ 미팅 예약하기'
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="bg-error-50 border border-error-300 text-error-700 px-4 py-3 rounded-lg text-center">
+                    {error}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

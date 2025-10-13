@@ -19,6 +19,7 @@ import { withAuth } from '@/lib/auth-middleware';
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 import { auditCreate, auditUpdate, auditDelete } from '@/lib/audit-log';
+import { createZoomWebinar } from '@/lib/zoom';
 
 // ============================================================
 // Database Connection
@@ -40,6 +41,7 @@ const EventCreateSchema = z.object({
   location_details: z.string().optional(),
   thumbnail_url: z.string().url().optional(),
   max_participants: z.number().int().positive().optional(),
+  meeting_type: z.enum(['OFFLINE', 'WEBINAR']).default('OFFLINE'),
   status: z.enum(['DRAFT', 'PUBLISHED']),
 });
 
@@ -272,6 +274,54 @@ export const POST = withAuth(
         );
       }
 
+      // Zoom Webinar 자동 생성 (WEBINAR 타입인 경우)
+      let zoomWebinarId: string | null = null;
+      let zoomWebinarJoinUrl: string | null = null;
+      let zoomWebinarHostUrl: string | null = null;
+
+      if (validated.meeting_type === 'WEBINAR') {
+        try {
+          console.log('[Event Create] Creating Zoom webinar for:', validated.title);
+
+          // Calculate duration in minutes
+          const startDate = new Date(validated.start_date);
+          const endDate = new Date(validated.end_date);
+          const durationMinutes = Math.round((endDate.getTime() - startDate.getTime()) / 60000);
+
+          // Create Zoom webinar
+          const webinar = await createZoomWebinar({
+            topic: validated.title,
+            type: 5, // Webinar
+            start_time: validated.start_date,
+            duration: durationMinutes,
+            timezone: 'Asia/Seoul',
+            agenda: validated.description.replace(/<[^>]*>/g, ''), // Strip HTML tags
+            settings: {
+              host_video: true,
+              panelists_video: true,
+              question_answer: true,
+              approval_type: 0, // Automatic approval
+              registration_type: 1, // Attendees register once and can attend any occurrence
+              auto_recording: 'none',
+            },
+          });
+
+          zoomWebinarId = webinar.id.toString();
+          zoomWebinarJoinUrl = webinar.join_url;
+          zoomWebinarHostUrl = webinar.join_url; // Zoom provides join_url, host uses host_key
+
+          console.log('[Event Create] Zoom webinar created:', {
+            webinarId: zoomWebinarId,
+            joinUrl: zoomWebinarJoinUrl,
+          });
+        } catch (zoomError) {
+          console.error('[Event Create] Failed to create Zoom webinar:', zoomError);
+          // Graceful degradation: Zoom 실패해도 이벤트는 생성
+          // 관리자가 수동으로 Zoom 링크를 추가하거나 OFFLINE으로 변경 가능
+          console.warn('[Event Create] Continuing without Zoom integration');
+        }
+      }
+
       // Insert event (Neon Tagged Template Literals)
       const now = new Date();
       const publishedAt = validated.status === 'PUBLISHED' ? now : null;
@@ -284,6 +334,7 @@ export const POST = withAuth(
           id,
           title, slug, description, status, start_date, end_date,
           location, location_details, thumbnail_url, max_participants,
+          meeting_type, zoom_webinar_id, zoom_webinar_join_url, zoom_webinar_host_url,
           published_at, author_id, created_at, updated_at
         )
         VALUES (
@@ -298,6 +349,10 @@ export const POST = withAuth(
           ${validated.location_details || null},
           ${validated.thumbnail_url || null},
           ${validated.max_participants || null},
+          ${validated.meeting_type},
+          ${zoomWebinarId},
+          ${zoomWebinarJoinUrl},
+          ${zoomWebinarHostUrl},
           ${publishedAt},
           ${user.userId},
           ${now},
@@ -321,6 +376,10 @@ export const POST = withAuth(
         locationDetails: event.location_details,
         thumbnailUrl: event.thumbnail_url,
         maxParticipants: event.max_participants,
+        meetingType: event.meeting_type,
+        zoomWebinarId: event.zoom_webinar_id,
+        zoomWebinarJoinUrl: event.zoom_webinar_join_url,
+        zoomWebinarHostUrl: event.zoom_webinar_host_url,
         viewCount: event.view_count,
         publishedAt: event.published_at,
         authorId: event.author_id,
@@ -338,6 +397,7 @@ export const POST = withAuth(
           slug: event.slug,
           status: event.status,
           location: event.location,
+          meeting_type: event.meeting_type,
         },
         request
       );
@@ -347,6 +407,8 @@ export const POST = withAuth(
         title: event.title,
         slug: event.slug,
         status: event.status,
+        meetingType: event.meeting_type,
+        zoomWebinarId: event.zoom_webinar_id,
       });
 
       return NextResponse.json(

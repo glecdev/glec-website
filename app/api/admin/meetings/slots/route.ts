@@ -50,13 +50,23 @@ export async function GET(req: NextRequest) {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    const countQuery = `SELECT COUNT(*) as total FROM meeting_slots ${whereClause}`;
-    const dataQuery = `SELECT * FROM meeting_slots ${whereClause} ORDER BY start_time ASC LIMIT ${per_page} OFFSET ${offset}`;
+    const countResult = await sql`
+      SELECT COUNT(*)::int as total
+      FROM meeting_slots
+      ${sql.unsafe(whereClause)}
+    `;
 
-    const countResult = await sql.query(countQuery);
-    const slots = await sql.query(dataQuery);
-    
-    const total = parseInt(countResult[0]?.total || '0');
+    const slots = await sql`
+      SELECT *
+      FROM meeting_slots
+      ${sql.unsafe(whereClause)}
+      ORDER BY start_time ASC
+      LIMIT ${per_page} OFFSET ${offset}
+    `;
+
+    const total = countResult && countResult.length > 0 && countResult[0]?.total != null
+      ? parseInt(String(countResult[0].total))
+      : 0;
     
     return NextResponse.json({
       success: true,

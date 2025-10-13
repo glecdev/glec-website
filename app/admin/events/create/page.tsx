@@ -32,6 +32,7 @@ interface EventFormData {
   location_details: string;
   thumbnail_url: string;
   max_participants: string;
+  meeting_type: 'OFFLINE' | 'WEBINAR';
   status: 'DRAFT' | 'PUBLISHED';
 }
 
@@ -48,6 +49,7 @@ export default function EventCreatePage() {
     location_details: '',
     thumbnail_url: '',
     max_participants: '',
+    meeting_type: 'OFFLINE',
     status: 'DRAFT',
   });
 
@@ -145,6 +147,7 @@ export default function EventCreatePage() {
           location_details: formData.location_details || undefined,
           thumbnail_url: formData.thumbnail_url || undefined,
           max_participants: formData.max_participants ? parseInt(formData.max_participants, 10) : undefined,
+          meeting_type: formData.meeting_type,
           status: formData.status,
         }),
       });
@@ -348,6 +351,40 @@ export default function EventCreatePage() {
             placeholder="제한 없음 (미입력 시)"
           />
           <p className="mt-1 text-sm text-gray-500">미입력 시 인원 제한 없음</p>
+        </div>
+
+        {/* Meeting Type */}
+        <div>
+          <label htmlFor="meeting_type" className="block text-sm font-semibold text-gray-700 mb-2">
+            이벤트 유형 <span className="text-red-500">*</span>
+          </label>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="meeting_type"
+                value="OFFLINE"
+                checked={formData.meeting_type === 'OFFLINE'}
+                onChange={handleChange}
+                className="w-4 h-4 text-primary-500 focus:ring-primary-500"
+              />
+              <span className="text-gray-700">오프라인 (현장 이벤트)</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="meeting_type"
+                value="WEBINAR"
+                checked={formData.meeting_type === 'WEBINAR'}
+                onChange={handleChange}
+                className="w-4 h-4 text-primary-500 focus:ring-primary-500"
+              />
+              <span className="text-gray-700">웨비나 (온라인 Zoom)</span>
+            </label>
+          </div>
+          <p className="mt-2 text-sm text-gray-500">
+            ℹ️ 웨비나를 선택하면 Zoom 웨비나가 자동으로 생성되며, 참가자에게 자동으로 초대장이 발송됩니다.
+          </p>
         </div>
 
         {/* Status */}

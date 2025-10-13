@@ -36,7 +36,6 @@ interface BookingDetail {
     meeting_location: 'OFFICE' | 'ONLINE' | 'HYBRID';
     meeting_type: 'GENERAL' | 'DEMO' | 'CONSULTATION' | 'TRAINING';
     meeting_url: string | null;
-    slot_status: 'AVAILABLE' | 'BOOKED' | 'BLOCKED';
   };
 
   customer: {

@@ -47,44 +47,46 @@ export const GET = withAuth(
         );
       }
 
-      // Build WHERE clause
+      // Build WHERE clause (using template literals with SQL escaping)
       const conditions: string[] = [];
-      const params: any[] = [];
 
       if (status) {
-        conditions.push(`status = $${params.length + 1}`);
-        params.push(status);
+        const escapedStatus = status.replace(/'/g, "''");
+        conditions.push(`status = '${escapedStatus}'`);
       }
 
       if (partnershipType) {
-        conditions.push(`partnership_type = $${params.length + 1}`);
-        params.push(partnershipType);
+        const escapedType = partnershipType.replace(/'/g, "''");
+        conditions.push(`partnership_type = '${escapedType}'`);
       }
 
       if (search) {
-        conditions.push(`(company_name ILIKE $${params.length + 1} OR contact_name ILIKE $${params.length + 1} OR email ILIKE $${params.length + 1})`);
-        params.push(`%${search}%`);
+        const escapedSearch = search.replace(/'/g, "''");
+        conditions.push(`(company_name ILIKE '%${escapedSearch}%' OR contact_name ILIKE '%${escapedSearch}%' OR email ILIKE '%${escapedSearch}%')`);
       }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
       // Count total
-      const countQuery = `SELECT COUNT(*) as total FROM partnerships ${whereClause}`;
-      const countResult = await sql.query(countQuery, params);
-      const total = parseInt(countResult[0].total, 10);
+      const countResult = await sql`
+        SELECT COUNT(*)::int as total
+        FROM partnerships
+        ${sql.unsafe(whereClause)}
+      `;
+
+      const total = countResult && countResult.length > 0 && countResult[0]?.total != null
+        ? parseInt(String(countResult[0].total))
+        : 0;
 
       // Get paginated items
       const offset = (page - 1) * per_page;
-      const itemsQuery = `
+      const items = await sql`
         SELECT *
         FROM partnerships
-        ${whereClause}
+        ${sql.unsafe(whereClause)}
         ORDER BY created_at DESC
-        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+        LIMIT ${per_page} OFFSET ${offset}
       `;
-      params.push(per_page, offset);
-
-      const items = await sql.query(itemsQuery, params);
 
       // Transform to camelCase
       const transformedItems = items.map((item: any) => ({
@@ -161,7 +163,9 @@ export const PUT = withAuth(
       const validated = validationResult.data;
 
       // Check if item exists
-      const existing = await sql.query('SELECT id FROM partnerships WHERE id = $1', [id]);
+      const existing = await sql`
+        SELECT id FROM partnerships WHERE id = ${id}
+      `;
       if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Partnership not found' } },
@@ -171,28 +175,28 @@ export const PUT = withAuth(
 
       // Build UPDATE query dynamically
       const updates: string[] = [];
-      const params: any[] = [];
+      const values: any[] = [];
+      let paramIndex = 1;
 
       if (validated.status !== undefined) {
-        updates.push(`status = $${params.length + 1}`);
-        params.push(validated.status);
+        updates.push(`status = $${paramIndex}`);
+        values.push(validated.status);
+        paramIndex++;
       }
       if (validated.notes !== undefined) {
-        updates.push(`notes = $${params.length + 1}`);
-        params.push(validated.notes);
+        updates.push(`notes = $${paramIndex}`);
+        values.push(validated.notes);
+        paramIndex++;
       }
 
       updates.push(`updated_at = NOW()`);
 
-      const updateQuery = `
-        UPDATE partnerships
-        SET ${updates.join(', ')}
-        WHERE id = $${params.length + 1}
-        RETURNING *
-      `;
-      params.push(id);
+      values.push(id);
 
-      const updated = await sql.query(updateQuery, params);
+      const setClause = updates.join(', ');
+      const updateQuery = `UPDATE partnerships SET ${setClause} WHERE id = $${paramIndex} RETURNING *`;
+
+      const updated = await sql.unsafe(updateQuery, values);
       const result = updated[0];
 
       return NextResponse.json({
@@ -239,7 +243,9 @@ export const DELETE = withAuth(
       }
 
       // Check if item exists
-      const existing = await sql.query('SELECT id FROM partnerships WHERE id = $1', [id]);
+      const existing = await sql`
+        SELECT id FROM partnerships WHERE id = ${id}
+      `;
       if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Partnership not found' } },
@@ -248,7 +254,9 @@ export const DELETE = withAuth(
       }
 
       // Delete item
-      await sql.query('DELETE FROM partnerships WHERE id = $1', [id]);
+      await sql`
+        DELETE FROM partnerships WHERE id = ${id}
+      `;
 
       return new NextResponse(null, { status: 204 });
     } catch (error) {

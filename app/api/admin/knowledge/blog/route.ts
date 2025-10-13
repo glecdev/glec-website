@@ -67,40 +67,42 @@ export const GET = withAuth(
         );
       }
 
-      // Build WHERE clause
+      // Build WHERE clause (using template literals with SQL escaping)
       const conditions: string[] = ['deleted_at IS NULL']; // Exclude soft-deleted items
-      const params: any[] = [];
 
       // Note: Blogs table doesn't have a category field in schema, filtering by tags instead
       if (category) {
-        conditions.push(`$${params.length + 1} = ANY(tags)`);
-        params.push(category);
+        const escapedCategory = category.replace(/'/g, "''");
+        conditions.push(`'${escapedCategory}' = ANY(tags)`);
       }
 
       if (search) {
-        conditions.push(`title ILIKE $${params.length + 1}`);
-        params.push(`%${search}%`);
+        const escapedSearch = search.replace(/'/g, "''");
+        conditions.push(`title ILIKE '%${escapedSearch}%'`);
       }
 
       const whereClause = `WHERE ${conditions.join(' AND ')}`;
 
-      // Count total using sql.query()
-      const countQuery = `SELECT COUNT(*) as total FROM blogs ${whereClause}`;
-      const countResult = await sql.query(countQuery, params);
-      const total = parseInt(countResult[0].total, 10);
+      // Count total
+      const countResult = await sql`
+        SELECT COUNT(*)::int as total
+        FROM blogs
+        ${sql.unsafe(whereClause)}
+      `;
 
-      // Get paginated items using sql.query()
+      const total = countResult && countResult.length > 0 && countResult[0]?.total != null
+        ? parseInt(String(countResult[0].total))
+        : 0;
+
+      // Get paginated items
       const offset = (page - 1) * per_page;
-      const itemsQuery = `
+      const items = await sql`
         SELECT *
         FROM blogs
-        ${whereClause}
+        ${sql.unsafe(whereClause)}
         ORDER BY published_at DESC NULLS LAST, created_at DESC
-        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+        LIMIT ${per_page} OFFSET ${offset}
       `;
-      params.push(per_page, offset);
-
-      const items = await sql.query(itemsQuery, params);
 
       // Transform to Knowledge Blog format
       const transformedItems = items.map((item: any) => ({
@@ -254,7 +256,9 @@ export const PUT = withAuth(
       const validated = validationResult.data;
 
       // Check if item exists
-      const existing = await sql.query('SELECT id FROM blogs WHERE id = $1', [id]);
+      const existing = await sql`
+        SELECT id FROM blogs WHERE id = ${id}
+      `;
       if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Blog post not found' } },
@@ -264,43 +268,47 @@ export const PUT = withAuth(
 
       // Build UPDATE query dynamically
       const updates: string[] = [];
-      const params: any[] = [];
+      const values: any[] = [];
+      let paramIndex = 1;
 
       if (validated.title !== undefined) {
-        updates.push(`title = $${params.length + 1}`);
-        params.push(validated.title);
+        updates.push(`title = $${paramIndex}`);
+        values.push(validated.title);
+        paramIndex++;
         const newSlug = generateSlug(validated.title);
-        updates.push(`slug = $${params.length + 1}`);
-        params.push(newSlug);
+        updates.push(`slug = $${paramIndex}`);
+        values.push(newSlug);
+        paramIndex++;
       }
       if (validated.content !== undefined) {
-        updates.push(`content = $${params.length + 1}`);
-        params.push(validated.content);
+        updates.push(`content = $${paramIndex}`);
+        values.push(validated.content);
+        paramIndex++;
       }
       if (validated.excerpt !== undefined) {
-        updates.push(`excerpt = $${params.length + 1}`);
-        params.push(validated.excerpt);
+        updates.push(`excerpt = $${paramIndex}`);
+        values.push(validated.excerpt);
+        paramIndex++;
       }
       if (validated.thumbnailUrl !== undefined) {
-        updates.push(`thumbnail_url = $${params.length + 1}`);
-        params.push(validated.thumbnailUrl);
+        updates.push(`thumbnail_url = $${paramIndex}`);
+        values.push(validated.thumbnailUrl);
+        paramIndex++;
       }
       if (validated.tags !== undefined) {
-        updates.push(`tags = $${params.length + 1}`);
-        params.push(validated.tags);
+        updates.push(`tags = $${paramIndex}`);
+        values.push(validated.tags);
+        paramIndex++;
       }
 
       updates.push(`updated_at = NOW()`);
 
-      const updateQuery = `
-        UPDATE blogs
-        SET ${updates.join(', ')}
-        WHERE id = $${params.length + 1}
-        RETURNING *
-      `;
-      params.push(id);
+      values.push(id);
 
-      const updated = await sql.query(updateQuery, params);
+      const setClause = updates.join(', ');
+      const updateQuery = `UPDATE blogs SET ${setClause} WHERE id = $${paramIndex} RETURNING *`;
+
+      const updated = await sql.unsafe(updateQuery, values);
       const result = updated[0];
 
       return NextResponse.json({
@@ -349,7 +357,9 @@ export const DELETE = withAuth(
       }
 
       // Check if item exists and is not already deleted
-      const existing = await sql.query('SELECT id FROM blogs WHERE id = $1 AND deleted_at IS NULL', [id]);
+      const existing = await sql`
+        SELECT id FROM blogs WHERE id = ${id} AND deleted_at IS NULL
+      `;
       if (existing.length === 0) {
         return NextResponse.json(
           { success: false, error: { code: 'NOT_FOUND', message: 'Blog post not found' } },
@@ -358,7 +368,9 @@ export const DELETE = withAuth(
       }
 
       // Soft delete item (set deleted_at timestamp)
-      await sql.query('UPDATE blogs SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1', [id]);
+      await sql`
+        UPDATE blogs SET deleted_at = NOW(), updated_at = NOW() WHERE id = ${id}
+      `;
 
       return NextResponse.json(
         { success: true, message: 'Blog post deleted successfully' },
