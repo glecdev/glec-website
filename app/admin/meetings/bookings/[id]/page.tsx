@@ -45,7 +45,6 @@ interface BookingDetail {
     contact_name: string;
     email: string;
     phone: string;
-    position: string | null;
     consent_date: string | null;
   };
 

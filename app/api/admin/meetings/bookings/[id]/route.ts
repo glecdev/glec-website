@@ -49,8 +49,7 @@ export async function GET(
         c.contact_name as contact_name,
         c.email as contact_email,
         c.phone as contact_phone,
-        c.position as contact_position,
-        c.consent_date as contact_consent_date,
+        c.created_at as contact_consent_date,
 
         -- Lead info (LIBRARY_LEAD)
         ll.company_name as library_company,
@@ -114,7 +113,6 @@ export async function GET(
         contact_name: booking.contact_name || booking.library_contact || 'N/A',
         email: booking.contact_email || booking.library_email || 'N/A',
         phone: booking.contact_phone || booking.library_phone || 'N/A',
-        position: booking.contact_position || booking.library_position || null,
         consent_date: booking.contact_consent_date || booking.library_created_at || null,
       },
 
