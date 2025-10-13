@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     // Save to database first
     const now = new Date();
-    const dbResult = await resend ? sql`
+    const dbResult = await sql`
       INSERT INTO partnerships (
         company_name, contact_name, email, partnership_type, proposal,
         status, created_at, updated_at
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
         'NEW', ${now}, ${now}
       )
       RETURNING id, company_name, contact_name, email, status, created_at
-    ` : null;
+    `;
 
     const createdPartnership = dbResult ? dbResult[0] : null;
 

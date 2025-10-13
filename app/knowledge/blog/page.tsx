@@ -21,22 +21,12 @@ interface BlogPost {
   authorAvatar: string | null;
   publishedAt: string;
   readTime: string; // "5분" format
-  category: string;
-  tags: string[];
+  tags: string[]; // Note: DB doesn't have category column, using tags instead
 }
-
-const CATEGORIES = {
-  ALL: { value: '', label: '전체' },
-  TECHNOLOGY: { value: 'TECHNOLOGY', label: '기술' },
-  INDUSTRY: { value: 'INDUSTRY', label: '산업 동향' },
-  CASE_STUDY: { value: 'CASE_STUDY', label: '사례 연구' },
-  INSIGHT: { value: 'INSIGHT', label: '인사이트' },
-} as const;
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -51,7 +41,7 @@ export default function BlogPage() {
 
   useEffect(() => {
     fetchBlog();
-  }, [selectedCategory, debouncedSearch]);
+  }, [debouncedSearch]);
 
   const fetchBlog = async () => {
     try {
@@ -59,9 +49,6 @@ export default function BlogPage() {
       const params = new URLSearchParams();
       params.append('per_page', '20');
 
-      if (selectedCategory) {
-        params.append('category', selectedCategory);
-      }
       if (debouncedSearch) {
         params.append('search', debouncedSearch);
       }
@@ -100,43 +87,27 @@ export default function BlogPage() {
         </div>
       </section>
 
-      {/* Category Filter + Search */}
+      {/* Search Bar */}
       <section className="py-8 bg-white border-b">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Category Tabs */}
-            <div className="flex flex-wrap gap-3">
-              {Object.entries(CATEGORIES).map(([key, { value, label }]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedCategory(value)}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                    selectedCategory === value
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
+          <div className="max-w-2xl mx-auto">
             {/* Search Input */}
-            <div className="flex-1 lg:max-w-md">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="제목/내용 검색..."
-                className="
-                  w-full px-4 py-2
-                  text-base text-gray-900
-                  border border-gray-300 rounded-lg
-                  transition-colors duration-200
-                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
-                "
-              />
-            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="제목으로 블로그 검색..."
+              className="
+                w-full px-4 py-3
+                text-base text-gray-900
+                border border-gray-300 rounded-lg
+                transition-colors duration-200
+                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+              "
+            />
+            <p className="mt-2 text-sm text-gray-500 text-center">
+              태그 기반 필터링 - 블로그 포스트의 태그를 클릭하여 관련 글을 찾아보세요
+            </p>
           </div>
         </div>
       </section>
@@ -189,9 +160,6 @@ export default function BlogPage() {
                     )}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs font-semibold text-primary-500 bg-primary-50 px-2 py-1 rounded">
-                          {post.category}
-                        </span>
                         <span className="text-xs text-gray-500">{post.readTime} 읽기</span>
                       </div>
                       <h3 className="text-2xl font-bold text-gray-900 mb-3 hover:text-primary-500 transition-colors">

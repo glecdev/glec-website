@@ -617,3 +617,39 @@ model ContentRanking {
   @@index([rank])
   @@map("content_rankings")
 }
+
+// ============================================================
+// PARTNERSHIPS
+// ============================================================
+
+enum PartnershipStatus {
+  NEW
+  IN_PROGRESS
+  ACCEPTED
+  REJECTED
+}
+
+enum PartnershipType {
+  tech
+  reseller
+  consulting
+  other
+}
+
+model Partnership {
+  id              String            @id @default(uuid())
+  companyName     String            @map("company_name")
+  contactName     String            @map("contact_name")
+  email           String
+  partnershipType PartnershipType   @map("partnership_type")
+  proposal        String            @db.Text
+  status          PartnershipStatus @default(NEW)
+  adminNotes      String?           @map("admin_notes") @db.Text
+
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([email])
+  @@map("partnerships")
+}
