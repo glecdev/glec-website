@@ -152,15 +152,17 @@ export async function POST(request: NextRequest) {
       RETURNING id, company_name, contact_name, email, status, created_at
     `;
 
-    const createdPartnership = dbResult ? dbResult[0] : null;
+    const createdPartnership = dbResult[0];
 
-    // Send email via Resend
-    const emailResult = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@glec.io',
-      to: 'partnership@glec.io',
-      replyTo: sanitizedData.email,
-      subject: `[GLEC 파트너십 신청] ${getPartnershipTypeLabel(sanitizedData.partnershipType)} - ${sanitizedData.companyName}`,
-      html: `
+    // Send email via Resend (non-blocking - don't fail if email fails)
+    let emailSent = false;
+    try {
+      const emailResult = await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || 'noreply@glec.io',
+        to: 'partnership@glec.io',
+        replyTo: sanitizedData.email,
+        subject: `[GLEC 파트너십 신청] ${getPartnershipTypeLabel(sanitizedData.partnershipType)} - ${sanitizedData.companyName}`,
+        html: `
         <!DOCTYPE html>
         <html>
         <head>
@@ -218,28 +220,24 @@ export async function POST(request: NextRequest) {
         </body>
         </html>
       `,
-    });
+      });
 
-    if (emailResult.error) {
-      console.error('Resend email error:', emailResult.error);
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'EMAIL_SEND_ERROR',
-            message: '이메일 전송 중 오류가 발생했습니다',
-          },
-        },
-        { status: 500 }
-      );
+      if (!emailResult.error) {
+        emailSent = true;
+      } else {
+        console.error('Resend email error (non-fatal):', emailResult.error);
+      }
+    } catch (emailError: any) {
+      console.error('Email send exception (non-fatal):', emailError.message);
     }
 
-    // Success response
+    // Success response (even if email failed, DB save succeeded)
     return NextResponse.json({
       success: true,
       data: {
-        id: createdPartnership?.id || emailResult.data?.id,
+        id: createdPartnership.id,
         message: '파트너십 신청이 성공적으로 접수되었습니다',
+        emailSent, // Include email status for debugging
       },
     });
   } catch (error) {
