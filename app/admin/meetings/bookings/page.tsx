@@ -484,15 +484,11 @@ export default function AdminMeetingBookingsPage() {
 
                     {/* Actions */}
                     <div className="border-t border-gray-200 pt-4 mt-4 flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          alert('상세보기 기능은 향후 구현 예정입니다.');
-                        }}
-                      >
-                        상세보기
-                      </Button>
+                      <a href={`/admin/meetings/bookings/${booking.id}`}>
+                        <Button variant="outline" size="sm">
+                          상세보기
+                        </Button>
+                      </a>
 
                       {booking.booking_status === 'PENDING' && (
                         <>
@@ -813,16 +809,11 @@ export default function AdminMeetingBookingsPage() {
 
                             {/* Actions */}
                             <div className="border-t border-gray-200 pt-3 mt-3 flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1"
-                                onClick={() => {
-                                  alert('상세보기 기능은 향후 구현 예정입니다.');
-                                }}
-                              >
-                                상세보기
-                              </Button>
+                              <a href={`/admin/meetings/bookings/${booking.id}`} className="flex-1">
+                                <Button variant="outline" size="sm" className="w-full">
+                                  상세보기
+                                </Button>
+                              </a>
 
                               {booking.booking_status === 'PENDING' && (
                                 <Button
