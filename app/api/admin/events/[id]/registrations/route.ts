@@ -27,9 +27,11 @@ const sql = neon(process.env.DATABASE_URL!);
 // ============================================================
 
 export const GET = withAuth(
-  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+  async (request: NextRequest) => {
     try {
-      const { id: eventId } = await params;
+      // Extract eventId from URL pathname
+      const pathname = request.nextUrl.pathname;
+      const eventId = pathname.split('/')[4]; // /api/admin/events/[id]/registrations
       console.log('[DEBUG] Event ID:', eventId);
       console.log('[DEBUG] DATABASE_URL exists:', !!process.env.DATABASE_URL);
 

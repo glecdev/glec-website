@@ -39,9 +39,14 @@ const RegistrationUpdateSchema = z.object({
 // ============================================================
 
 export const PATCH = withAuth(
-  async (request: NextRequest, { params }: { params: Promise<{ id: string; registrationId: string }> }) => {
+  async (request: NextRequest) => {
     try {
-      const { id: eventId, registrationId } = await params;
+      // Extract eventId and registrationId from URL pathname
+      const pathname = request.nextUrl.pathname;
+      const parts = pathname.split('/'); // /api/admin/events/[id]/registrations/[registrationId]
+      const eventId = parts[4];
+      const registrationId = parts[6];
+
       const body = await request.json();
 
       // Validate

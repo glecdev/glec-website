@@ -151,7 +151,8 @@ async function verifyRegistrationInAdmin() {
   const data = await response.json();
 
   if (!data.success) {
-    throw new Error(`Failed to fetch registrations: ${data.error?.message}`);
+    console.error('   Full error response:', JSON.stringify(data.error, null, 2));
+    throw new Error(`Failed to fetch registrations: ${data.error?.message || JSON.stringify(data.error)}`);
   }
 
   console.log('   ✅ Fetched registrations from admin API');
