@@ -5,13 +5,15 @@
  * Used in: Admin pages for exporting data
  */
 
+import { showError } from './admin-notifications';
+
 export function exportToCSV<T extends Record<string, any>>(
   data: T[],
   filename: string,
   columnMapping?: Record<keyof T, string>
 ): void {
   if (data.length === 0) {
-    alert('내보낼 데이터가 없습니다.');
+    showError('내보낼 데이터가 없습니다.');
     return;
   }
 

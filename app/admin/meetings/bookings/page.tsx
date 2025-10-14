@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { showSuccess, showError, showWarning } from '@/lib/admin-notifications';
 
 interface MeetingBooking {
   id: string;
@@ -496,7 +497,7 @@ export default function AdminMeetingBookingsPage() {
                             variant="primary"
                             size="sm"
                             onClick={() => {
-                              alert('확정 기능은 향후 구현 예정입니다.');
+                              showError('확정 기능은 향후 구현 예정입니다.');
                             }}
                           >
                             확정하기
@@ -506,7 +507,7 @@ export default function AdminMeetingBookingsPage() {
                             size="sm"
                             onClick={() => {
                               if (confirm('정말 이 예약을 취소하시겠습니까?')) {
-                                alert('취소 기능은 향후 구현 예정입니다.');
+                                showError('취소 기능은 향후 구현 예정입니다.');
                               }
                             }}
                           >
@@ -821,7 +822,7 @@ export default function AdminMeetingBookingsPage() {
                                   size="sm"
                                   className="flex-1"
                                   onClick={() => {
-                                    alert('확정 기능은 향후 구현 예정입니다.');
+                                    showError('확정 기능은 향후 구현 예정입니다.');
                                   }}
                                 >
                                   확정

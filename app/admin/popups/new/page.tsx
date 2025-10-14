@@ -9,6 +9,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { showSuccess, showError, showWarning } from '@/lib/admin-notifications';
 
 export default function NewPopupPage() {
   const router = useRouter();
@@ -46,14 +47,14 @@ export default function NewPopupPage() {
 
       const data = await response.json();
       if (data.success) {
-        alert('팝업이 생성되었습니다.');
+        showError('팝업이 생성되었습니다.');
         router.push('/admin/popups');
       } else {
-        alert(data.error?.message || '생성에 실패했습니다.');
+        showError(data.error?.message || '생성에 실패했습니다.');
       }
     } catch (error) {
       console.error('[Popup Create] Error:', error);
-      alert('생성에 실패했습니다.');
+      showError('생성에 실패했습니다.');
     } finally {
       setIsSubmitting(false);
     }

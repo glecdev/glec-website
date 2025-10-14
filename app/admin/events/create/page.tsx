@@ -21,6 +21,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import { showSuccess, showError, showWarning } from '@/lib/admin-notifications';
 
 interface EventFormData {
   title: string;
@@ -158,7 +159,7 @@ export default function EventCreatePage() {
         throw new Error(result.error?.message || 'Failed to create event');
       }
 
-      alert('이벤트가 생성되었습니다.');
+      showError('이벤트가 생성되었습니다.');
       router.push('/admin/events');
     } catch (err) {
       console.error('[Event Create] Error:', err);

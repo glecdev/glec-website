@@ -13,6 +13,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { showSuccess, showError, showWarning } from '@/lib/admin-notifications';
 
 interface PopupFormData {
   title: string;
@@ -124,7 +125,7 @@ function EditPopupForm() {
       const result = await response.json();
 
       if (result.success) {
-        alert('팝업이 수정되었습니다');
+        showError('팝업이 수정되었습니다');
         router.push('/admin/popups');
       } else {
         setError(result.error?.message || '팝업 수정 실패');
