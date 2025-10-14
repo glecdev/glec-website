@@ -263,13 +263,23 @@ interface NoticeCardProps {
 function NoticeCard({ notice, isIntersecting, index }: NoticeCardProps) {
   const [imageError, setImageError] = React.useState(false);
 
-  const formatDate = (date: Date | null) => {
+  const formatDate = (date: Date | string | null) => {
     if (!date) return '';
+
+    // Convert string to Date if necessary
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) {
+      console.error('[LatestNewsSection] Invalid date:', date);
+      return '';
+    }
+
     return new Intl.DateTimeFormat('ko-KR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(date);
+    }).format(dateObj);
   };
 
   return (
