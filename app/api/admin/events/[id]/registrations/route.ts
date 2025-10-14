@@ -30,12 +30,18 @@ export const GET = withAuth(
   async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     try {
       const { id: eventId } = await params;
+      console.log('[DEBUG] Event ID:', eventId);
+      console.log('[DEBUG] DATABASE_URL exists:', !!process.env.DATABASE_URL);
+
       const searchParams = request.nextUrl.searchParams;
       const status = searchParams.get('status');
       const search = searchParams.get('search');
+      console.log('[DEBUG] Query params - status:', status, 'search:', search);
 
       // First, get event details
+      console.log('[DEBUG] Fetching event from database...');
       const eventResult = await sql`SELECT * FROM events WHERE id = ${eventId}`;
+      console.log('[DEBUG] Event query result:', eventResult.length, 'rows');
 
       if (eventResult.length === 0) {
         return NextResponse.json(
@@ -82,14 +88,17 @@ export const GET = withAuth(
         `;
       } else {
         // No filters
+        console.log('[DEBUG] Fetching registrations without filters...');
         registrations = await sql`
           SELECT * FROM event_registrations
           WHERE event_id = ${eventId}
           ORDER BY created_at DESC
         `;
+        console.log('[DEBUG] Registrations query result:', registrations.length, 'rows');
       }
 
       // Transform snake_case to camelCase
+      console.log('[DEBUG] Transforming registrations...');
       const transformedRegistrations = registrations.map((reg: any) => ({
         id: reg.id,
         name: reg.name,
@@ -115,6 +124,7 @@ export const GET = withAuth(
         maxParticipants: event.max_participants,
       };
 
+      console.log('[DEBUG] Returning success response with', transformedRegistrations.length, 'registrations');
       return NextResponse.json(
         {
           success: true,
@@ -131,12 +141,17 @@ export const GET = withAuth(
       );
     } catch (error) {
       console.error('[GET /api/admin/events/[id]/registrations] Error:', error);
+      console.error('[DEBUG] Error type:', error instanceof Error ? error.constructor.name : typeof error);
+      console.error('[DEBUG] Error message:', error instanceof Error ? error.message : String(error));
+      console.error('[DEBUG] Error stack:', error instanceof Error ? error.stack : 'No stack');
+
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'INTERNAL_SERVER_ERROR',
             message: 'An unexpected error occurred',
+            debug: error instanceof Error ? error.message : String(error),
           },
         },
         { status: 500 }
