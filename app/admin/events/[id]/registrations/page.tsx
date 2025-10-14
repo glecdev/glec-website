@@ -18,6 +18,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { showSuccess, showError } from '@/lib/admin-notifications';
 
 interface Event {
   id: string;
@@ -109,7 +110,9 @@ export default function EventRegistrationsPage() {
       setRegistrations(result.data.registrations);
     } catch (err) {
       console.error('[Registrations] Fetch error:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -149,11 +152,11 @@ export default function EventRegistrationsPage() {
         throw new Error(result.error?.message || 'Failed to update status');
       }
 
-      alert('상태가 업데이트되었습니다.');
+      showSuccess('상태가 업데이트되었습니다.');
       fetchRegistrations(); // Refresh list
     } catch (err) {
       console.error('[Update Status] Error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to update status');
+      showError(err instanceof Error ? err.message : 'Failed to update status');
     }
   };
 
@@ -300,7 +303,7 @@ export default function EventRegistrationsPage() {
       )}
 
       {/* Error State */}
-      {error && (
+      {error && !isLoading && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <p className="text-red-700 font-medium">에러: {error}</p>
         </div>
