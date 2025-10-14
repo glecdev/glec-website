@@ -22,7 +22,7 @@ const testRegistration = {
   email: `test-${timestamp}@example.com`,
   phone: '010-1234-5678',
   company: '테스트 회사',
-  jobTitle: '테스트 직책',
+  job_title: '테스트 직책',
   message: '이것은 E2E 테스트 참가 신청입니다.',
   privacy_consent: true,
   marketing_consent: true
@@ -186,7 +186,7 @@ async function verifyRegistrationInAdmin() {
     email: registration.email === testRegistration.email,
     phone: registration.phone === testRegistration.phone,
     company: registration.company === testRegistration.company,
-    jobTitle: registration.jobTitle === testRegistration.jobTitle,
+    jobTitle: registration.jobTitle === testRegistration.job_title,
     message: registration.message === testRegistration.message,
     status: registration.status === 'PENDING'
   };
