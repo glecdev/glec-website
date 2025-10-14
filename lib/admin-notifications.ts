@@ -1,9 +1,16 @@
+'use client';
+
 /**
  * Admin Notifications Utility
  *
  * Purpose: Centralized notification system for admin portal
  * Replaces: alert(), confirm(), console.log()
  * Based on: GLEC-Design-System-Standards.md (Toast notifications)
+ *
+ * IMPORTANT: 'use client' directive is required because this file uses:
+ * - react-hot-toast (client-side library)
+ * - document API (browser-only)
+ * - DOM manipulation for showConfirm modal
  *
  * Usage:
  * ```typescript

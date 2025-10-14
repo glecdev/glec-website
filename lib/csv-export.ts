@@ -1,8 +1,16 @@
+'use client';
+
 /**
  * CSV Export Utility
  *
  * Converts data to CSV format and triggers download
  * Used in: Admin pages for exporting data
+ *
+ * IMPORTANT: 'use client' directive is required because this file uses:
+ * - document API (browser-only)
+ * - Blob API (browser-only)
+ * - URL.createObjectURL (browser-only)
+ * - showError from admin-notifications (client-only)
  */
 
 import { showError } from './admin-notifications';
