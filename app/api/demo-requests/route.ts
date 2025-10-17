@@ -6,8 +6,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { neon } from '@neondatabase/serverless';
+import { Resend } from 'resend';
+import {
+  getDemoConfirmationSubject,
+  getDemoConfirmationHtmlBody,
+  getDemoConfirmationPlainTextBody,
+} from '@/lib/email-templates/demo-confirmation';
+import {
+  getDemoAdminNotificationSubject,
+  getDemoAdminNotificationHtmlBody,
+  getDemoAdminNotificationPlainTextBody,
+} from '@/lib/email-templates/demo-admin-notification';
 
 const sql = neon(process.env.DATABASE_URL!);
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 const DemoRequestSchema = z.object({
   companyName: z.string().min(1),
@@ -79,6 +91,96 @@ export async function POST(request: NextRequest) {
       company: created.company_name,
     });
 
+    // ============================================================
+    // AUTOMATION 1: Send Confirmation Email to Customer
+    // ============================================================
+    try {
+      const confirmationEmail = await resend.emails.send({
+        from: 'GLEC <noreply@no-reply.glec.io>',
+        to: data.email,
+        subject: getDemoConfirmationSubject(),
+        html: getDemoConfirmationHtmlBody({
+          contact_name: data.contactName,
+          company_name: data.companyName,
+          preferred_date: data.preferredDate,
+          preferred_time: data.preferredTime,
+          demo_request_id: demoRequestId,
+          product_interests: data.productInterests,
+        }),
+        text: getDemoConfirmationPlainTextBody({
+          contact_name: data.contactName,
+          company_name: data.companyName,
+          preferred_date: data.preferredDate,
+          preferred_time: data.preferredTime,
+          demo_request_id: demoRequestId,
+          product_interests: data.productInterests,
+        }),
+      });
+
+      if (confirmationEmail.error) {
+        console.error('[POST /api/demo-requests] Confirmation email failed:', confirmationEmail.error);
+      } else {
+        console.log('[POST /api/demo-requests] Confirmation email sent:', confirmationEmail.data?.id);
+      }
+    } catch (error) {
+      console.error('[POST /api/demo-requests] Confirmation email error:', error);
+      // Don't fail the request if email fails
+    }
+
+    // ============================================================
+    // AUTOMATION 2: Send Admin Notification Email
+    // ============================================================
+    try {
+      const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'admin@glec.io';
+
+      const adminNotification = await resend.emails.send({
+        from: 'GLEC Admin <noreply@no-reply.glec.io>',
+        to: adminEmail,
+        subject: getDemoAdminNotificationSubject(data.companyName),
+        html: getDemoAdminNotificationHtmlBody({
+          demo_request_id: demoRequestId,
+          company_name: data.companyName,
+          contact_name: data.contactName,
+          email: data.email,
+          phone: data.phone,
+          company_size: data.companySize,
+          product_interests: data.productInterests,
+          use_case: data.useCase,
+          current_solution: data.currentSolution,
+          monthly_shipments: data.monthlyShipments,
+          preferred_date: data.preferredDate,
+          preferred_time: data.preferredTime,
+          additional_message: data.additionalMessage,
+          created_at: now.toISOString(),
+        }),
+        text: getDemoAdminNotificationPlainTextBody({
+          demo_request_id: demoRequestId,
+          company_name: data.companyName,
+          contact_name: data.contactName,
+          email: data.email,
+          phone: data.phone,
+          company_size: data.companySize,
+          product_interests: data.productInterests,
+          use_case: data.useCase,
+          current_solution: data.currentSolution,
+          monthly_shipments: data.monthlyShipments,
+          preferred_date: data.preferredDate,
+          preferred_time: data.preferredTime,
+          additional_message: data.additionalMessage,
+          created_at: now.toISOString(),
+        }),
+      });
+
+      if (adminNotification.error) {
+        console.error('[POST /api/demo-requests] Admin notification failed:', adminNotification.error);
+      } else {
+        console.log('[POST /api/demo-requests] Admin notification sent:', adminNotification.data?.id);
+      }
+    } catch (error) {
+      console.error('[POST /api/demo-requests] Admin notification error:', error);
+      // Don't fail the request if email fails
+    }
+
     return NextResponse.json(
       {
         success: true,
@@ -90,7 +192,7 @@ export async function POST(request: NextRequest) {
           status: created.status,
           createdAt: created.created_at,
         },
-        message: '데모 신청이 완료되었습니다. 담당자가 빠른 시일 내에 연락드리겠습니다.',
+        message: '데모 신청이 완료되었습니다. 확인 이메일을 발송했으니 확인해주세요.',
       },
       { status: 201 }
     );

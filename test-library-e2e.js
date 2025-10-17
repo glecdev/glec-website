@@ -64,16 +64,15 @@ async function testLibraryE2E() {
       contact_name: 'Test User',
       email: TEST_EMAIL,
       phone: '010-1234-5678',
-      industry: 'Technology',
-      job_title: 'Engineer',
-      message: 'This is an automated E2E test from Claude Code',
+      privacy_consent: true,
+      marketing_consent: false,
     };
 
     console.log(`📤 Request payload:`);
     console.log(JSON.stringify(requestData, null, 2));
     console.log('');
 
-    const requestResponse = await fetch(`${BASE_URL}/api/library/request`, {
+    const requestResponse = await fetch(`${BASE_URL}/api/library/download`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

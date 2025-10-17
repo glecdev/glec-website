@@ -1,0 +1,13 @@
+{
+  "loginSuccess": false,
+  "deletedVariables": [],
+  "addedVariables": [],
+  "screenshots": [
+    "01-login-page.png",
+    "error-final.png"
+  ],
+  "redeploymentTriggered": false,
+  "errors": [
+    "Login timeout - not completed within 5 minutes"
+  ]
+}

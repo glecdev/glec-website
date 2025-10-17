@@ -14,5 +14,11 @@
       "source": "/api/:path*",
       "destination": "/api/:path*"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/library-nurture",
+      "schedule": "0 0 * * *"
+    }
   ]
 }

@@ -75,18 +75,7 @@ export async function GET(req: NextRequest) {
 
     if (cronSecret !== expectedSecret) {
       console.error('[Library Nurture] Invalid cron secret - mismatch');
-      return NextResponse.json({
-        error: 'Unauthorized',
-        debug: {
-          raw_secret: rawSecret,
-          expected_secret: expectedSecret,
-          received_secret: cronSecret,
-          raw_hex: Buffer.from(rawSecret).toString('hex'),
-          expected_hex: Buffer.from(expectedSecret).toString('hex'),
-          received_hex: cronSecret ? Buffer.from(cronSecret).toString('hex') : null,
-          match: cronSecret === expectedSecret,
-        }
-      }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     console.log('[Library Nurture] Starting cron job...');

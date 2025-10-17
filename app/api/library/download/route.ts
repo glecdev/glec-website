@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { neon } from '@neondatabase/serverless';
 import { Resend } from 'resend';
+import { calculateLibraryLeadScore } from '@/lib/lead-scoring/calculate-score';
 
 // ============================================================
 // DATABASE CONNECTION
@@ -100,68 +101,24 @@ interface LibraryLead {
 // ============================================================
 
 /**
- * Calculate lead score (0-100)
+ * Calculate lead score (0-100) - DEPRECATED
+ * Use lib/lead-scoring/calculate-score.ts instead
  */
 function calculateLeadScore(lead: LibraryDownloadRequest, libraryItem: LibraryItem): number {
-  let score = 0;
+  const result = calculateLibraryLeadScore({
+    email: lead.email,
+    phone: lead.phone,
+    marketing_consent: lead.marketing_consent,
+    utm_source: lead.utm_source,
+    utm_medium: lead.utm_medium,
+    utm_campaign: lead.utm_campaign,
+    email_opened: false,
+    download_link_clicked: false,
+    created_at: new Date(),
+    library_category: libraryItem.category,
+  });
 
-  // 1. Source Type (30점)
-  score += 30; // Library download is high intent
-
-  // 2. Library Item Value (20점)
-  if (libraryItem.category === 'FRAMEWORK') score += 20;
-  else if (libraryItem.category === 'WHITEPAPER') score += 15;
-  else if (libraryItem.category === 'CASE_STUDY') score += 10;
-  else score += 5;
-
-  // 3. Company Size (20점) - infer from email domain
-  const domain = lead.email.split('@')[1];
-  const companyScore = inferCompanySizeScore(domain);
-  score += companyScore;
-
-  // 4. Marketing Consent (10점)
-  if (lead.marketing_consent) score += 10;
-
-  // 5. Phone Provided (10점)
-  if (lead.phone) score += 10;
-
-  // 6. UTM Tracking (10점) - indicates marketing campaign engagement
-  if (lead.utm_source || lead.utm_medium || lead.utm_campaign) score += 10;
-
-  return Math.max(0, Math.min(100, score));
-}
-
-function inferCompanySizeScore(domain: string): number {
-  // Fortune 500 / Large corporations
-  const largeCorporations = [
-    'samsung.com',
-    'lg.com',
-    'sk.com',
-    'hyundai.com',
-    'posco.com',
-    'hanwha.com',
-    'lotte.com',
-    'gs.com',
-  ];
-  if (largeCorporations.some((corp) => domain.includes(corp))) return 20;
-
-  // Logistics companies (high value target)
-  const logisticsCompanies = [
-    'dhl.com',
-    'fedex.com',
-    'ups.com',
-    'cjlogistics.com',
-    'hanjin.com',
-    'kmlogis.com',
-  ];
-  if (logisticsCompanies.some((log) => domain.includes(log))) return 18;
-
-  // Generic email domains (low score)
-  const genericDomains = ['gmail.com', 'naver.com', 'daum.net', 'hotmail.com', 'outlook.com'];
-  if (genericDomains.includes(domain)) return 0;
-
-  // SMB / Corporate email (default)
-  return 10;
+  return result.score;
 }
 
 /**
@@ -182,12 +139,13 @@ function isDisposableEmail(email: string): boolean {
 
 /**
  * Send download email with PDF attachment or Google Drive link
+ * @returns Resend email ID for tracking
  */
 async function sendLibraryDownloadEmail(
   lead: LibraryDownloadRequest,
   libraryItem: LibraryItem,
   leadId: string
-): Promise<void> {
+): Promise<string> {
   const googleDriveLink = 'https://drive.google.com/file/d/1mS9i6Mj5z68Vefmyu3OM_YZYobVEu1UZ/view?usp=drive_link';
 
   const htmlBody = `
@@ -306,12 +264,22 @@ async function sendLibraryDownloadEmail(
 </html>
   `;
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: 'GLEC <noreply@no-reply.glec.io>',
     to: lead.email,
     subject: `[GLEC] ${libraryItem.title} 다운로드`,
     html: htmlBody,
   });
+
+  if (error) {
+    throw new Error(`Resend API error: ${error.message}`);
+  }
+
+  if (!data?.id) {
+    throw new Error('Resend did not return email ID');
+  }
+
+  return data.id; // Return Resend email ID (e.g., "abc123...")
 }
 
 // ============================================================
@@ -379,7 +347,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 4. Check library item exists and is published
+    // 4. Check if email is blacklisted
+    const blacklisted = await sql`
+      SELECT email, reason FROM email_blacklist
+      WHERE email = ${data.email}
+      LIMIT 1
+    `;
+
+    if (blacklisted.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'EMAIL_BLACKLISTED',
+            message: '이 이메일 주소는 사용할 수 없습니다',
+          },
+        },
+        { status: 403 }
+      );
+    }
+
+    // 5. Check library item exists and is published
     const libraryItems = await sql`
       SELECT * FROM library_items
       WHERE id = ${data.library_item_id}
@@ -446,15 +434,20 @@ export async function POST(req: NextRequest) {
     // 7. Send email
     let emailSent = false;
     let emailError = null;
+    let resendEmailId: string | null = null;
 
     try {
-      await sendLibraryDownloadEmail(data, libraryItem, lead.id);
+      resendEmailId = await sendLibraryDownloadEmail(data, libraryItem, lead.id);
       emailSent = true;
 
-      // 8. Update email sent status
+      // 8. Update email sent status + Resend email ID
       await sql`
         UPDATE library_leads
-        SET email_sent = TRUE, email_sent_at = NOW()
+        SET
+          email_sent = TRUE,
+          email_sent_at = NOW(),
+          resend_email_id = ${resendEmailId},
+          email_status = 'sent'::email_delivery_status
         WHERE id = ${lead.id}
       `;
     } catch (error) {
