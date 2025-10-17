@@ -98,11 +98,12 @@ export async function GET(req: NextRequest) {
         email,
         library_item_id
       FROM library_leads
-      WHERE DATE(created_at) = CURRENT_DATE - INTERVAL '3 days'
-      AND email_sent = TRUE
-      AND email_opened = TRUE
+      WHERE created_at >= NOW() - INTERVAL '4 days'
+      AND created_at <= NOW() - INTERVAL '3 days'
       AND nurture_day3_sent = FALSE
       AND marketing_consent = TRUE
+      AND (email_bounced = FALSE OR email_bounced IS NULL)
+      AND (email_complained = FALSE OR email_complained IS NULL)
       LIMIT 100
     `;
 
@@ -165,11 +166,13 @@ export async function GET(req: NextRequest) {
         contact_name,
         email
       FROM library_leads
-      WHERE DATE(created_at) = CURRENT_DATE - INTERVAL '7 days'
-      AND email_sent = TRUE
+      WHERE created_at >= NOW() - INTERVAL '8 days'
+      AND created_at <= NOW() - INTERVAL '7 days'
       AND nurture_day3_sent = TRUE
       AND nurture_day7_sent = FALSE
       AND marketing_consent = TRUE
+      AND (email_bounced = FALSE OR email_bounced IS NULL)
+      AND (email_complained = FALSE OR email_complained IS NULL)
       LIMIT 100
     `;
 
@@ -224,12 +227,13 @@ export async function GET(req: NextRequest) {
         contact_name,
         email
       FROM library_leads
-      WHERE DATE(created_at) = CURRENT_DATE - INTERVAL '14 days'
-      AND email_sent = TRUE
+      WHERE created_at >= NOW() - INTERVAL '15 days'
+      AND created_at <= NOW() - INTERVAL '14 days'
       AND nurture_day7_sent = TRUE
       AND nurture_day14_sent = FALSE
-      AND download_link_clicked = TRUE
       AND marketing_consent = TRUE
+      AND (email_bounced = FALSE OR email_bounced IS NULL)
+      AND (email_complained = FALSE OR email_complained IS NULL)
       LIMIT 100
     `;
 
@@ -284,12 +288,13 @@ export async function GET(req: NextRequest) {
         contact_name,
         email
       FROM library_leads
-      WHERE DATE(created_at) = CURRENT_DATE - INTERVAL '30 days'
-      AND email_sent = TRUE
+      WHERE created_at >= NOW() - INTERVAL '31 days'
+      AND created_at <= NOW() - INTERVAL '30 days'
       AND nurture_day14_sent = TRUE
       AND nurture_day30_sent = FALSE
-      AND email_opened = FALSE
       AND marketing_consent = TRUE
+      AND (email_bounced = FALSE OR email_bounced IS NULL)
+      AND (email_complained = FALSE OR email_complained IS NULL)
       LIMIT 100
     `;
 
