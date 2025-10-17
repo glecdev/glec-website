@@ -78,9 +78,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         error: 'Unauthorized',
         debug: {
-          raw_secret_length: rawSecret.length,
-          expected_secret_length: expectedSecret.length,
-          received_secret_length: cronSecret?.length,
+          raw_secret: rawSecret,
+          expected_secret: expectedSecret,
+          received_secret: cronSecret,
+          raw_hex: Buffer.from(rawSecret).toString('hex'),
+          expected_hex: Buffer.from(expectedSecret).toString('hex'),
+          received_hex: cronSecret ? Buffer.from(cronSecret).toString('hex') : null,
           match: cronSecret === expectedSecret,
         }
       }, { status: 401 });
