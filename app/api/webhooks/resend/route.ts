@@ -21,8 +21,64 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
+import crypto from 'crypto';
+import { calculateLibraryLeadScore } from '@/lib/lead-scoring/calculate-score';
 
 const sql = neon(process.env.DATABASE_URL!);
+
+// ============================================================
+// WEBHOOK SIGNATURE VERIFICATION
+// ============================================================
+
+function verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
+  try {
+    // Handle trailing newlines, escaped newlines, and quotes from Vercel CLI
+    const trimmedSecret = secret
+      .trim()                    // Remove leading/trailing whitespace
+      .replace(/^["']|["']$/g, '') // Remove leading/trailing quotes
+      .replace(/\\n$/, '');      // Remove escaped newline at end
+
+    // Resend uses Svix for webhook signatures
+    // Format: "v1,timestamp=XXXX,signatures=YYYY"
+    const parts = signature.split(',');
+    const timestamp = parts.find(p => p.startsWith('t='))?.split('=')[1];
+    const sigs = parts.filter(p => p.startsWith('v1='));
+
+    if (!timestamp || sigs.length === 0) {
+      console.error('[Resend Webhook] Invalid signature format');
+      return false;
+    }
+
+    // Verify timestamp is recent (within 5 minutes)
+    const now = Math.floor(Date.now() / 1000);
+    const signatureTimestamp = parseInt(timestamp, 10);
+    if (Math.abs(now - signatureTimestamp) > 300) {
+      console.error('[Resend Webhook] Signature timestamp too old');
+      return false;
+    }
+
+    // Create signed payload: timestamp.payload
+    const signedPayload = `${timestamp}.${payload}`;
+
+    // Compute HMAC-SHA256
+    const expectedSignature = crypto
+      .createHmac('sha256', trimmedSecret)
+      .update(signedPayload)
+      .digest('base64');
+
+    // Check if any signature matches
+    return sigs.some(sig => {
+      const providedSig = sig.split('=')[1];
+      return crypto.timingSafeEqual(
+        Buffer.from(expectedSignature),
+        Buffer.from(providedSig)
+      );
+    });
+  } catch (error) {
+    console.error('[Resend Webhook] Signature verification error:', error);
+    return false;
+  }
+}
 
 interface ResendWebhookEvent {
   type: string;
@@ -54,8 +110,25 @@ const EVENT_STATUS_MAP: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Parse webhook payload
-    const event: ResendWebhookEvent = await req.json();
+    // 1. Read raw body for signature verification
+    const rawBody = await req.text();
+    const signature = req.headers.get('svix-signature');
+
+    // 2. Verify webhook signature (security)
+    const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      console.error('[Resend Webhook] RESEND_WEBHOOK_SECRET not configured');
+      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
+    }
+
+    if (signature && !verifyWebhookSignature(rawBody, signature, webhookSecret)) {
+      console.error('[Resend Webhook] Invalid webhook signature');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+
+    // 3. Parse webhook payload
+    const event: ResendWebhookEvent = JSON.parse(rawBody);
 
     console.log('[Resend Webhook] Received event:', event.type);
     console.log('[Resend Webhook] Email ID:', event.data.email_id);
@@ -268,6 +341,13 @@ async function handleEmailComplained(email: string): Promise<void> {
   try {
     console.warn(`[Resend Webhook] Spam complaint: ${email}`);
 
+    // Add to email blacklist
+    await sql`
+      INSERT INTO email_blacklist (email, reason)
+      VALUES (${email}, 'spam_complaint')
+      ON CONFLICT (email) DO NOTHING
+    `;
+
     // Mark lead as LOST and low quality
     await sql`
       UPDATE library_leads
@@ -313,80 +393,31 @@ async function recalculateLeadScore(leadId: string): Promise<void> {
     if (leads.length === 0) return;
 
     const lead = leads[0];
-    let score = 0;
 
-    // 1. Source Type (30점)
-    score += 30;
-
-    // 2. Library Item Value (20점)
-    if (lead.category === 'FRAMEWORK') score += 20;
-    else if (lead.category === 'WHITEPAPER') score += 15;
-    else if (lead.category === 'CASE_STUDY') score += 10;
-    else score += 5;
-
-    // 3. Email Engagement (30점)
-    if (lead.email_opened) score += 10;
-    if (lead.download_link_clicked) score += 20;
-
-    // 4. Company Size (20점)
-    const domain = lead.email.split('@')[1];
-    score += inferCompanySizeScore(domain);
-
-    // 5. Marketing Consent (10점)
-    if (lead.marketing_consent) score += 10;
-
-    // 6. Phone Provided (10점)
-    if (lead.phone) score += 10;
-
-    // 7. UTM Tracking (10점)
-    if (lead.utm_source || lead.utm_medium || lead.utm_campaign) score += 10;
-
-    // 8. Time Factor - deduct 10 points if no action within 30 days
-    const daysSinceCreated =
-      (Date.now() - new Date(lead.created_at).getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSinceCreated > 30 && !lead.email_opened) score -= 10;
-
-    // Clamp to 0-100
-    score = Math.max(0, Math.min(100, score));
+    // Use centralized scoring function
+    const result = calculateLibraryLeadScore({
+      email: lead.email,
+      phone: lead.phone,
+      marketing_consent: lead.marketing_consent,
+      utm_source: lead.utm_source,
+      utm_medium: lead.utm_medium,
+      utm_campaign: lead.utm_campaign,
+      email_opened: lead.email_opened,
+      download_link_clicked: lead.download_link_clicked,
+      created_at: lead.created_at,
+      library_category: lead.category,
+    });
 
     // Update lead_score
     await sql`
       UPDATE library_leads
-      SET lead_score = ${score}, updated_at = NOW()
+      SET lead_score = ${result.score}, updated_at = NOW()
       WHERE id = ${leadId}
     `;
 
-    console.log(`[Resend Webhook] Lead score updated: ${leadId} → ${score}`);
+    console.log(`[Resend Webhook] Lead score updated: ${leadId} → ${result.score}`);
+    console.log(`[Resend Webhook] Score breakdown:`, result.breakdown);
   } catch (error) {
     console.error('[Resend Webhook] Error recalculating lead score:', error);
   }
-}
-
-function inferCompanySizeScore(domain: string): number {
-  const largeCorporations = [
-    'samsung.com',
-    'lg.com',
-    'sk.com',
-    'hyundai.com',
-    'posco.com',
-    'hanwha.com',
-    'lotte.com',
-    'gs.com',
-  ];
-  if (largeCorporations.some((corp) => domain.includes(corp))) return 20;
-
-  const logisticsCompanies = [
-    'dhl.com',
-    'fedex.com',
-    'ups.com',
-    'cjlogistics.com',
-    'hanjin.com',
-    'kmlogis.com',
-  ];
-  if (logisticsCompanies.some((log) => domain.includes(log))) return 18;
-
-  const genericDomains = ['gmail.com', 'naver.com', 'daum.net', 'hotmail.com', 'outlook.com'];
-  if (genericDomains.includes(domain)) return 0;
-
-  return 10;
 }
