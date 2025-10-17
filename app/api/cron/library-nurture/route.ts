@@ -98,8 +98,7 @@ export async function GET(req: NextRequest) {
         email,
         library_item_id
       FROM library_leads
-      WHERE created_at >= NOW() - INTERVAL '4 days'
-      AND created_at <= NOW() - INTERVAL '3 days'
+      WHERE created_at <= NOW() - INTERVAL '3 days'
       AND nurture_day3_sent = FALSE
       AND marketing_consent = TRUE
       AND (email_bounced = FALSE OR email_bounced IS NULL)
@@ -166,8 +165,7 @@ export async function GET(req: NextRequest) {
         contact_name,
         email
       FROM library_leads
-      WHERE created_at >= NOW() - INTERVAL '8 days'
-      AND created_at <= NOW() - INTERVAL '7 days'
+      WHERE created_at <= NOW() - INTERVAL '7 days'
       AND nurture_day3_sent = TRUE
       AND nurture_day7_sent = FALSE
       AND marketing_consent = TRUE
@@ -227,8 +225,7 @@ export async function GET(req: NextRequest) {
         contact_name,
         email
       FROM library_leads
-      WHERE created_at >= NOW() - INTERVAL '15 days'
-      AND created_at <= NOW() - INTERVAL '14 days'
+      WHERE created_at <= NOW() - INTERVAL '14 days'
       AND nurture_day7_sent = TRUE
       AND nurture_day14_sent = FALSE
       AND marketing_consent = TRUE
@@ -288,8 +285,7 @@ export async function GET(req: NextRequest) {
         contact_name,
         email
       FROM library_leads
-      WHERE created_at >= NOW() - INTERVAL '31 days'
-      AND created_at <= NOW() - INTERVAL '30 days'
+      WHERE created_at <= NOW() - INTERVAL '30 days'
       AND nurture_day14_sent = TRUE
       AND nurture_day30_sent = FALSE
       AND marketing_consent = TRUE
