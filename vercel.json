@@ -17,7 +17,7 @@
   ],
   "crons": [
     {
-      "path": "/api/cron/library-nurture",
+      "path": "/api/cron/library-nurture?cron_secret=OjZEePvm%2Bx5JqHn13bVCBQn0rTCDngh6492hqIhwRaA%3D",
       "schedule": "0 0 * * *"
     }
   ]

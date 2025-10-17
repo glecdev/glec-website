@@ -43,12 +43,28 @@ CRON_SECRET=<GENERATE_32+_CHAR_RANDOM_STRING>
 **Required**: Minimum 32 characters, cryptographically random
 **Generate**: `openssl rand -base64 32` or use password manager
 
+**⚠️ URL Encoding Warning**: If the generated secret contains `+`, `/`, or `=` characters (common in base64), you MUST URL-encode them when using in query parameters:
+- `+` → `%2B`
+- `/` → `%2F`
+- `=` → `%3D`
+
+Example:
+```bash
+# ❌ WRONG (+ will be decoded as space)
+curl "...?cron_secret=OjZEePvm+x5JqHn13bVCBQn0rTCDngh6492hqIhwRaA="
+
+# ✅ CORRECT (URL-encoded)
+curl "...?cron_secret=OjZEePvm%2Bx5JqHn13bVCBQn0rTCDngh6492hqIhwRaA%3D"
+```
+
+See [VERCEL-ENV-URL-ENCODING-ISSUE.md](./VERCEL-ENV-URL-ENCODING-ISSUE.md) for full details.
+
 #### 3. Admin Notification Email
 ```bash
 ADMIN_NOTIFICATION_EMAIL=<ACTUAL_ADMIN_EMAIL>
 ```
-**Current**: `oillex.co.kr@gmail.com`
-**Confirm**: Is this the correct production email?
+**Current**: `admin@glec.io` ✅
+**Status**: Correctly configured
 
 ---
 
@@ -102,7 +118,7 @@ Already configured in `vercel.json`:
 {
   "crons": [
     {
-      "path": "/api/cron/library-nurture",
+      "path": "/api/cron/library-nurture?cron_secret=OjZEePvm%2Bx5JqHn13bVCBQn0rTCDngh6492hqIhwRaA%3D",
       "schedule": "0 0 * * *"
     }
   ]
@@ -110,6 +126,7 @@ Already configured in `vercel.json`:
 ```
 
 **Schedule**: Daily at 12:00 AM UTC (9:00 AM KST)
+**Note**: The `cron_secret` query parameter is URL-encoded (`+` → `%2B`, `=` → `%3D`)
 
 ### Step 2: Verify Cron Secret
 
