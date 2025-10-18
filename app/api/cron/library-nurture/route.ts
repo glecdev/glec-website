@@ -8,8 +8,16 @@
  * Process:
  * 1. Find library leads created exactly N days ago
  * 2. Check if nurture email for that day has been sent
- * 3. Send appropriate nurture email (Day 3, 7, 14, 30)
- * 4. Update nurture flags in database
+ * 3. Fetch email template from database (LIBRARY_DOWNLOAD category)
+ * 4. Render template with lead-specific variables
+ * 5. Send personalized nurture email (Day 3, 7, 14, 30)
+ * 6. Update nurture flags in database
+ * 7. Log email send to email_send_history table
+ *
+ * Template System:
+ * - Uses database templates from email_templates table
+ * - Variable substitution: {contact_name}, {company_name}, {library_item_title}, etc.
+ * - Tracks template usage statistics
  *
  * Security:
  * - Requires cron_secret query parameter (set in .env)
@@ -20,28 +28,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 import { Resend } from 'resend';
 import {
-  getDay3Subject,
-  getDay3HtmlBody,
-  getDay3PlainTextBody,
-} from '@/lib/email-templates/library-nurture-day3';
-import {
-  getDay7Subject,
-  getDay7HtmlBody,
-  getDay7PlainTextBody,
-} from '@/lib/email-templates/library-nurture-day7';
-import {
-  getDay14Subject,
-  getDay14HtmlBody,
-  getDay14PlainTextBody,
-} from '@/lib/email-templates/library-nurture-day14';
-import {
-  getDay30Subject,
-  getDay30HtmlBody,
-  getDay30PlainTextBody,
-} from '@/lib/email-templates/library-nurture-day30';
+  getLibraryNurtureEmail,
+  logEmailSend,
+} from '@/lib/email-templates/template-renderer';
 
 const sql = neon(process.env.DATABASE_URL!);
 const resend = new Resend(process.env.RESEND_API_KEY!);
+
+// ============================================================
+// TYPES
+// ============================================================
+
+interface LibraryLead {
+  id: string;
+  company_name: string;
+  contact_name: string;
+  email: string;
+  library_item_id: string;
+  created_at: Date;
+}
 
 // ============================================================
 // CRON JOB HANDLER
@@ -96,7 +101,8 @@ export async function GET(req: NextRequest) {
         company_name,
         contact_name,
         email,
-        library_item_id
+        library_item_id,
+        created_at
       FROM library_leads
       WHERE created_at <= NOW() - INTERVAL '3 days'
       AND nurture_day3_sent = FALSE
@@ -116,27 +122,37 @@ export async function GET(req: NextRequest) {
         `;
         const libraryTitle = items[0]?.title || 'GLEC Framework';
 
+        // Get rendered email from template system
+        const emailContent = await getLibraryNurtureEmail(3, {
+          contact_name: lead.contact_name,
+          company_name: lead.company_name,
+          library_item_title: libraryTitle,
+          library_item_id: lead.library_item_id,
+          download_date: new Date(lead.created_at).toLocaleDateString('ko-KR'),
+          email: lead.email,
+        });
+
         const { data, error } = await resend.emails.send({
           from: 'GLEC <noreply@no-reply.glec.io>',
           to: lead.email,
-          subject: getDay3Subject(),
-          html: getDay3HtmlBody({
-            contact_name: lead.contact_name,
-            company_name: lead.company_name,
-            library_title: libraryTitle,
-            lead_id: lead.id,
-          }),
-          text: getDay3PlainTextBody({
-            contact_name: lead.contact_name,
-            company_name: lead.company_name,
-            library_title: libraryTitle,
-            lead_id: lead.id,
-          }),
+          subject: emailContent.subject,
+          html: emailContent.html,
+          text: emailContent.text,
         });
 
         if (error) {
           console.error(`[Library Nurture] Day 3 email failed for ${lead.email}:`, error);
           results.day3.failed++;
+
+          // Log failed send
+          await logEmailSend(
+            emailContent.template_id,
+            lead.id,
+            lead.email,
+            null,
+            'failed',
+            error.message
+          );
         } else {
           await sql`
             UPDATE library_leads
@@ -148,6 +164,15 @@ export async function GET(req: NextRequest) {
           `;
           console.log(`[Library Nurture] Day 3 email sent to ${lead.email}`);
           results.day3.sent++;
+
+          // Log successful send
+          await logEmailSend(
+            emailContent.template_id,
+            lead.id,
+            lead.email,
+            data?.id || null,
+            'sent'
+          );
         }
       } catch (error) {
         console.error(`[Library Nurture] Error processing Day 3 for ${lead.email}:`, error);
@@ -163,7 +188,9 @@ export async function GET(req: NextRequest) {
         id,
         company_name,
         contact_name,
-        email
+        email,
+        library_item_id,
+        created_at
       FROM library_leads
       WHERE created_at <= NOW() - INTERVAL '7 days'
       AND nurture_day3_sent = TRUE
@@ -178,25 +205,43 @@ export async function GET(req: NextRequest) {
 
     for (const lead of day7Leads) {
       try {
+        // Fetch library item title
+        const items = await sql`
+          SELECT title FROM library_items WHERE id = ${lead.library_item_id} LIMIT 1
+        `;
+        const libraryTitle = items[0]?.title || 'GLEC Framework';
+
+        // Get rendered email from template system
+        const emailContent = await getLibraryNurtureEmail(7, {
+          contact_name: lead.contact_name,
+          company_name: lead.company_name,
+          library_item_title: libraryTitle,
+          library_item_id: lead.library_item_id,
+          download_date: new Date(lead.created_at).toLocaleDateString('ko-KR'),
+          email: lead.email,
+        });
+
         const { data, error } = await resend.emails.send({
           from: 'GLEC <noreply@no-reply.glec.io>',
           to: lead.email,
-          subject: getDay7Subject(),
-          html: getDay7HtmlBody({
-            contact_name: lead.contact_name,
-            company_name: lead.company_name,
-            lead_id: lead.id,
-          }),
-          text: getDay7PlainTextBody({
-            contact_name: lead.contact_name,
-            company_name: lead.company_name,
-            lead_id: lead.id,
-          }),
+          subject: emailContent.subject,
+          html: emailContent.html,
+          text: emailContent.text,
         });
 
         if (error) {
           console.error(`[Library Nurture] Day 7 email failed for ${lead.email}:`, error);
           results.day7.failed++;
+
+          // Log failed send
+          await logEmailSend(
+            emailContent.template_id,
+            lead.id,
+            lead.email,
+            null,
+            'failed',
+            error.message
+          );
         } else {
           await sql`
             UPDATE library_leads
@@ -208,6 +253,15 @@ export async function GET(req: NextRequest) {
           `;
           console.log(`[Library Nurture] Day 7 email sent to ${lead.email}`);
           results.day7.sent++;
+
+          // Log successful send
+          await logEmailSend(
+            emailContent.template_id,
+            lead.id,
+            lead.email,
+            data?.id || null,
+            'sent'
+          );
         }
       } catch (error) {
         console.error(`[Library Nurture] Error processing Day 7 for ${lead.email}:`, error);
@@ -223,7 +277,9 @@ export async function GET(req: NextRequest) {
         id,
         company_name,
         contact_name,
-        email
+        email,
+        library_item_id,
+        created_at
       FROM library_leads
       WHERE created_at <= NOW() - INTERVAL '14 days'
       AND nurture_day7_sent = TRUE
@@ -238,25 +294,43 @@ export async function GET(req: NextRequest) {
 
     for (const lead of day14Leads) {
       try {
+        // Fetch library item title
+        const items = await sql`
+          SELECT title FROM library_items WHERE id = ${lead.library_item_id} LIMIT 1
+        `;
+        const libraryTitle = items[0]?.title || 'GLEC Framework';
+
+        // Get rendered email from template system
+        const emailContent = await getLibraryNurtureEmail(14, {
+          contact_name: lead.contact_name,
+          company_name: lead.company_name,
+          library_item_title: libraryTitle,
+          library_item_id: lead.library_item_id,
+          download_date: new Date(lead.created_at).toLocaleDateString('ko-KR'),
+          email: lead.email,
+        });
+
         const { data, error } = await resend.emails.send({
           from: 'GLEC <noreply@no-reply.glec.io>',
           to: lead.email,
-          subject: getDay14Subject(),
-          html: getDay14HtmlBody({
-            contact_name: lead.contact_name,
-            company_name: lead.company_name,
-            lead_id: lead.id,
-          }),
-          text: getDay14PlainTextBody({
-            contact_name: lead.contact_name,
-            company_name: lead.company_name,
-            lead_id: lead.id,
-          }),
+          subject: emailContent.subject,
+          html: emailContent.html,
+          text: emailContent.text,
         });
 
         if (error) {
           console.error(`[Library Nurture] Day 14 email failed for ${lead.email}:`, error);
           results.day14.failed++;
+
+          // Log failed send
+          await logEmailSend(
+            emailContent.template_id,
+            lead.id,
+            lead.email,
+            null,
+            'failed',
+            error.message
+          );
         } else {
           await sql`
             UPDATE library_leads
@@ -268,6 +342,15 @@ export async function GET(req: NextRequest) {
           `;
           console.log(`[Library Nurture] Day 14 email sent to ${lead.email}`);
           results.day14.sent++;
+
+          // Log successful send
+          await logEmailSend(
+            emailContent.template_id,
+            lead.id,
+            lead.email,
+            data?.id || null,
+            'sent'
+          );
         }
       } catch (error) {
         console.error(`[Library Nurture] Error processing Day 14 for ${lead.email}:`, error);
@@ -283,7 +366,9 @@ export async function GET(req: NextRequest) {
         id,
         company_name,
         contact_name,
-        email
+        email,
+        library_item_id,
+        created_at
       FROM library_leads
       WHERE created_at <= NOW() - INTERVAL '30 days'
       AND nurture_day14_sent = TRUE
@@ -298,25 +383,46 @@ export async function GET(req: NextRequest) {
 
     for (const lead of day30Leads) {
       try {
+        // Fetch library item title
+        const items = await sql`
+          SELECT title FROM library_items WHERE id = ${lead.library_item_id} LIMIT 1
+        `;
+        const libraryTitle = items[0]?.title || 'GLEC Framework';
+
+        // Get rendered email from template system
+        const emailContent = await getLibraryNurtureEmail(30, {
+          contact_name: lead.contact_name,
+          company_name: lead.company_name,
+          library_item_title: libraryTitle,
+          library_item_id: lead.library_item_id,
+          download_date: new Date(lead.created_at).toLocaleDateString('ko-KR'),
+          email: lead.email,
+          discount_code: 'LIBRARY30',
+          discount_amount: '20%',
+          expiry_date: getExpiryDate(),
+        });
+
         const { data, error } = await resend.emails.send({
           from: 'GLEC <noreply@no-reply.glec.io>',
           to: lead.email,
-          subject: getDay30Subject(),
-          html: getDay30HtmlBody({
-            contact_name: lead.contact_name,
-            company_name: lead.company_name,
-            lead_id: lead.id,
-          }),
-          text: getDay30PlainTextBody({
-            contact_name: lead.contact_name,
-            company_name: lead.company_name,
-            lead_id: lead.id,
-          }),
+          subject: emailContent.subject,
+          html: emailContent.html,
+          text: emailContent.text,
         });
 
         if (error) {
           console.error(`[Library Nurture] Day 30 email failed for ${lead.email}:`, error);
           results.day30.failed++;
+
+          // Log failed send
+          await logEmailSend(
+            emailContent.template_id,
+            lead.id,
+            lead.email,
+            null,
+            'failed',
+            error.message
+          );
         } else {
           await sql`
             UPDATE library_leads
@@ -328,6 +434,15 @@ export async function GET(req: NextRequest) {
           `;
           console.log(`[Library Nurture] Day 30 email sent to ${lead.email}`);
           results.day30.sent++;
+
+          // Log successful send
+          await logEmailSend(
+            emailContent.template_id,
+            lead.id,
+            lead.email,
+            data?.id || null,
+            'sent'
+          );
         }
       } catch (error) {
         console.error(`[Library Nurture] Error processing Day 30 for ${lead.email}:`, error);
@@ -360,4 +475,18 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// ============================================================
+// HELPER: Get Expiry Date (End of Current Month)
+// ============================================================
+
+function getExpiryDate(): string {
+  const now = new Date();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return lastDay.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 }
