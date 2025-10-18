@@ -1,14 +1,30 @@
+/**
+ * Video Detail API
+ *
+ * GET /api/knowledge/videos/[id]
+ * - Returns single video details with related videos
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL!);
 
-export const runtime = 'edge';
+interface Video {
+  id: string;
+  title: string;
+  description: string;
+  youtube_url: string;
+  youtube_video_id: string;
+  thumbnail_url: string;
+  duration: string;
+  tab?: string; // Database column is 'tab', not 'category'
+  view_count: number;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+}
 
-/**
- * GET /api/knowledge/videos/[id]
- * Get video by ID
- */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -16,28 +32,40 @@ export async function GET(
   try {
     const { id } = await params;
 
-    if (!id) {
+    // Validate ID
+    if (!id || typeof id !== 'string') {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'INVALID_ID',
-            message: 'Video ID is required',
+            message: 'Invalid video ID',
           },
         },
         { status: 400 }
       );
     }
 
-    // Get video from knowledge_videos table
-    const result = await sql`
-      SELECT *
-      FROM knowledge_videos
+    // Fetch video details
+    const videos = await sql`
+      SELECT
+        id,
+        title,
+        description,
+        youtube_url,
+        youtube_video_id,
+        thumbnail_url,
+        duration,
+        tab,
+        view_count,
+        published_at,
+        created_at,
+        updated_at
+      FROM videos
       WHERE id = ${id}
-      LIMIT 1
     `;
 
-    if (result.length === 0) {
+    if (videos.length === 0) {
       return NextResponse.json(
         {
           success: false,
@@ -50,67 +78,84 @@ export async function GET(
       );
     }
 
-    const video = result[0];
+    const video = videos[0] as Video;
 
     // Increment view count
     await sql`
-      UPDATE knowledge_videos
+      UPDATE videos
       SET view_count = view_count + 1
-      WHERE id = ${video.id}
+      WHERE id = ${id}
     `;
 
-    // Extract YouTube video ID from URL
-    const extractYouTubeId = (url: string): string => {
-      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([a-zA-Z0-9_-]{11})/);
-      return match ? match[1] : '';
-    };
+    // Fetch related videos (same tab, excluding current video, limit 3)
+    let relatedVideos: Video[] = [];
 
-    // Transform to camelCase
-    const transformedVideo = {
-      id: video.id,
-      title: video.title,
-      description: video.description || '',
-      youtubeUrl: video.video_url,
-      youtubeVideoId: extractYouTubeId(video.video_url),
-      thumbnailUrl: video.thumbnail_url,
-      duration: video.duration || '0:00',
-      category: video.category,
-      tags: video.tags || [],
-      viewCount: video.view_count + 1, // Return updated count
-      publishedAt: video.published_at,
-      createdAt: video.created_at,
-      updatedAt: video.updated_at,
-    };
+    if (video.tab) {
+      relatedVideos = (await sql`
+        SELECT
+          id,
+          title,
+          description,
+          youtube_url,
+          youtube_video_id,
+          thumbnail_url,
+          duration,
+          tab,
+          view_count,
+          published_at
+        FROM videos
+        WHERE tab = ${video.tab}
+          AND id != ${id}
+        ORDER BY view_count DESC, published_at DESC
+        LIMIT 3
+      `) as Video[];
+    }
 
-    // Get related videos (same category, excluding current video)
-    const relatedResult = await sql`
-      SELECT *
-      FROM knowledge_videos
-      WHERE id != ${video.id}
-        AND category = ${video.category}
-      ORDER BY published_at DESC, created_at DESC
-      LIMIT 3
-    `;
+    // If not enough related videos, fill with recent videos
+    if (relatedVideos.length < 3) {
+      const limit = 3 - relatedVideos.length;
+      const additionalVideos = (await sql`
+        SELECT
+          id,
+          title,
+          description,
+          youtube_url,
+          youtube_video_id,
+          thumbnail_url,
+          duration,
+          tab,
+          view_count,
+          published_at
+        FROM videos
+        WHERE id != ${id}
+        ORDER BY published_at DESC
+        LIMIT ${limit}
+      `) as Video[];
 
-    const relatedVideos = relatedResult.map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description || '',
-      youtubeUrl: item.video_url,
-      youtubeVideoId: extractYouTubeId(item.video_url),
-      thumbnailUrl: item.thumbnail_url,
-      duration: item.duration || '0:00',
-      category: item.category,
-      tags: item.tags || [],
-      viewCount: item.view_count,
-      publishedAt: item.published_at,
-    }));
+      relatedVideos = [...relatedVideos, ...additionalVideos];
+    }
+
+    // Transform to camelCase (map 'tab' to 'category' for frontend compatibility)
+    const transformVideo = (v: Video) => ({
+      id: v.id,
+      title: v.title,
+      description: v.description,
+      youtubeUrl: v.youtube_url,
+      youtubeVideoId: v.youtube_video_id,
+      thumbnailUrl: v.thumbnail_url,
+      duration: v.duration,
+      category: v.tab, // Frontend expects 'category' field
+      viewCount: v.view_count + (v.id === id ? 1 : 0),
+      publishedAt: v.published_at,
+      createdAt: (v as any).created_at,
+      updatedAt: (v as any).updated_at,
+    });
 
     return NextResponse.json({
       success: true,
       data: {
-        video: transformedVideo,
-        relatedVideos,
+        video: transformVideo(video),
+        relatedVideos: relatedVideos.map(transformVideo),
       },
     });
   } catch (error) {
@@ -121,7 +166,7 @@ export async function GET(
         success: false,
         error: {
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'An unexpected error occurred',
+          message: 'Failed to fetch video details',
         },
       },
       { status: 500 }
