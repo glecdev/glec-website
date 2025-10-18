@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 import { Resend } from 'resend';
 import { z } from 'zod';
+import { getContactFormConfirmationEmail } from '@/lib/email-templates/template-renderer';
 
 const sql = neon(process.env.DATABASE_URL!);
 const resend = new Resend(process.env.RESEND_API_KEY!);
@@ -48,13 +49,20 @@ export async function POST(req: NextRequest) {
 
     const lead = result[0];
 
-    // Send confirmation email
+    // Send confirmation email using template system
+    const emailContent = getContactFormConfirmationEmail({
+      contact_name: lead.contact_name,
+      company_name: lead.company_name,
+      email: lead.email,
+      phone: data.phone || '미제공',
+    });
+
     await resend.emails.send({
       from: 'GLEC <noreply@no-reply.glec.io>',
       to: lead.email,
-      subject: '[GLEC] 문의 접수 완료',
-      html: `<h1>안녕하세요 ${lead.contact_name}님</h1><p>${lead.company_name}에서 문의해 주셔서 감사합니다.</p>`,
-      text: `안녕하세요 ${lead.contact_name}님, ${lead.company_name}에서 문의해 주셔서 감사합니다.`,
+      subject: emailContent.subject,
+      html: emailContent.html,
+      text: emailContent.text,
     });
 
     return NextResponse.json({ success: true, data: { lead_id: lead.id } });
