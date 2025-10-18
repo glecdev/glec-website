@@ -4,7 +4,7 @@
  * Endpoint: GET /api/knowledge/videos
  * Purpose: 사용자에게 공개된 비디오 목록 제공
  * Security: Public access (no auth required)
- * Database: knowledge_videos table
+ * Database: videos table
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -37,47 +37,47 @@ export async function GET(request: NextRequest) {
 
     if (category && search) {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM knowledge_videos
+        SELECT COUNT(*) as total FROM videos
         WHERE category = ${category} AND title ILIKE ${`%${search}%`}
       `;
       items = await sql`
         SELECT *
-        FROM knowledge_videos
+        FROM videos
         WHERE category = ${category} AND title ILIKE ${`%${search}%`}
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
     } else if (category) {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM knowledge_videos
+        SELECT COUNT(*) as total FROM videos
         WHERE category = ${category}
       `;
       items = await sql`
         SELECT *
-        FROM knowledge_videos
+        FROM videos
         WHERE category = ${category}
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
     } else if (search) {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM knowledge_videos
+        SELECT COUNT(*) as total FROM videos
         WHERE title ILIKE ${`%${search}%`}
       `;
       items = await sql`
         SELECT *
-        FROM knowledge_videos
+        FROM videos
         WHERE title ILIKE ${`%${search}%`}
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
     } else {
       countResult = await sql`
-        SELECT COUNT(*) as total FROM knowledge_videos
+        SELECT COUNT(*) as total FROM videos
       `;
       items = await sql`
         SELECT *
-        FROM knowledge_videos
+        FROM videos
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;

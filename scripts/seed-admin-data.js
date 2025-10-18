@@ -16,6 +16,22 @@
  */
 
 const { neon } = require('@neondatabase/serverless');
+const fs = require('fs');
+const path = require('path');
+
+// Load .env.local
+const envPath = path.join(__dirname, '..', '.env.local');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8');
+  const envVars = envContent.split('\n').filter(line => line && !line.startsWith('#'));
+  envVars.forEach(line => {
+    const [key, ...values] = line.split('=');
+    if (key && values.length > 0) {
+      const value = values.join('=').replace(/^["']|["']$/g, '');
+      process.env[key.trim()] = value.trim();
+    }
+  });
+}
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -124,7 +140,7 @@ async function seedLibraryItems(sql) {
     try {
       // Check if item already exists
       const existing = await sql`
-        SELECT id FROM library_items WHERE id = ${item.id}
+        SELECT id FROM libraries WHERE id = ${item.id}
       `;
 
       if (existing.length > 0) {
@@ -135,7 +151,7 @@ async function seedLibraryItems(sql) {
 
       // Insert library item
       await sql`
-        INSERT INTO library_items (
+        INSERT INTO libraries (
           id,
           title,
           description,
@@ -184,7 +200,7 @@ async function clearLibraryItems(sql) {
   console.log(`\n${YELLOW}⚠️  Clearing existing library items...${RESET}\n`);
 
   try {
-    const result = await sql`DELETE FROM library_items`;
+    const result = await sql`DELETE FROM libraries`;
     log('SUCCESS', `Deleted ${result.count || 0} library items`);
   } catch (error) {
     log('ERROR', 'Failed to clear library items', error.message);

@@ -1,0 +1,143 @@
+{
+  "login": {
+    "success": true,
+    "url": "https://glec-website-hijwxwbq4-glecdevs-projects.vercel.app/admin"
+  },
+  "pages": [
+    {
+      "name": "Knowledge Blog",
+      "path": "/admin/knowledge-blog",
+      "apiPath": "/api/admin/knowledge-blog",
+      "contentType": "blog",
+      "pageLoadSuccess": true,
+      "contentCount": 1,
+      "errorMessage": null,
+      "screenshot": "./screenshots/admin-blog-1760793339628.png"
+    },
+    {
+      "name": "Knowledge Videos",
+      "path": "/admin/knowledge-videos",
+      "apiPath": "/api/admin/knowledge-videos",
+      "contentType": "video",
+      "pageLoadSuccess": true,
+      "contentCount": 1,
+      "errorMessage": null,
+      "screenshot": "./screenshots/admin-video-1760793343311.png"
+    },
+    {
+      "name": "Knowledge Library",
+      "path": "/admin/knowledge-library",
+      "apiPath": "/api/admin/knowledge-library",
+      "contentType": "library",
+      "pageLoadSuccess": true,
+      "contentCount": 0,
+      "errorMessage": "콘텐츠 요소를 찾을 수 없음",
+      "screenshot": "./screenshots/admin-library-1760793346231.png"
+    },
+    {
+      "name": "Notices",
+      "path": "/admin/notices",
+      "apiPath": "/api/admin/notices",
+      "contentType": "notice",
+      "pageLoadSuccess": true,
+      "contentCount": 1,
+      "errorMessage": null,
+      "screenshot": "./screenshots/admin-notice-1760793349538.png"
+    },
+    {
+      "name": "Events",
+      "path": "/admin/events",
+      "apiPath": "/api/admin/events",
+      "contentType": "event",
+      "pageLoadSuccess": true,
+      "contentCount": 1,
+      "errorMessage": null,
+      "screenshot": "./screenshots/admin-event-1760793353179.png"
+    },
+    {
+      "name": "Press",
+      "path": "/admin/press",
+      "apiPath": "/api/admin/press",
+      "contentType": "press",
+      "pageLoadSuccess": true,
+      "contentCount": 1,
+      "errorMessage": null,
+      "screenshot": "./screenshots/admin-press-1760793356796.png"
+    },
+    {
+      "name": "Popups",
+      "path": "/admin/popups",
+      "apiPath": "/api/admin/popups",
+      "contentType": "popup",
+      "pageLoadSuccess": true,
+      "contentCount": 1,
+      "errorMessage": null,
+      "screenshot": "./screenshots/admin-popup-1760793360498.png"
+    }
+  ],
+  "apis": [
+    {
+      "name": "Knowledge Blog",
+      "apiPath": "/api/admin/knowledge-blog",
+      "success": false,
+      "statusCode": 404,
+      "dataCount": 0,
+      "errorMessage": "HTTP 404"
+    },
+    {
+      "name": "Knowledge Videos",
+      "apiPath": "/api/admin/knowledge-videos",
+      "success": false,
+      "statusCode": 404,
+      "dataCount": 0,
+      "errorMessage": "HTTP 404"
+    },
+    {
+      "name": "Knowledge Library",
+      "apiPath": "/api/admin/knowledge-library",
+      "success": false,
+      "statusCode": 404,
+      "dataCount": 0,
+      "errorMessage": "HTTP 404"
+    },
+    {
+      "name": "Notices",
+      "apiPath": "/api/admin/notices",
+      "success": false,
+      "statusCode": 401,
+      "dataCount": 0,
+      "errorMessage": "HTTP 401"
+    },
+    {
+      "name": "Events",
+      "apiPath": "/api/admin/events",
+      "success": false,
+      "statusCode": 401,
+      "dataCount": 0,
+      "errorMessage": "HTTP 401"
+    },
+    {
+      "name": "Press",
+      "apiPath": "/api/admin/press",
+      "success": false,
+      "statusCode": 401,
+      "dataCount": 0,
+      "errorMessage": "HTTP 401"
+    },
+    {
+      "name": "Popups",
+      "apiPath": "/api/admin/popups",
+      "success": false,
+      "statusCode": 401,
+      "dataCount": 0,
+      "errorMessage": "HTTP 401"
+    }
+  ],
+  "database": null,
+  "summary": {
+    "total": 7,
+    "passed": 6,
+    "failed": 1,
+    "warnings": 0
+  }
+}

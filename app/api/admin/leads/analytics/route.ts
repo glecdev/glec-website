@@ -55,6 +55,47 @@ export const GET = withAuth(
       const [demoTotal] = await sql`SELECT COUNT(*) as total FROM demo_requests WHERE created_at >= ${dateFrom} AND created_at <= ${dateTo}`;
       const [eventTotal] = await sql`SELECT COUNT(*) as total FROM event_registrations WHERE created_at >= ${dateFrom} AND created_at <= ${dateTo}`;
 
+      // Build time-series by merging contacts, demo_requests, and event_registrations
+      const dateMap = new Map<string, { contact_form: number; demo_request: number; event_registration: number }>();
+
+      // Add contacts
+      contacts.forEach((row: any) => {
+        const dateStr = format(new Date(row.date), 'yyyy-MM-dd');
+        if (!dateMap.has(dateStr)) {
+          dateMap.set(dateStr, { contact_form: 0, demo_request: 0, event_registration: 0 });
+        }
+        dateMap.get(dateStr)!.contact_form = Number(row.count);
+      });
+
+      // Add demo requests
+      demoRequests.forEach((row: any) => {
+        const dateStr = format(new Date(row.date), 'yyyy-MM-dd');
+        if (!dateMap.has(dateStr)) {
+          dateMap.set(dateStr, { contact_form: 0, demo_request: 0, event_registration: 0 });
+        }
+        dateMap.get(dateStr)!.demo_request = Number(row.count);
+      });
+
+      // Add event registrations
+      eventRegs.forEach((row: any) => {
+        const dateStr = format(new Date(row.date), 'yyyy-MM-dd');
+        if (!dateMap.has(dateStr)) {
+          dateMap.set(dateStr, { contact_form: 0, demo_request: 0, event_registration: 0 });
+        }
+        dateMap.get(dateStr)!.event_registration = Number(row.count);
+      });
+
+      // Convert to array and sort by date
+      const time_series = Array.from(dateMap.entries())
+        .map(([date, data]) => ({
+          date,
+          contact_form: data.contact_form,
+          demo_request: data.demo_request,
+          event_registration: data.event_registration,
+          total: data.contact_form + data.demo_request + data.event_registration,
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
       return NextResponse.json({
         success: true,
         data: {
@@ -63,13 +104,7 @@ export const GET = withAuth(
             to: dateTo.toISOString(),
             granularity,
           },
-          time_series: [{
-            date: format(new Date(), 'yyyy-MM-dd'),
-            contact_form: 0,
-            demo_request: 0,
-            event_registration: 0,
-            total: 0,
-          }],
+          time_series,
           score_distribution: [],
           status_distribution: [],
           source_distribution: [
