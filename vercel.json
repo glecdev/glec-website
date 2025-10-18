@@ -1,28 +1,8 @@
 {
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "outputDirectory": ".next",
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 10
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    }
-  ],
   "crons": [
     {
-      "path": "/api/cron/library-nurture?cron_secret=OjZEePvm%2Bx5JqHn13bVCBQn0rTCDngh6492hqIhwRaA%3D",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/contact-nurture?cron_secret=OjZEePvm%2Bx5JqHn13bVCBQn0rTCDngh6492hqIhwRaA%3D",
-      "schedule": "0 1 * * *"
+      "path": "/api/cron/email-automation",
+      "schedule": "0 9 * * *"
     }
   ]
 }

@@ -17,12 +17,16 @@
  * - contacts: admin_email_status, user_email_status
  * - library_leads: email_status, email_opened, download_link_clicked
  * - email_webhook_events: Audit log of all webhook events
+ * - email_sends: Email automation tracking (NEW - Phase 5)
+ * - email_metrics: Email automation aggregation (NEW - Phase 5)
+ * - unified_leads: Bounced/complained tracking (NEW - Phase 5)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 import crypto from 'crypto';
 import { calculateLibraryLeadScore } from '@/lib/lead-scoring/calculate-score';
+import { prisma } from '@/lib/prisma';
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -288,6 +292,11 @@ async function handleEmailOpened(email: string): Promise<void> {
         WHERE email = ${email}
       `;
     }
+
+    // ========================================
+    // Email Automation Integration (Phase 5)
+    // ========================================
+    await updateEmailAutomationTracking(email, 'opened');
   } catch (error) {
     console.error('[Resend Webhook] Error updating email_opened:', error);
   }
@@ -314,6 +323,11 @@ async function handleEmailClicked(email: string, link?: string): Promise<void> {
       // Recalculate lead score (+20 points for link click)
       await recalculateLeadScore(result[0].id);
     }
+
+    // ========================================
+    // Email Automation Integration (Phase 5)
+    // ========================================
+    await updateEmailAutomationTracking(email, 'clicked');
   } catch (error) {
     console.error('[Resend Webhook] Error updating download_link_clicked:', error);
   }
@@ -332,6 +346,11 @@ async function handleEmailBounced(email: string): Promise<void> {
         updated_at = NOW()
       WHERE email = ${email}
     `;
+
+    // ========================================
+    // Email Automation Integration (Phase 5)
+    // ========================================
+    await updateEmailAutomationBounced(email);
   } catch (error) {
     console.error('[Resend Webhook] Error handling bounced email:', error);
   }
@@ -368,6 +387,11 @@ async function handleEmailComplained(email: string): Promise<void> {
         updated_at = NOW()
       WHERE email = ${email}
     `;
+
+    // ========================================
+    // Email Automation Integration (Phase 5)
+    // ========================================
+    await updateEmailAutomationComplained(email);
   } catch (error) {
     console.error('[Resend Webhook] Error handling spam complaint:', error);
   }
@@ -419,5 +443,178 @@ async function recalculateLeadScore(leadId: string): Promise<void> {
     console.log(`[Resend Webhook] Score breakdown:`, result.breakdown);
   } catch (error) {
     console.error('[Resend Webhook] Error recalculating lead score:', error);
+  }
+}
+
+// ============================================================
+// EMAIL AUTOMATION INTEGRATION (Phase 5)
+// ============================================================
+
+/**
+ * Update email_sends table for opened/clicked events
+ * Update email_metrics aggregation table
+ */
+async function updateEmailAutomationTracking(
+  email: string,
+  action: 'opened' | 'clicked'
+): Promise<void> {
+  try {
+    // 1. Find lead in unified_leads
+    const lead = await prisma.unifiedLead.findFirst({
+      where: { email },
+      select: { id: true },
+    });
+
+    if (!lead) {
+      console.log(`[Email Automation] Lead not found in unified_leads: ${email}`);
+      return;
+    }
+
+    // 2. Update email_sends table
+    const updateData: any = {};
+    if (action === 'opened') {
+      updateData.openedAt = new Date();
+    } else if (action === 'clicked') {
+      updateData.clickedAt = new Date();
+    }
+
+    const updated = await prisma.emailSend.updateMany({
+      where: {
+        leadId: lead.id,
+        openedAt: action === 'opened' ? null : undefined,
+        clickedAt: action === 'clicked' ? null : undefined,
+      },
+      data: updateData,
+    });
+
+    if (updated.count > 0) {
+      console.log(`[Email Automation] Updated ${updated.count} email_sends for ${email} (${action})`);
+
+      // 3. Update email_metrics aggregation
+      // Find template_id from the updated email_send
+      const emailSend = await prisma.emailSend.findFirst({
+        where: {
+          leadId: lead.id,
+          ...(action === 'opened' && { openedAt: { not: null } }),
+          ...(action === 'clicked' && { clickedAt: { not: null } }),
+        },
+        orderBy: { sentAt: 'desc' },
+        select: { templateId: true },
+      });
+
+      if (emailSend?.templateId) {
+        await updateEmailMetrics(emailSend.templateId, action);
+      }
+    }
+  } catch (error) {
+    console.error(`[Email Automation] Error updating tracking for ${email}:`, error);
+  }
+}
+
+/**
+ * Update unified_leads table for bounced emails
+ */
+async function updateEmailAutomationBounced(email: string): Promise<void> {
+  try {
+    const updated = await prisma.unifiedLead.updateMany({
+      where: { email },
+      data: { emailBounced: true },
+    });
+
+    if (updated.count > 0) {
+      console.log(`[Email Automation] Marked ${updated.count} unified_leads as bounced: ${email}`);
+    }
+  } catch (error) {
+    console.error(`[Email Automation] Error updating bounced for ${email}:`, error);
+  }
+}
+
+/**
+ * Update unified_leads table for complained emails
+ */
+async function updateEmailAutomationComplained(email: string): Promise<void> {
+  try {
+    const updated = await prisma.unifiedLead.updateMany({
+      where: { email },
+      data: { emailComplained: true },
+    });
+
+    if (updated.count > 0) {
+      console.log(`[Email Automation] Marked ${updated.count} unified_leads as complained: ${email}`);
+    }
+  } catch (error) {
+    console.error(`[Email Automation] Error updating complained for ${email}:`, error);
+  }
+}
+
+/**
+ * Update email_metrics aggregation table
+ */
+async function updateEmailMetrics(
+  templateId: string,
+  action: 'sent' | 'delivered' | 'opened' | 'clicked' | 'converted'
+): Promise<void> {
+  try {
+    const now = new Date();
+    const dateKey = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const hourKey = now.getHours();
+
+    // Find or create metric record for this template/date/hour
+    const existingMetric = await prisma.emailMetric.findFirst({
+      where: {
+        templateId,
+        date: new Date(dateKey),
+        hour: hourKey,
+      },
+    });
+
+    if (existingMetric) {
+      // Update existing metric
+      const updateData: any = {};
+      switch (action) {
+        case 'sent':
+          updateData.sentCount = existingMetric.sentCount + 1;
+          break;
+        case 'delivered':
+          updateData.deliveredCount = existingMetric.deliveredCount + 1;
+          break;
+        case 'opened':
+          updateData.openedCount = existingMetric.openedCount + 1;
+          break;
+        case 'clicked':
+          updateData.clickedCount = existingMetric.clickedCount + 1;
+          break;
+        case 'converted':
+          updateData.convertedCount = existingMetric.convertedCount + 1;
+          break;
+      }
+
+      await prisma.emailMetric.update({
+        where: { id: existingMetric.id },
+        data: updateData,
+      });
+
+      console.log(`[Email Automation] Updated email_metrics: template=${templateId}, action=${action}`);
+    } else {
+      // Create new metric record
+      await prisma.emailMetric.create({
+        data: {
+          templateId,
+          date: new Date(dateKey),
+          hour: hourKey,
+          sentCount: action === 'sent' ? 1 : 0,
+          deliveredCount: action === 'delivered' ? 1 : 0,
+          openedCount: action === 'opened' ? 1 : 0,
+          clickedCount: action === 'clicked' ? 1 : 0,
+          convertedCount: action === 'converted' ? 1 : 0,
+          bouncedCount: 0,
+          complainedCount: 0,
+        },
+      });
+
+      console.log(`[Email Automation] Created email_metrics: template=${templateId}, action=${action}`);
+    }
+  } catch (error) {
+    console.error(`[Email Automation] Error updating email_metrics:`, error);
   }
 }

@@ -1,40 +1,540 @@
-// GLEC Website Database Schema
-// Version: 1.0.0
-// Database: Neon PostgreSQL (Serverless)
-// Based on: GLEC-API-Specification.yaml
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-// ============================================================
-// ENUMS
-// ============================================================
+model analytics_conversions {
+  id                 String             @id
+  session_id         String
+  conversion_type    String
+  form_data          Json?
+  value              Float?
+  created_at         DateTime           @default(now())
+  analytics_sessions analytics_sessions @relation(fields: [session_id], references: [session_id], onDelete: Cascade)
 
-enum UserRole {
-  SUPER_ADMIN
-  CONTENT_MANAGER
-  ANALYST
+  @@index([conversion_type])
+  @@index([created_at(sort: Desc)])
+  @@index([session_id])
 }
 
-enum ContentStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+model analytics_events {
+  id                 String             @id
+  session_id         String
+  event_type         String
+  event_name         String
+  event_data         Json?
+  page               String
+  element_id         String?
+  element_text       String?
+  created_at         DateTime           @default(now())
+  analytics_sessions analytics_sessions @relation(fields: [session_id], references: [session_id], onDelete: Cascade)
+
+  @@index([created_at(sort: Desc)])
+  @@index([event_name])
+  @@index([event_type])
+  @@index([session_id])
 }
 
-enum NoticeCategory {
-  GENERAL
-  PRODUCT
-  EVENT
-  PRESS
+model analytics_pageviews {
+  id                 String             @id
+  session_id         String
+  path               String
+  title              String
+  referrer           String?
+  duration           Int?
+  scroll_depth       Int?
+  exit_page          Boolean            @default(false)
+  created_at         DateTime           @default(now())
+  analytics_sessions analytics_sessions @relation(fields: [session_id], references: [session_id], onDelete: Cascade)
+
+  @@index([created_at(sort: Desc)])
+  @@index([path])
+  @@index([session_id])
+}
+
+model analytics_sessions {
+  id                    String                  @id
+  session_id            String                  @unique
+  user_id               String?
+  ip_address            String
+  user_agent            String
+  country               String?
+  city                  String?
+  device                String
+  browser               String
+  os                    String
+  referrer              String?
+  landing_page          String
+  cookie_consent        Json
+  created_at            DateTime                @default(now())
+  updated_at            DateTime
+  analytics_conversions analytics_conversions[]
+  analytics_events      analytics_events[]
+  analytics_pageviews   analytics_pageviews[]
+
+  @@index([browser])
+  @@index([created_at(sort: Desc)])
+  @@index([device])
+  @@index([session_id])
+}
+
+model audit_logs {
+  id          String      @id
+  user_id     String
+  action      AuditAction
+  resource    String
+  resource_id String?
+  changes     Json?
+  ip_address  String
+  user_agent  String
+  created_at  DateTime    @default(now())
+  users       users       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([action])
+  @@index([created_at(sort: Desc)])
+  @@index([resource])
+  @@index([user_id, created_at(sort: Desc)])
+}
+
+model automation_rules {
+  rule_id               String          @id
+  rule_name             String          @unique
+  lead_source_type      LeadSourceType
+  trigger_type          TriggerType
+  trigger_delay_minutes Int             @default(0)
+  trigger_condition     Json?
+  template_id           String
+  max_sends_per_lead    Int             @default(1)
+  max_sends_per_day     Int             @default(2)
+  cooldown_minutes      Int             @default(1440)
+  priority              Int             @default(3)
+  is_active             Boolean         @default(true)
+  created_at            DateTime        @default(now())
+  updated_at            DateTime
+  email_templates       email_templates @relation(fields: [template_id], references: [template_id], onDelete: Cascade)
+  email_sends           email_sends[]
+
+  @@index([is_active])
+  @@index([lead_source_type])
+  @@index([trigger_type])
+}
+
+model blogs {
+  id            String        @id
+  title         String
+  slug          String        @unique
+  content       String
+  excerpt       String?
+  status        ContentStatus @default(DRAFT)
+  thumbnail_url String?
+  tags          String[]      @default([])
+  view_count    Int           @default(0)
+  reading_time  Int?
+  published_at  DateTime?
+  author_id     String
+  created_at    DateTime      @default(now())
+  updated_at    DateTime
+  deleted_at    DateTime?
+  users         users         @relation(fields: [author_id], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([status, published_at(sort: Desc)])
+  @@index([tags])
+}
+
+model contacts {
+  id              String             @id
+  company_name    String
+  contact_name    String
+  email           String
+  phone           String
+  inquiry_type    ContactInquiryType
+  message         String
+  privacy_consent Boolean
+  status          ContactStatus      @default(NEW)
+  ip_address      String?
+  notes           String?
+  assigned_to_id  String?
+  created_at      DateTime           @default(now())
+  updated_at      DateTime
+  users           users?             @relation(fields: [assigned_to_id], references: [id])
+
+  @@index([email])
+  @@index([status, created_at(sort: Desc)])
+}
+
+model content_rankings {
+  id             String     @id
+  content_type   String
+  content_id     String
+  content_title  String
+  view_count     Int        @default(0)
+  click_count    Int        @default(0)
+  download_count Int        @default(0)
+  period_type    PeriodType
+  period_start   DateTime
+  period_end     DateTime
+  rank           Int
+  previous_rank  Int?
+  rank_change    Int?
+  created_at     DateTime   @default(now())
+  updated_at     DateTime
+
+  @@unique([content_type, content_id, period_type, period_start])
+  @@index([period_type, period_start(sort: Desc)])
+  @@index([rank])
+}
+
+model demo_requests {
+  id                 String            @id
+  company_name       String
+  contact_name       String
+  email              String
+  phone              String
+  company_size       String
+  product_interests  String[]
+  use_case           String
+  current_solution   String?
+  monthly_shipments  String
+  preferred_date     DateTime
+  preferred_time     String
+  additional_message String?
+  status             DemoRequestStatus @default(NEW)
+  privacy_consent    Boolean
+  ip_address         String?
+  notes              String?
+  assigned_to_id     String?
+  created_at         DateTime          @default(now())
+  updated_at         DateTime
+  users              users?            @relation(fields: [assigned_to_id], references: [id])
+
+  @@index([email])
+  @@index([preferred_date])
+  @@index([status, created_at(sort: Desc)])
+}
+
+model email_metrics {
+  metric_id          String          @id
+  template_id        String
+  date               DateTime        @db.Date
+  hour               Int?
+  sent_count         Int             @default(0)
+  delivered_count    Int             @default(0)
+  bounced_count      Int             @default(0)
+  opened_count       Int             @default(0)
+  clicked_count      Int             @default(0)
+  converted_count    Int             @default(0)
+  unsubscribed_count Int             @default(0)
+  spam_count         Int             @default(0)
+  created_at         DateTime        @default(now())
+  updated_at         DateTime
+  email_templates    email_templates @relation(fields: [template_id], references: [template_id], onDelete: Cascade)
+
+  @@unique([template_id, date, hour])
+  @@index([date])
+  @@index([template_id])
+}
+
+model email_sends {
+  email_send_id    String           @id
+  lead_id          String
+  rule_id          String
+  template_id      String
+  resend_email_id  String?
+  recipient_email  String
+  subject          String
+  status           EmailSendStatus  @default(PENDING)
+  sent_at          DateTime?
+  delivered_at     DateTime?
+  opened_at        DateTime?
+  clicked_at       DateTime?
+  ab_variant       String?
+  created_at       DateTime         @default(now())
+  updated_at       DateTime
+  automation_rules automation_rules @relation(fields: [rule_id], references: [rule_id], onDelete: Cascade)
+  email_templates  email_templates  @relation(fields: [template_id], references: [template_id], onDelete: Cascade)
+
+  @@index([lead_id])
+  @@index([rule_id])
+  @@index([sent_at])
+  @@index([status])
+  @@index([template_id])
+}
+
+model email_templates {
+  template_id           String             @id
+  template_name         String             @unique
+  template_type         EmailTemplateType
+  lead_source_type      LeadSourceType
+  subject               String
+  html_body             String
+  text_body             String
+  variables             Json               @default("[]")
+  trigger_type          TriggerType
+  trigger_delay_minutes Int                @default(0)
+  is_ab_test            Boolean            @default(false)
+  ab_variant_id         String?
+  ab_traffic_split      Int                @default(50)
+  is_active             Boolean            @default(true)
+  version               Int                @default(1)
+  created_at            DateTime           @default(now())
+  updated_at            DateTime
+  automation_rules      automation_rules[]
+  email_metrics         email_metrics[]
+  email_sends           email_sends[]
+  email_templates       email_templates?   @relation("email_templatesToemail_templates", fields: [ab_variant_id], references: [template_id])
+  other_email_templates email_templates[]  @relation("email_templatesToemail_templates")
+
+  @@index([is_active])
+  @@index([lead_source_type])
+  @@index([template_type])
+}
+
+model event_registrations {
+  id                String             @id
+  name              String
+  email             String
+  phone             String
+  company           String?
+  job_title         String?
+  message           String?
+  status            RegistrationStatus @default(PENDING)
+  privacy_consent   Boolean
+  marketing_consent Boolean            @default(false)
+  admin_notes       String?
+  event_id          String
+  created_at        DateTime           @default(now())
+  updated_at        DateTime
+  events            events             @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@index([created_at(sort: Desc)])
+  @@index([email])
+  @@index([event_id, status])
+}
+
+model events {
+  id                  String                @id
+  title               String
+  slug                String                @unique
+  description         String
+  status              EventStatus           @default(DRAFT)
+  start_date          DateTime
+  end_date            DateTime
+  location            String
+  location_details    String?
+  thumbnail_url       String?
+  max_participants    Int?
+  view_count          Int                   @default(0)
+  published_at        DateTime?
+  author_id           String
+  created_at          DateTime              @default(now())
+  updated_at          DateTime
+  deleted_at          DateTime?
+  event_registrations event_registrations[]
+  users               users                 @relation(fields: [author_id], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([status, start_date])
+}
+
+model libraries {
+  id             String        @id
+  title          String
+  slug           String        @unique
+  description    String?
+  category       String
+  file_type      String
+  thumbnail_url  String?
+  file_url       String
+  file_size      String
+  tags           String[]      @default([])
+  page_count     Int?
+  is_gated       Boolean       @default(true)
+  download_count Int           @default(0)
+  status         ContentStatus @default(DRAFT)
+  published_at   DateTime?
+  author_id      String
+  created_at     DateTime      @default(now())
+  updated_at     DateTime
+  users          users         @relation(fields: [author_id], references: [id], onDelete: Cascade)
+
+  @@index([category])
+  @@index([slug])
+  @@index([status, published_at(sort: Desc)])
+  @@index([tags])
+}
+
+model media {
+  id                String   @id
+  filename          String
+  original_filename String
+  url               String
+  mime_type         String
+  size_bytes        Int
+  width             Int?
+  height            Int?
+  alt_text          String?
+  uploaded_by_id    String
+  created_at        DateTime @default(now())
+  users             users    @relation(fields: [uploaded_by_id], references: [id], onDelete: Cascade)
+
+  @@index([created_at(sort: Desc)])
+  @@index([mime_type])
+}
+
+model newsletter_subscriptions {
+  id                 String           @id
+  email              String           @unique
+  status             NewsletterStatus @default(ACTIVE)
+  verification_token String?
+  verified_at        DateTime?
+  unsubscribed_at    DateTime?
+  created_at         DateTime         @default(now())
+  updated_at         DateTime
+
+  @@index([email])
+  @@index([status])
+}
+
+model notices {
+  id            String         @id
+  title         String
+  slug          String         @unique
+  content       String
+  excerpt       String?
+  status        ContentStatus  @default(DRAFT)
+  category      NoticeCategory @default(GENERAL)
+  thumbnail_url String?
+  view_count    Int            @default(0)
+  published_at  DateTime?
+  author_id     String
+  created_at    DateTime       @default(now())
+  updated_at    DateTime
+  deleted_at    DateTime?
+  users         users          @relation(fields: [author_id], references: [id], onDelete: Cascade)
+
+  @@index([category, status])
+  @@index([slug])
+  @@index([status, published_at(sort: Desc)])
+}
+
+model partnerships {
+  id               String            @id
+  company_name     String
+  contact_name     String
+  email            String
+  partnership_type PartnershipType
+  proposal         String
+  status           PartnershipStatus @default(NEW)
+  admin_notes      String?
+  created_at       DateTime          @default(now())
+  updated_at       DateTime
+
+  @@index([email])
+  @@index([status, created_at(sort: Desc)])
+}
+
+model popups {
+  id                String           @id
+  title             String
+  content           String?
+  image_url         String?
+  link_url          String?
+  display_type      PopupDisplayType @default(modal)
+  is_active         Boolean          @default(false)
+  start_date        DateTime?
+  end_date          DateTime?
+  z_index           Int              @default(1000)
+  show_once_per_day Boolean          @default(true)
+  position          String?
+  size              String?
+  background_color  String           @default("#ffffff")
+  deleted_at        DateTime?
+  created_at        DateTime         @default(now())
+  updated_at        DateTime
+
+  @@index([is_active, deleted_at])
+  @@index([start_date, end_date])
+}
+
+model presses {
+  id            String        @id
+  title         String
+  slug          String        @unique
+  content       String
+  excerpt       String?
+  status        ContentStatus @default(DRAFT)
+  thumbnail_url String?
+  media_outlet  String?
+  external_url  String?
+  view_count    Int           @default(0)
+  published_at  DateTime?
+  author_id     String
+  created_at    DateTime      @default(now())
+  updated_at    DateTime
+  deleted_at    DateTime?
+  users         users         @relation(fields: [author_id], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([status, published_at(sort: Desc)])
+}
+
+model users {
+  id            String          @id
+  email         String          @unique
+  name          String
+  password_hash String
+  role          UserRole        @default(CONTENT_MANAGER)
+  phone         String?
+  last_login_at DateTime?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime
+  audit_logs    audit_logs[]
+  blogs         blogs[]
+  contacts      contacts[]
+  demo_requests demo_requests[]
+  events        events[]
+  libraries     libraries[]
+  media         media[]
+  notices       notices[]
+  presses       presses[]
+  videos        videos[]
+}
+
+model videos {
+  id               String        @id
+  title            String
+  slug             String        @unique
+  description      String?
+  youtube_url      String
+  youtube_video_id String
+  thumbnail_url    String
+  channel_name     String?
+  duration         String?
+  view_count       Int           @default(0)
+  status           ContentStatus @default(DRAFT)
+  tab              String        @default("전체")
+  published_at     DateTime?
+  author_id        String
+  created_at       DateTime      @default(now())
+  updated_at       DateTime
+  users            users         @relation(fields: [author_id], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([status, tab, published_at(sort: Desc)])
+}
+
+enum AuditAction {
+  LOGIN
+  CREATE
+  UPDATE
+  DELETE
 }
 
 enum ContactInquiryType {
@@ -51,468 +551,11 @@ enum ContactStatus {
   SPAM
 }
 
-enum NewsletterStatus {
-  ACTIVE
-  UNSUBSCRIBED
-}
-
-enum EventStatus {
+enum ContentStatus {
   DRAFT
   PUBLISHED
-  CLOSED
+  ARCHIVED
 }
-
-enum RegistrationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
-}
-
-enum AuditAction {
-  LOGIN
-  CREATE
-  UPDATE
-  DELETE
-}
-
-enum PeriodType {
-  DAILY
-  WEEKLY
-  MONTHLY
-  ALL_TIME
-}
-
-// ============================================================
-// USER MODEL
-// ============================================================
-
-model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String
-  passwordHash  String    @map("password_hash")
-  role          UserRole  @default(CONTENT_MANAGER)
-  phone         String?
-  lastLoginAt   DateTime? @map("last_login_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  notices       Notice[]
-  presses       Press[]
-  videos        Video[]
-  blogs         Blog[]
-  libraries     Library[]
-  mediaUploads  Media[]   @relation("MediaUploader")
-  assignedContacts Contact[] @relation("AssignedTo")
-  events        Event[]
-  assignedDemoRequests DemoRequest[] @relation("DemoAssignedTo")
-  auditLogs     AuditLog[]
-
-  @@map("users")
-}
-
-// ============================================================
-// CONTENT MODELS
-// ============================================================
-
-model Notice {
-  id            String         @id @default(uuid())
-  title         String
-  slug          String         @unique
-  content       String         @db.Text
-  excerpt       String?
-  status        ContentStatus  @default(DRAFT)
-  category      NoticeCategory @default(GENERAL)
-  thumbnailUrl  String?        @map("thumbnail_url")
-  viewCount     Int            @default(0) @map("view_count")
-  publishedAt   DateTime?      @map("published_at")
-
-  // Relations
-  authorId      String         @map("author_id")
-  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  deletedAt     DateTime?      @map("deleted_at")
-
-  @@index([slug])
-  @@index([status, publishedAt(sort: Desc)])
-  @@index([category, status])
-  @@map("notices")
-}
-
-model Press {
-  id            String        @id @default(uuid())
-  title         String
-  slug          String        @unique
-  content       String        @db.Text
-  excerpt       String?
-  status        ContentStatus @default(DRAFT)
-  thumbnailUrl  String?       @map("thumbnail_url")
-  mediaOutlet   String?       @map("media_outlet") // 언론사
-  externalUrl   String?       @map("external_url") // 원문 링크
-  viewCount     Int           @default(0) @map("view_count")
-  publishedAt   DateTime?     @map("published_at")
-
-  // Relations
-  authorId      String        @map("author_id")
-  author        User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-  deletedAt     DateTime?     @map("deleted_at")
-
-  @@index([slug])
-  @@index([status, publishedAt(sort: Desc)])
-  @@map("presses")
-}
-
-model Video {
-  id              String        @id @default(uuid())
-  title           String
-  slug            String        @unique
-  description     String?       @db.Text
-  youtubeUrl      String        @map("youtube_url")
-  youtubeVideoId  String        @map("youtube_video_id")
-  thumbnailUrl    String        @map("thumbnail_url") // OpenGraph image
-  channelName     String?       @map("channel_name")
-  duration        String?       // e.g., "5:32"
-  viewCount       Int           @default(0) @map("view_count")
-  status          ContentStatus @default(DRAFT)
-  tab             String        @default("전체") // 전체, 글렉, 팟캐스트
-  publishedAt     DateTime?     @map("published_at")
-
-  // Relations
-  authorId        String        @map("author_id")
-  author          User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-
-  @@index([slug])
-  @@index([status, tab, publishedAt(sort: Desc)])
-  @@map("videos")
-}
-
-model Blog {
-  id            String        @id @default(uuid())
-  title         String
-  slug          String        @unique
-  content       String        @db.Text
-  excerpt       String?
-  status        ContentStatus @default(DRAFT)
-  thumbnailUrl  String?       @map("thumbnail_url")
-  tags          String[]      @default([])
-  viewCount     Int           @default(0) @map("view_count")
-  readingTime   Int?          @map("reading_time") // minutes
-  publishedAt   DateTime?     @map("published_at")
-
-  // Relations
-  authorId      String        @map("author_id")
-  author        User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-  deletedAt     DateTime?     @map("deleted_at")
-
-  @@index([slug])
-  @@index([status, publishedAt(sort: Desc)])
-  @@index([tags])
-  @@map("blogs")
-}
-
-model Library {
-  id            String        @id @default(uuid())
-  title         String
-  slug          String        @unique
-  description   String?       @db.Text
-  category      String        // TECHNICAL, GUIDE, NEWS, CASE_STUDY, TUTORIAL, WHITEPAPER, REPORT, RESEARCH
-  fileType      String        @map("file_type") // PDF, DOCX, XLSX, PPTX
-  thumbnailUrl  String?       @map("thumbnail_url")
-  fileUrl       String        @map("file_url")
-  fileSize      String        @map("file_size") // e.g., "2.5 MB"
-  tags          String[]      @default([])
-  pageCount     Int?          @map("page_count")
-  isGated       Boolean       @default(true) @map("is_gated") // true = 열람 신청 필요
-  downloadCount Int           @default(0) @map("download_count")
-  status        ContentStatus @default(DRAFT)
-  publishedAt   DateTime?     @map("published_at")
-
-  // Relations
-  authorId      String        @map("author_id")
-  author        User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-
-  @@index([slug])
-  @@index([status, publishedAt(sort: Desc)])
-  @@index([category])
-  @@index([tags])
-  @@map("libraries")
-}
-
-// ============================================================
-// CONTACT & NEWSLETTER
-// ============================================================
-
-model Contact {
-  id              String              @id @default(uuid())
-  companyName     String              @map("company_name")
-  contactName     String              @map("contact_name")
-  email           String
-  phone           String
-  inquiryType     ContactInquiryType  @map("inquiry_type")
-  message         String              @db.Text
-  privacyConsent  Boolean             @map("privacy_consent")
-  status          ContactStatus       @default(NEW)
-  ipAddress       String?             @map("ip_address")
-  notes           String?             @db.Text // 관리자 메모
-
-  // Relations
-  assignedToId    String?             @map("assigned_to_id")
-  assignedTo      User?               @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
-
-  createdAt       DateTime            @default(now()) @map("created_at")
-  updatedAt       DateTime            @updatedAt @map("updated_at")
-
-  @@index([status, createdAt(sort: Desc)])
-  @@index([email])
-  @@map("contacts")
-}
-
-model NewsletterSubscription {
-  id                String            @id @default(uuid())
-  email             String            @unique
-  status            NewsletterStatus  @default(ACTIVE)
-  verificationToken String?           @map("verification_token")
-  verifiedAt        DateTime?         @map("verified_at")
-  unsubscribedAt    DateTime?         @map("unsubscribed_at")
-
-  createdAt         DateTime          @default(now()) @map("created_at")
-  updatedAt         DateTime          @updatedAt @map("updated_at")
-
-  @@index([email])
-  @@index([status])
-  @@map("newsletter_subscriptions")
-}
-
-// ============================================================
-// MEDIA
-// ============================================================
-
-model Media {
-  id                String   @id @default(uuid())
-  filename          String
-  originalFilename  String   @map("original_filename")
-  url               String
-  mimeType          String   @map("mime_type")
-  sizeBytes         Int      @map("size_bytes")
-  width             Int?
-  height            Int?
-  altText           String?  @map("alt_text")
-
-  // Relations
-  uploadedById      String   @map("uploaded_by_id")
-  uploadedBy        User     @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
-
-  createdAt         DateTime @default(now()) @map("created_at")
-
-  @@index([mimeType])
-  @@index([createdAt(sort: Desc)])
-  @@map("media")
-}
-
-// ============================================================
-// EVENTS
-// ============================================================
-
-model Event {
-  id                String        @id @default(uuid())
-  title             String
-  slug              String        @unique
-  description       String        @db.Text
-  status            EventStatus   @default(DRAFT)
-  startDate         DateTime      @map("start_date")
-  endDate           DateTime      @map("end_date")
-  location          String
-  locationDetails   String?       @map("location_details") @db.Text
-  thumbnailUrl      String?       @map("thumbnail_url")
-  maxParticipants   Int?          @map("max_participants")
-  viewCount         Int           @default(0) @map("view_count")
-  publishedAt       DateTime?     @map("published_at")
-
-  // Relations
-  authorId          String        @map("author_id")
-  author            User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  registrations     EventRegistration[]
-
-  createdAt         DateTime      @default(now()) @map("created_at")
-  updatedAt         DateTime      @updatedAt @map("updated_at")
-  deletedAt         DateTime?     @map("deleted_at")
-
-  @@index([slug])
-  @@index([status, startDate(sort: Asc)])
-  @@map("events")
-}
-
-model EventRegistration {
-  id                String              @id @default(uuid())
-  name              String
-  email             String
-  phone             String
-  company           String?
-  jobTitle          String?             @map("job_title")
-  message           String?             @db.Text
-  status            RegistrationStatus  @default(PENDING)
-  privacyConsent    Boolean             @map("privacy_consent")
-  marketingConsent  Boolean             @default(false) @map("marketing_consent")
-  adminNotes        String?             @map("admin_notes") @db.Text
-
-  // Relations
-  eventId           String              @map("event_id")
-  event             Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  createdAt         DateTime            @default(now()) @map("created_at")
-  updatedAt         DateTime            @updatedAt @map("updated_at")
-
-  @@index([eventId, status])
-  @@index([email])
-  @@index([createdAt(sort: Desc)])
-  @@map("event_registrations")
-}
-
-// ============================================================
-// ANALYTICS MODELS
-// ============================================================
-
-model AnalyticsSession {
-  id            String   @id @default(uuid())
-  sessionId     String   @unique @map("session_id")
-  userId        String?  @map("user_id") // Nullable for anonymous users
-  ipAddress     String   @map("ip_address") // Last octet masked for GDPR (e.g., 192.168.1.0)
-  userAgent     String   @map("user_agent")
-  country       String?
-  city          String?
-  device        String   // desktop, mobile, tablet
-  browser       String
-  os            String
-  referrer      String?
-  landingPage   String   @map("landing_page")
-  cookieConsent Json     @map("cookie_consent") // {analytics: boolean, marketing: boolean, functional: boolean}
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  pageViews     AnalyticsPageView[]
-  events        AnalyticsEvent[]
-  conversions   AnalyticsConversion[]
-
-  @@index([sessionId])
-  @@index([createdAt(sort: Desc)])
-  @@index([device])
-  @@index([browser])
-  @@map("analytics_sessions")
-}
-
-model AnalyticsPageView {
-  id          String   @id @default(uuid())
-  sessionId   String   @map("session_id")
-  path        String
-  title       String
-  referrer    String?
-  duration    Int?     // seconds spent on page
-  scrollDepth Int?     @map("scroll_depth") // percentage scrolled (0-100)
-  exitPage    Boolean  @default(false) @map("exit_page")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  // Relations
-  session     AnalyticsSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
-
-  @@index([sessionId])
-  @@index([path])
-  @@index([createdAt(sort: Desc)])
-  @@map("analytics_pageviews")
-}
-
-model AnalyticsEvent {
-  id          String   @id @default(uuid())
-  sessionId   String   @map("session_id")
-  eventType   String   @map("event_type") // click, form_submit, cta_click, download, video_play, etc.
-  eventName   String   @map("event_name")
-  eventData   Json?    @map("event_data") // Additional event metadata
-  page        String
-  elementId   String?  @map("element_id")
-  elementText String?  @map("element_text")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  // Relations
-  session     AnalyticsSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
-
-  @@index([sessionId])
-  @@index([eventType])
-  @@index([eventName])
-  @@index([createdAt(sort: Desc)])
-  @@map("analytics_events")
-}
-
-model AnalyticsConversion {
-  id             String   @id @default(uuid())
-  sessionId      String   @map("session_id")
-  conversionType String   @map("conversion_type") // demo_request, contact_form, download, newsletter_signup, etc.
-  formData       Json?    @map("form_data") // Anonymized form data
-  value          Float?   // Estimated conversion value in KRW
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  // Relations
-  session        AnalyticsSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
-
-  @@index([sessionId])
-  @@index([conversionType])
-  @@index([createdAt(sort: Desc)])
-  @@map("analytics_conversions")
-}
-
-// ============================================================
-// POPUPS
-// ============================================================
-
-enum PopupDisplayType {
-  modal
-  banner
-  corner
-}
-
-model Popup {
-  id              String            @id @default(uuid())
-  title           String
-  content         String?           @db.Text
-  imageUrl        String?           @map("image_url")
-  linkUrl         String?           @map("link_url")
-  displayType     PopupDisplayType  @default(modal) @map("display_type")
-  isActive        Boolean           @default(false) @map("is_active")
-  startDate       DateTime?         @map("start_date")
-  endDate         DateTime?         @map("end_date")
-  zIndex          Int               @default(1000) @map("z_index")
-  showOncePerDay  Boolean           @default(true) @map("show_once_per_day")
-  position        String?           // JSON: {top, right, bottom, left}
-  size            String?           // JSON: {width, height}
-  backgroundColor String            @default("#ffffff") @map("background_color")
-
-  deletedAt       DateTime?         @map("deleted_at")
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
-
-  @@index([isActive, deletedAt])
-  @@index([startDate, endDate])
-  @@map("popups")
-}
-
-// ============================================================
-// DEMO REQUESTS
-// ============================================================
 
 enum DemoRequestStatus {
   NEW
@@ -521,106 +564,49 @@ enum DemoRequestStatus {
   CANCELLED
 }
 
-model DemoRequest {
-  id                String             @id @default(uuid())
-
-  // Step 1: Company Information
-  companyName       String             @map("company_name")
-  contactName       String             @map("contact_name")
-  email             String
-  phone             String
-  companySize       String             @map("company_size") // 1-10, 11-50, 51-200, 201-1000, 1000+
-
-  // Step 2: Interest & Requirements
-  productInterests  String[]           @map("product_interests") // DTG Series5, Carbon API, GLEC Cloud, AI DTG
-  useCase           String             @map("use_case") @db.Text
-  currentSolution   String?            @map("current_solution")
-  monthlyShipments  String             @map("monthly_shipments") // <100, 100-1000, 1000-10000, 10000+
-
-  // Step 3: Schedule Demo
-  preferredDate     DateTime           @map("preferred_date")
-  preferredTime     String             @map("preferred_time") // HH:MM format
-  additionalMessage String?            @map("additional_message") @db.Text
-
-  // Metadata
-  status            DemoRequestStatus  @default(NEW)
-  privacyConsent    Boolean            @map("privacy_consent")
-  ipAddress         String?            @map("ip_address")
-  notes             String?            @db.Text // Admin notes
-
-  // Relations
-  assignedToId      String?            @map("assigned_to_id")
-  assignedTo        User?              @relation("DemoAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
-
-  createdAt         DateTime           @default(now()) @map("created_at")
-  updatedAt         DateTime           @updatedAt @map("updated_at")
-
-  @@index([status, createdAt(sort: Desc)])
-  @@index([email])
-  @@index([preferredDate])
-  @@map("demo_requests")
+enum EmailSendStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  SPAM
+  FAILED
 }
 
-// ============================================================
-// AUDIT LOGS
-// ============================================================
-
-model AuditLog {
-  id          String      @id @default(uuid())
-  userId      String      @map("user_id")
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  action      AuditAction // LOGIN, CREATE, UPDATE, DELETE
-  resource    String      // notices, events, contacts, demo_requests, etc.
-  resourceId  String?     @map("resource_id") // ID of affected resource
-
-  changes     Json?       // Before/after diff
-  ipAddress   String      @map("ip_address")
-  userAgent   String      @map("user_agent") @db.Text
-
-  createdAt   DateTime    @default(now()) @map("created_at")
-
-  @@index([userId, createdAt(sort: Desc)])
-  @@index([action])
-  @@index([resource])
-  @@index([createdAt(sort: Desc)])
-  @@map("audit_logs")
+enum EmailTemplateType {
+  WELCOME
+  CONFIRMATION
+  FOLLOW_UP
+  NURTURE
+  RE_ENGAGEMENT
 }
 
-// ============================================================
-// CONTENT RANKINGS
-// ============================================================
-
-model ContentRanking {
-  id            String     @id @default(uuid())
-  contentType   String     @map("content_type") // notice, press, blog, video, library
-  contentId     String     @map("content_id")
-  contentTitle  String     @map("content_title")
-
-  viewCount     Int        @default(0) @map("view_count")
-  clickCount    Int        @default(0) @map("click_count")
-  downloadCount Int        @default(0) @map("download_count")
-
-  periodType    PeriodType @map("period_type") // DAILY, WEEKLY, MONTHLY, ALL_TIME
-  periodStart   DateTime   @map("period_start")
-  periodEnd     DateTime   @map("period_end")
-
-  rank          Int
-  previousRank  Int?       @map("previous_rank")
-  rankChange    Int?       @map("rank_change") // +5, -2, etc.
-
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
-
-  @@unique([contentType, contentId, periodType, periodStart])
-  @@index([periodType, periodStart(sort: Desc)])
-  @@index([rank])
-  @@map("content_rankings")
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
 }
 
-// ============================================================
-// PARTNERSHIPS
-// ============================================================
+enum LeadSourceType {
+  LIBRARY_LEAD
+  CONTACT_FORM
+  DEMO_REQUEST
+  EVENT_REGISTRATION
+}
+
+enum NewsletterStatus {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+enum NoticeCategory {
+  GENERAL
+  PRODUCT
+  EVENT
+  PRESS
+}
 
 enum PartnershipStatus {
   NEW
@@ -636,20 +622,36 @@ enum PartnershipType {
   other
 }
 
-model Partnership {
-  id              String            @id @default(uuid())
-  companyName     String            @map("company_name")
-  contactName     String            @map("contact_name")
-  email           String
-  partnershipType PartnershipType   @map("partnership_type")
-  proposal        String            @db.Text
-  status          PartnershipStatus @default(NEW)
-  adminNotes      String?           @map("admin_notes") @db.Text
+enum PeriodType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  ALL_TIME
+}
 
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
+enum PopupDisplayType {
+  modal
+  banner
+  corner
+}
 
-  @@index([status, createdAt(sort: Desc)])
-  @@index([email])
-  @@map("partnerships")
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum TriggerType {
+  LEAD_CREATED
+  EMAIL_OPENED
+  EMAIL_CLICKED
+  TIME_ELAPSED
+  STATUS_CHANGED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  CONTENT_MANAGER
+  ANALYST
 }

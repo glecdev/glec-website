@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
+import { FileUpload, type UploadedFileData } from '@/components/admin/FileUpload';
 import { z } from 'zod';
 
 // ====================================================================
@@ -99,6 +100,8 @@ export function LibraryItemForm({ item, onClose, onSuccess, onError }: LibraryIt
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadMethod, setUploadMethod] = useState<'local' | 'url' | 'google_drive'>('local');
+  const [uploadedFileData, setUploadedFileData] = useState<UploadedFileData | null>(null);
 
   // Handle input change
   const handleChange = (name: string, value: any) => {
@@ -126,6 +129,21 @@ export function LibraryItemForm({ item, onClose, onSuccess, onError }: LibraryIt
         .replace(/^-+|-+$/g, '');
       handleChange('slug', autoSlug);
     }
+  };
+
+  // Handle file upload success
+  const handleFileUploadSuccess = (data: UploadedFileData) => {
+    setUploadedFileData(data);
+    // Auto-fill form fields with uploaded file data
+    handleChange('file_url', data.file_url);
+    handleChange('file_type', data.file_type);
+    handleChange('file_size_mb', data.file_size_mb);
+    handleChange('download_type', 'DIRECT');
+  };
+
+  // Handle file upload error
+  const handleFileUploadError = (error: string) => {
+    onError(error);
   };
 
   // Handle submit
@@ -262,18 +280,107 @@ export function LibraryItemForm({ item, onClose, onSuccess, onError }: LibraryIt
             </div>
           </div>
 
-          {/* File URL */}
+          {/* File Upload Method Selector */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              파일 URL <span className="text-error-500">*</span>
+              파일 업로드 방식 <span className="text-error-500">*</span>
             </label>
-            <Input
-              type="url"
-              value={formData.file_url}
-              onChange={(e) => handleChange('file_url', e.target.value)}
-              placeholder="https://example.com/files/glec-framework-v3.pdf"
-              className={errors.file_url ? 'border-error-500' : ''}
-            />
+            <div className="flex gap-3 mb-4">
+              <button
+                type="button"
+                onClick={() => setUploadMethod('local')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  uploadMethod === 'local'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                로컬 파일 업로드
+              </button>
+              <button
+                type="button"
+                onClick={() => setUploadMethod('url')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  uploadMethod === 'url'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                URL 직접 입력
+              </button>
+              <button
+                type="button"
+                onClick={() => setUploadMethod('google_drive')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  uploadMethod === 'google_drive'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Google Drive
+              </button>
+            </div>
+
+            {/* Local File Upload */}
+            {uploadMethod === 'local' && item && (
+              <FileUpload
+                itemId={item.id}
+                onUploadSuccess={handleFileUploadSuccess}
+                onUploadError={handleFileUploadError}
+                currentFileUrl={formData.file_url}
+              />
+            )}
+
+            {uploadMethod === 'local' && !item && (
+              <div className="border border-yellow-200 bg-yellow-50 rounded-lg p-4">
+                <p className="text-sm text-yellow-800">
+                  <strong>안내:</strong> 먼저 라이브러리 항목을 생성한 후에 파일을 업로드할 수 있습니다.
+                  <br />
+                  현재는 임시 URL을 입력하고, 생성 후 수정 화면에서 파일을 업로드하세요.
+                </p>
+                <Input
+                  type="url"
+                  value={formData.file_url}
+                  onChange={(e) => handleChange('file_url', e.target.value)}
+                  placeholder="https://placeholder.com/temp"
+                  className={`mt-3 ${errors.file_url ? 'border-error-500' : ''}`}
+                />
+              </div>
+            )}
+
+            {/* Manual URL Input */}
+            {uploadMethod === 'url' && (
+              <div>
+                <Input
+                  type="url"
+                  value={formData.file_url}
+                  onChange={(e) => handleChange('file_url', e.target.value)}
+                  placeholder="https://example.com/files/glec-framework-v3.pdf"
+                  className={errors.file_url ? 'border-error-500' : ''}
+                />
+                <p className="text-gray-500 text-xs mt-1">외부 서버에 호스팅된 파일의 전체 URL을 입력하세요</p>
+              </div>
+            )}
+
+            {/* Google Drive Link */}
+            {uploadMethod === 'google_drive' && (
+              <div>
+                <Input
+                  type="url"
+                  value={formData.file_url}
+                  onChange={(e) => {
+                    handleChange('file_url', e.target.value);
+                    handleChange('download_type', 'GOOGLE_DRIVE');
+                  }}
+                  placeholder="https://drive.google.com/file/d/..."
+                  className={errors.file_url ? 'border-error-500' : ''}
+                />
+                <p className="text-gray-500 text-xs mt-1">
+                  Google Drive 파일의 공유 링크를 입력하세요 (링크 공유가 &quot;링크가 있는 모든 사용자&quot;로 설정되어야 합니다)
+                </p>
+              </div>
+            )}
+
             {errors.file_url && <p className="text-error-500 text-sm mt-1">{errors.file_url}</p>}
           </div>
 
