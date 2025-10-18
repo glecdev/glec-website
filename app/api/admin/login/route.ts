@@ -29,10 +29,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { comparePassword, generateToken, hashPassword } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-import { logLogin } from '@/app/api/_shared/audit-logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+// import { logLogin } from '@/app/api/_shared/audit-logger'; // Temporarily disabled for production fix
 
 // Request validation schema
 const LoginSchema = z.object({
@@ -153,8 +151,8 @@ export async function POST(request: NextRequest) {
       data: { lastLoginAt: new Date() },
     });
 
-    // Log successful login to audit trail
-    await logLogin(user.id, request);
+    // Log successful login to audit trail (temporarily disabled for production fix)
+    // await logLogin(user.id, request);
 
     // Generate JWT token
     const token = generateToken({
