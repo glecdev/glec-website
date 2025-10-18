@@ -147,7 +147,7 @@ export const GET = withAuth(
       // Count total
       const countResult = await sql`
         SELECT COUNT(*)::int as total
-        FROM knowledge_videos
+        FROM videos
         ${sql.unsafe(whereClause)}
       `;
 
@@ -159,22 +159,22 @@ export const GET = withAuth(
       const offset = (page - 1) * per_page;
       const items = await sql`
         SELECT *
-        FROM knowledge_videos
+        FROM videos
         ${sql.unsafe(whereClause)}
         ORDER BY published_at DESC, created_at DESC
         LIMIT ${per_page} OFFSET ${offset}
       `;
 
-      // Transform to API response format
+      // Transform to API response format (mapping schema columns to API format)
       const transformedItems = items.map((item: any) => ({
         id: item.id,
         title: item.title,
-        description: item.description,
-        videoUrl: item.video_url,
+        description: item.description || '',
+        videoUrl: item.youtube_url, // schema uses youtube_url
         thumbnailUrl: item.thumbnail_url,
-        duration: item.duration,
-        category: item.category,
-        tags: item.tags || [],
+        duration: item.duration || '00:00',
+        category: item.tab || 'TUTORIAL', // schema uses tab instead of category
+        tags: [], // videos table doesn't have tags in schema
         viewCount: item.view_count,
         publishedAt: item.published_at,
         createdAt: item.created_at,
@@ -235,16 +235,28 @@ export const POST = withAuth(
       // Generate thumbnail URL if not provided
       const defaultThumbnail = `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`;
 
-      // Insert new video
+      // Insert new video (using correct schema: videos table)
       const newItem = await sql`
-        INSERT INTO knowledge_videos (
-          title, description, video_url, thumbnail_url,
-          duration, category, tags, view_count, published_at
+        INSERT INTO videos (
+          id, title, slug, description, youtube_url, youtube_video_id,
+          thumbnail_url, duration, tab, status, view_count, published_at,
+          author_id, created_at, updated_at
         ) VALUES (
-          ${validated.title}, ${validated.description}, ${validated.videoUrl},
+          ${randomUUID()},
+          ${validated.title},
+          ${generateSlug(validated.title)},
+          ${validated.description},
+          ${validated.videoUrl},
+          ${youtubeVideoId},
           ${validated.thumbnailUrl || defaultThumbnail},
-          ${validated.duration}, ${validated.category}, ${validated.tags},
-          0, NOW()
+          ${validated.duration},
+          ${validated.category},
+          'PUBLISHED',
+          0,
+          NOW(),
+          ${user.id},
+          NOW(),
+          NOW()
         )
         RETURNING *
       `;
@@ -258,11 +270,11 @@ export const POST = withAuth(
             id: created.id,
             title: created.title,
             description: created.description,
-            videoUrl: created.video_url,
+            videoUrl: created.youtube_url,
             thumbnailUrl: created.thumbnail_url,
             duration: created.duration,
-            category: created.category,
-            tags: created.tags,
+            category: created.tab,
+            tags: [],
             viewCount: created.view_count,
             publishedAt: created.published_at,
             createdAt: created.created_at,
@@ -321,9 +333,9 @@ export const PUT = withAuth(
 
       const validated = validationResult.data;
 
-      // Check if item exists
+      // Check if item exists (using correct table: videos)
       const existing = await sql`
-        SELECT id FROM knowledge_videos WHERE id = ${id}
+        SELECT id FROM videos WHERE id = ${id}
       `;
       if (existing.length === 0) {
         return NextResponse.json(
@@ -341,6 +353,10 @@ export const PUT = withAuth(
         updates.push(`title = $${paramIndex}`);
         values.push(validated.title);
         paramIndex++;
+        // Auto-update slug when title changes
+        updates.push(`slug = $${paramIndex}`);
+        values.push(generateSlug(validated.title));
+        paramIndex++;
       }
       if (validated.description !== undefined) {
         updates.push(`description = $${paramIndex}`);
@@ -348,12 +364,16 @@ export const PUT = withAuth(
         paramIndex++;
       }
       if (validated.videoUrl !== undefined) {
-        updates.push(`video_url = $${paramIndex}`);
+        updates.push(`youtube_url = $${paramIndex}`);
         values.push(validated.videoUrl);
+        paramIndex++;
+        // Auto-update youtube_video_id
+        const newVideoId = extractYouTubeId(validated.videoUrl);
+        updates.push(`youtube_video_id = $${paramIndex}`);
+        values.push(newVideoId);
         paramIndex++;
         // Auto-update thumbnail if not explicitly provided
         if (validated.thumbnailUrl === undefined) {
-          const newVideoId = extractYouTubeId(validated.videoUrl);
           const defaultThumbnail = `https://img.youtube.com/vi/${newVideoId}/maxresdefault.jpg`;
           updates.push(`thumbnail_url = $${paramIndex}`);
           values.push(defaultThumbnail);
@@ -371,13 +391,8 @@ export const PUT = withAuth(
         paramIndex++;
       }
       if (validated.category !== undefined) {
-        updates.push(`category = $${paramIndex}`);
+        updates.push(`tab = $${paramIndex}`);
         values.push(validated.category);
-        paramIndex++;
-      }
-      if (validated.tags !== undefined) {
-        updates.push(`tags = $${paramIndex}`);
-        values.push(validated.tags);
         paramIndex++;
       }
 
@@ -386,7 +401,7 @@ export const PUT = withAuth(
       values.push(id);
 
       const setClause = updates.join(', ');
-      const updateQuery = `UPDATE knowledge_videos SET ${setClause} WHERE id = $${paramIndex} RETURNING *`;
+      const updateQuery = `UPDATE videos SET ${setClause} WHERE id = $${paramIndex} RETURNING *`;
 
       const updated = await sql.unsafe(updateQuery, values);
       const result = updated[0];
@@ -397,11 +412,11 @@ export const PUT = withAuth(
           id: result.id,
           title: result.title,
           description: result.description,
-          videoUrl: result.video_url,
+          videoUrl: result.youtube_url,
           thumbnailUrl: result.thumbnail_url,
           duration: result.duration,
-          category: result.category,
-          tags: result.tags,
+          category: result.tab,
+          tags: [],
           viewCount: result.view_count,
           publishedAt: result.published_at,
           createdAt: result.created_at,
@@ -436,9 +451,9 @@ export const DELETE = withAuth(
         );
       }
 
-      // Check if item exists
+      // Check if item exists (using correct table: videos)
       const existing = await sql`
-        SELECT id FROM knowledge_videos WHERE id = ${id}
+        SELECT id FROM videos WHERE id = ${id}
       `;
       if (existing.length === 0) {
         return NextResponse.json(
@@ -449,7 +464,7 @@ export const DELETE = withAuth(
 
       // Delete item
       await sql`
-        DELETE FROM knowledge_videos WHERE id = ${id}
+        DELETE FROM videos WHERE id = ${id}
       `;
 
       return new NextResponse(null, { status: 204 });
