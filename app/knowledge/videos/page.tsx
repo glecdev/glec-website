@@ -43,6 +43,9 @@ export default function VideosPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalVideos, setTotalVideos] = useState(0);
 
   // Debounce search (500ms)
   useEffect(() => {
@@ -54,13 +57,19 @@ export default function VideosPage() {
   }, [searchQuery]);
 
   useEffect(() => {
+    setCurrentPage(1); // Reset to page 1 when filters change
     fetchVideos();
   }, [selectedCategory, debouncedSearch]);
+
+  useEffect(() => {
+    fetchVideos();
+  }, [currentPage]);
 
   const fetchVideos = async () => {
     try {
       setIsLoading(true);
       const params = new URLSearchParams();
+      params.append('page', currentPage.toString());
       params.append('per_page', '20');
 
       if (selectedCategory) {
@@ -75,6 +84,8 @@ export default function VideosPage() {
 
       if (data.success) {
         setVideos(data.data);
+        setTotalPages(data.meta.totalPages);
+        setTotalVideos(data.meta.total);
       }
     } catch (error) {
       console.error('[Videos] Fetch error:', error);
@@ -206,6 +217,93 @@ export default function VideosPage() {
                   </div>
                 </Link>
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoading && videos.length > 0 && totalPages > 1 && (
+            <div className="mt-12 flex flex-col items-center gap-4">
+              <div className="text-sm text-gray-600">
+                총 <span className="font-semibold text-primary-500">{totalVideos.toLocaleString()}</span>개 영상 중{' '}
+                <span className="font-semibold">{((currentPage - 1) * 20 + 1).toLocaleString()}</span> -{' '}
+                <span className="font-semibold">{Math.min(currentPage * 20, totalVideos).toLocaleString()}</span>개 표시
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className={`
+                    px-4 py-2 rounded-lg font-semibold transition-colors
+                    ${
+                      currentPage === 1
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-primary-50 hover:text-primary-500 border border-gray-300'
+                    }
+                  `}
+                >
+                  이전
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and 1 page before/after current
+                    const showPage =
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1);
+
+                    // Show ellipsis
+                    const showEllipsisBefore = page === currentPage - 2 && currentPage > 3;
+                    const showEllipsisAfter = page === currentPage + 2 && currentPage < totalPages - 2;
+
+                    if (showEllipsisBefore || showEllipsisAfter) {
+                      return (
+                        <span key={page} className="px-3 py-2 text-gray-400">
+                          ...
+                        </span>
+                      );
+                    }
+
+                    if (!showPage) return null;
+
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`
+                          px-4 py-2 rounded-lg font-semibold transition-colors
+                          ${
+                            currentPage === page
+                              ? 'bg-primary-500 text-white'
+                              : 'bg-white text-gray-700 hover:bg-primary-50 hover:text-primary-500 border border-gray-300'
+                          }
+                        `}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className={`
+                    px-4 py-2 rounded-lg font-semibold transition-colors
+                    ${
+                      currentPage === totalPages
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-primary-50 hover:text-primary-500 border border-gray-300'
+                    }
+                  `}
+                >
+                  다음
+                </button>
+              </div>
             </div>
           )}
         </div>
