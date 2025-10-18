@@ -5,32 +5,17 @@
  * Security: CLAUDE.md - No hardcoded passwords, bcrypt validation
  * Purpose: Authenticate admin users and return JWT token
  *
- * Request Body:
- * {
- *   "email": "admin@glec.io",
- *   "password": "secure-password"
- * }
- *
- * Response (Success):
- * {
- *   "success": true,
- *   "data": {
- *     "token": "jwt-token-here",
- *     "user": {
- *       "id": "user-id",
- *       "email": "admin@glec.io",
- *       "name": "Admin User",
- *       "role": "SUPER_ADMIN"
- *     }
- *   }
- * }
+ * PRODUCTION FIX: Using Neon Serverless Driver directly for Vercel Edge Runtime compatibility
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { comparePassword, generateToken, hashPassword } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-// import { logLogin } from '@/app/api/_shared/audit-logger'; // Temporarily disabled for production fix
+import { neon } from '@neondatabase/serverless';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
+// Neon serverless SQL client
+const sql = neon(process.env.DATABASE_URL!);
 
 // Request validation schema
 const LoginSchema = z.object({
@@ -112,12 +97,14 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = validationResult.data;
 
-    // Query user from Prisma database
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    // Query user from database using Neon
+    const users = await sql`
+      SELECT id, email, name, role, password_hash
+      FROM users
+      WHERE email = ${email}
+    `;
 
-    if (!user) {
+    if (users.length === 0) {
       // Don't reveal whether email exists (security best practice)
       const errorResponse: ErrorResponse = {
         success: false,
@@ -130,8 +117,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 401 });
     }
 
+    const user = users[0];
+
     // Verify password
-    const isPasswordValid = await comparePassword(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
     if (!isPasswordValid) {
       const errorResponse: ErrorResponse = {
@@ -146,20 +135,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Update lastLoginAt in database
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
-
-    // Log successful login to audit trail (temporarily disabled for production fix)
-    // await logLogin(user.id, request);
+    await sql`
+      UPDATE users
+      SET last_login_at = NOW()
+      WHERE id = ${user.id}
+    `;
 
     // Generate JWT token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
+    );
 
     // Success response
     const response: LoginResponse = {
